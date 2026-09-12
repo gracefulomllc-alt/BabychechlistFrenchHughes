@@ -240,8 +240,8 @@
   .allDone{margin:14px 16px 0;padding:14px 16px;border:1px solid #B9AF63;border-radius:10px;background:linear-gradient(180deg,#FBF6DE,#EFE6B8);display:none;align-items:center;gap:12px;font-family:Georgia,serif;font-size:18px;color:var(--ink)}
   .allDone.show{display:flex}
   .allDone img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #B9AF63}
-  .allDone.big{flex-direction:column;text-align:center}
-  .allDone.big img{width:100%;height:auto;max-height:320px;border-radius:10px;object-fit:cover}
+  .allDone.withPhoto{flex-direction:column;text-align:center}
+  .allDone.withPhoto img{width:100%;height:auto;max-height:420px;border-radius:10px;object-fit:contain;border:2px solid #B9AF63}
 
   .budget{font-size:13px;color:var(--ink);background:var(--apricot-soft);border:1px solid #B9AF63;border-radius:8px;padding:8px 12px;flex:1 1 100%}
   .budget b{font-family:Georgia,serif;font-size:15px}
@@ -326,7 +326,7 @@
   <div class="allDone" id="allDone"><img src="/ram.svg" alt=""><div>Every item is checked off. Leslie, you're ready for this baby.</div></div>
   <main id="main"></main>
   <div class="hiddenbar"><button id="showhidden"></button></div>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v12 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v13 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -917,7 +917,7 @@ let lastWk=currentWeek(); setInterval(()=>{ const c=currentWeek(); if(c!==lastWk
 // If you add your own image at public/badge.png, it replaces the built-in ram badge automatically.
 (function(){ const im=new Image(); im.onload=()=>{ document.documentElement.style.setProperty("--badge",'url("/badge.png")'); document.querySelector("#allDone img").src="/badge.png"; }; im.src="/badge.png?"+Date.now(); })();
 // Optional larger photo for the all-done banner: public/celebrate.jpg
-(function(){ const im=new Image(); im.onload=()=>{ const b=document.getElementById("allDone"); b.classList.add("big"); b.querySelector("img").src="/celebrate.jpg"; }; im.src="/celebrate.jpg?"+Date.now(); })();
+(function(){ const im=new Image(); im.onload=()=>{ const b=document.getElementById("allDone"); b.classList.add("withPhoto"); b.querySelector("img").src="/celebrate.jpg"; }; im.src="/celebrate.jpg?"+Date.now(); })();
 /* ================= tools: contractions ================= */
 function ctState(){ return S.meta.ct||{open:null,list:[]}; }
 function ctSave(st){ S.meta.ct=st; patch({meta:{ct:st}}); }

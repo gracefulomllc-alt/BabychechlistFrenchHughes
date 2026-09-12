@@ -39,6 +39,8 @@ real deadlines once the birth date is entered.
 **Budget** — "Show prices" adds rough estimates per item (edit in `public/prices.js` or tap a price to override) and totals.
 **Calendar** — "Add dates to calendar" downloads an .ics with the due date, checklist deadlines, and week milestones.
 
+**Photos** — `public/badge.png` is the completion badge (currently Leslie). Add `public/celebrate.jpg` later (a baby photo) and it appears in the "everything's done" banner.
+
 **Installable** — Add to Home Screen on iPhone/Android; the shell opens offline, data syncs when online.
 
 ## Files
