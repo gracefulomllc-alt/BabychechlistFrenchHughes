@@ -281,7 +281,7 @@
 </head>
 <body>
 <header>
-  <div class="cele">🎉 Congratulations, Leslie!</div>
+  <div class="cele"><button id="partyBtn" type="button" title="Celebrate!" style="background:none;border:0;font-size:20px;cursor:pointer;padding:0;line-height:1">🎉</button> Congratulations, Leslie!</div>
   <h1>Your baby is almost here</h1>
   <p class="sub">Counting down to the big day.</p>
   <div class="cd"><div><b id="cdD">–</b><span>days</span></div><div><b id="cdH">–</b><span>hours</span></div><div><b id="cdM">–</b><span>minutes</span></div><div><b id="cdS">–</b><span>seconds</span></div></div>
@@ -326,7 +326,7 @@
   <div class="allDone" id="allDone"><img src="/ram.svg" alt=""><div>Every item is checked off. Leslie, you're ready for this baby.</div></div>
   <main id="main"></main>
   <div class="hiddenbar"><button id="showhidden"></button></div>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v10 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v11 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -431,6 +431,7 @@
   </div>
 </div>
 
+<script src="/party.js"></script>
 <script src="/weeks.js"></script>
 <script src="/after.js"></script>
 <script src="/prices.js"></script>
@@ -989,6 +990,9 @@ async function bumpRender(){
 document.getElementById("bumpFile").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const data=await shrink(f); const r=await fetch(`/api/bump?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({w:wkSel,image:data})}); if(!r.ok) throw 0; if(!BUMPS.includes(wkSel)) BUMPS.push(wkSel), BUMPS.sort((a,b)=>a-b); toast(`Week ${wkSel} photo saved`); bumpRender(); }catch{ toast("Couldn't save photo"); } e.target.value=""; };
 document.getElementById("bumpDel").onclick=async()=>{ if(!confirm(`Remove week ${wkSel} photo?`)) return; await fetch(`/api/bump?h=${H}&w=${wkSel}`,{method:"DELETE"}).catch(()=>{}); BUMPS=BUMPS.filter(b=>b!==wkSel); bumpRender(); };
 
+document.getElementById("partyBtn").onclick=()=>window.party&&window.party();
+// Extra celebration when a whole category gets completed
+const _upd=update; update=function(){ const before=[...document.querySelectorAll('section[data-done="1"]')].length; _upd(); const after=[...document.querySelectorAll('section[data-done="1"]')].length; if(after>before&&window.party) window.party("confetti"); };
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
 load().then(()=>{ render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); bumpList(); });
 </script>
