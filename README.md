@@ -29,6 +29,16 @@ Two-tab site: a shared "before baby arrives" checklist and an AI nursery theme p
 **Protection** — every AI endpoint requires a household code and is capped per household (20 designs, 40 renders per day)
 and site-wide (150 / 300 per day) so a leaked link can't run up the bill. Household codes are 10 characters.
 
+**This Week** — week-by-week guide (weeks 4–42) keyed to the due date; a bump photo can be saved per week.
+
+**Tools** — contraction timer (5-1-1 alert), kick counter (10-in-2-hours), shared baby-names shortlist with hearts.
+
+**After Baby** — first-weeks checklist (insurance, birth certificate, SSN, pediatrician visits, postpartum checks) that shows
+real deadlines once the birth date is entered.
+
+**Budget** — "Show prices" adds rough estimates per item (edit in `public/prices.js` or tap a price to override) and totals.
+**Calendar** — "Add dates to calendar" downloads an .ics with the due date, checklist deadlines, and week milestones.
+
 **Installable** — Add to Home Screen on iPhone/Android; the shell opens offline, data syncs when online.
 
 ## Files

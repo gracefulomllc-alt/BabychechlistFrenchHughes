@@ -18,7 +18,7 @@ Schema:
   "accents":["4-5 concrete decor ideas: rug, mobile, wall art, lighting, plants"],
   "search":"a 3-5 word phrase to search on Pinterest for this look"
 }]}
-Rules: exactly 4 themes, each distinctly different. Gender-neutral unless told otherwise. Real, harmonious hex values that would actually work together on a wall. Keep every string under 140 characters.`;
+Rules: exactly the number of themes requested, each distinctly different. Gender-neutral unless told otherwise. Real, harmonious hex values that would actually work together on a wall. Keep every string under 140 characters.`;
 
 function layoutText(L={}) {
   const lines = [];
@@ -32,8 +32,9 @@ function layoutText(L={}) {
   if (L.extras && L.extras.length) lines.push(`Also include: ${L.extras.join(", ")}.`);
   return lines.join("\n");
 }
-function buildPrompt({ vibes = [], light = "", furniture = "", layout = {}, notes = "" }) {
-  return `Design 4 nursery themes.
+function buildPrompt({ vibes = [], light = "", furniture = "", layout = {}, notes = "", count = 4 }) {
+  const n = [2, 4].includes(Number(count)) ? Number(count) : 4;
+  return `Design exactly ${n} nursery themes.
 Desired vibes: ${vibes.join(", ") || "designer's choice"}.
 Room light: ${light || "unknown"}.
 Existing furniture finish: ${furniture || "none yet"}.
