@@ -159,7 +159,10 @@
     background:linear-gradient(180deg,#4E9A62 0%,#2E7A44 45%,#1E4D2B 50%,#1E4D2B 100%);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.35),0 3px 8px rgba(0,0,0,.35);
     border-top:3px solid var(--gold)}
+  header{overflow:hidden}
   header::after{content:"";display:block;height:6px;background:repeating-linear-gradient(90deg,var(--gold) 0 14px,#1E4D2B 14px 18px);margin:0 -20px}
+  html,body{overflow-x:hidden;max-width:100%}
+  .swp>.swi{min-width:0} .swp>.swi>label{min-width:0} .name{overflow-wrap:anywhere}
   .cele{justify-content:center;font-size:14px;text-shadow:0 1px 0 rgba(0,0,0,.6);letter-spacing:.14em}
   h1{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:32px;letter-spacing:0;text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 12px rgba(255,255,255,.25)}
   header .sub{text-shadow:0 1px 0 rgba(0,0,0,.5)}
@@ -307,6 +310,17 @@
     .tab[aria-selected=true]{padding-bottom:18px;margin-bottom:-4px;box-shadow:inset 0 1px 0 #fff,0 -2px 6px rgba(0,0,0,.2)}
     .tab[aria-selected=true]::after{content:"";position:absolute;left:14px;right:14px;bottom:8px;height:4px;border-radius:2px;background:var(--gold)}
   }
+
+  /* compact mode */
+  body.compact li:not(.open) .note,body.compact li:not(.open) .brand,body.compact li:not(.open) .where,body.compact li:not(.open) .tools,body.compact li:not(.open) .desc,body.compact li:not(.open) .notebox{display:none}
+  body.compact li:not(.open) .notepreview{display:none}
+  body.compact li{padding:9px 10px}
+  body.compact .name{cursor:pointer}
+  body.compact .name::after{content:" ▾";color:var(--muted);font-size:12px}
+  body.compact li.open .name::after{content:" ▴"}
+  body.compact li .when{margin-top:3px}
+  body.compact li.hasnote:not(.open) .name::before{content:"📝 ";font-size:12px}
+  @media(max-width:640px){ body.compact section:not([open])>button{border-radius:10px} }
 </style>
 </head>
 <body>
@@ -336,6 +350,7 @@
     <div class="due"><label for="due">Due date</label><input type="date" id="due"><span class="countdown" id="countdown"></span></div>
   </div>
   <div class="bar-row" style="padding-top:6px">
+    <button class="opt" id="denseTog" type="button" aria-pressed="true">Compact</button>
     <button class="opt" id="priceTog" type="button" aria-pressed="false">Show prices</button>
     <button class="opt" id="icsBtn" type="button">Add dates to calendar</button>
     <div class="budget" id="budget" style="display:none"></div>
@@ -358,8 +373,11 @@
   </div>
   <div class="allDone" id="allDone"><img src="/ram.svg" alt=""><div>Every item is checked off. Leslie, you're ready for this baby.</div></div>
   <main id="main"></main>
-  <div class="hiddenbar"><button id="showhidden"></button></div>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v16 — Leslie edition</span></p>
+  <section id="hiddenBox" style="display:none;margin:12px 16px">
+    <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
+    <ul id="hiddenList"></ul>
+  </section>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v18 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -654,7 +672,8 @@ let filter="all", showHidden=false, pending={}, flushTimer=null;
 const toastEl=document.getElementById("toast"); let toastT;
 function toast(t,undo){ toastEl.textContent=t; if(undo){ const b=document.createElement("button"); b.textContent="Undo"; b.onclick=()=>{ undo(); toastEl.classList.remove("show"); }; toastEl.appendChild(b); } toastEl.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>toastEl.classList.remove("show"),undo?5000:1800); }
 /* swipe-left-to-delete helper: wraps el's children, reveals a red panel, fires onDelete past the threshold */
-function swipeable(el,label,onDelete){
+function swipeable(el,label,onDelete,confirmMsg){
+  const _on=onDelete; onDelete=()=>{ if(confirmMsg&&!confirm(confirmMsg)){ const i=el.querySelector(".swi"); if(i) i.style.transform=""; el.classList.remove("arm"); return; } _on(); };
   if(el.classList.contains("swp")) return; el.classList.add("swp"); el.dataset.label=label;
   const inner=document.createElement("div"); inner.className="swi"; while(el.firstChild) inner.appendChild(el.firstChild); el.appendChild(inner);
   const x=document.createElement("button"); x.type="button"; x.className="swx"; x.textContent="✕ "+label; x.onclick=e=>{ e.preventDefault(); e.stopPropagation(); onDelete(); }; el.appendChild(x);
@@ -742,6 +761,11 @@ document.getElementById("icsBtn").onclick=ics;
 /* ================= prices ================= */
 function priceOf(row){ const o=(S.meta.prices||{})[row.id]; if(o!=null) return o; const d=(window.PRICES||{})[row.name]; return d==null?null:d; }
 document.getElementById("priceTog").onclick=()=>{ const on=!document.body.classList.toggle("prices"); document.getElementById("priceTog").setAttribute("aria-pressed",!on); document.getElementById("priceTog").textContent=on?"Show prices":"Hide prices"; document.getElementById("budget").style.display=on?"none":""; update(); };
+/* ================= compact mode ================= */
+const openSecs=new Set();
+function setDense(on){ document.body.classList.toggle("compact",on); const b=document.getElementById("denseTog"); b.setAttribute("aria-pressed",on); b.textContent=on?"Compact":"Detailed"; localStorage.setItem("bp-dense",on?"1":"0"); }
+setDense(localStorage.getItem("bp-dense")!=="0");
+document.getElementById("denseTog").onclick=()=>{ setDense(!document.body.classList.contains("compact")); render(); };
 /* ================= checklist ================= */
 function allSections(){ // built-in + custom items merged
   return DATA.map(sec=>{
@@ -756,9 +780,10 @@ function render(){
   DATA.forEach(sec=>{ const o=document.createElement("option"); o.value=sec.id; o.textContent=`${sec.em} ${sec.title}`; sel.appendChild(o); });
   sel.onchange=()=>{ const t=document.getElementById(sel.value); if(t){ t.setAttribute("open",""); t.scrollIntoView({behavior:"smooth",block:"start"}); } sel.value=""; };
   allSections().forEach(sec=>{
-    const s=document.createElement("section"); s.id=sec.id; s.setAttribute("open","");
+    const s=document.createElement("section"); s.id=sec.id; if(!(innerWidth<=640&&document.body.classList.contains("compact"))||openSecs.has(sec.id)) s.setAttribute("open","");
     const btn=document.createElement("button");
     btn.innerHTML=`<span class="em">${sec.em}</span><h2>${sec.title}</h2><span class="n"></span><span class="car">▶</span>`;
+    btn.addEventListener("click",()=>{ setTimeout(()=>{ if(s.hasAttribute("open")) openSecs.add(sec.id); else openSecs.delete(sec.id); },0); });
     btn.onclick=()=>{ s.hasAttribute("open")?s.removeAttribute("open"):s.setAttribute("open",""); };
     const ul=document.createElement("ul");
     sec.rows.forEach(row=>ul.appendChild(itemRow(row)));
@@ -791,17 +816,20 @@ function itemRow(row){
     <div class="desc">${DESC[row.name]||""}</div>
     <div class="notebox"><textarea placeholder="e.g. Ordered 9/14, arrives Oct 2 · Mom is buying this">${S.notes[row.id]||""}</textarea></div>`;
   const stop=e=>{e.preventDefault();e.stopPropagation();};
+  if(S.notes[row.id]) li.classList.add("hasnote");
+  lab.querySelector(".name").onclick=e=>{ if(!document.body.classList.contains("compact")) return; stop(e); li.classList.toggle("open"); };
   const pe=lab.querySelector(".price"); if(pe) pe.onclick=e=>{stop(e); const v=prompt(`Estimated price for "${row.name}" (blank = default)`, String(pr)); if(v===null) return; const n=v.trim()===""?null:Math.max(0,parseInt(v,10)||0); S.meta.prices=S.meta.prices||{}; if(n===null) delete S.meta.prices[row.id]; else S.meta.prices[row.id]=n; patch({meta:{prices:S.meta.prices}}); render(); };
   const why=lab.querySelector(".why"); if(why) why.onclick=e=>{stop(e); const d=lab.querySelector(".desc"); const on=d.classList.toggle("show"); why.textContent=on?"Hide":"What's this?";};
   lab.querySelector(".noteb").onclick=e=>{stop(e); const b=lab.querySelector(".notebox"); b.classList.toggle("show"); if(b.classList.contains("show")) b.querySelector("textarea").focus();};
   const ta=lab.querySelector("textarea"); ta.onclick=stop; let nt; ta.oninput=()=>{ clearTimeout(nt); nt=setTimeout(()=>{ S.notes[row.id]=ta.value.trim(); if(!S.notes[row.id]) delete S.notes[row.id]; patch({notes:{[row.id]:S.notes[row.id]||""}}); lab.querySelector(".noteb").classList.toggle("on",!!S.notes[row.id]); },500); };
   ta.onblur=()=>{ const p=lab.querySelector(".notepreview"); if(S.notes[row.id]){ if(p) p.textContent=S.notes[row.id]; else { const d=document.createElement("div"); d.className="notepreview"; d.textContent=S.notes[row.id]; lab.querySelector(".tools").before(d); } } else if(p) p.remove(); };
-  lab.querySelector(".hideb").onclick=e=>{stop(e); const v=!S.hidden[row.id]; if(v) S.hidden[row.id]=true; else delete S.hidden[row.id]; patch({hidden:{[row.id]:v}}); render(); toast(v?"Hidden — find it under “show hidden”":"Restored"); };
+  lab.querySelector(".hideb").onclick=e=>{stop(e); const v=!S.hidden[row.id]; if(v&&!confirm(`Hide "${row.name}"? You can restore it from Hidden items at the bottom.`)) return; if(v) S.hidden[row.id]=true; else delete S.hidden[row.id]; patch({hidden:{[row.id]:v}}); render(); toast(v?"Hidden — find it under “show hidden”":"Restored"); };
   const del=lab.querySelector(".delb"); if(del) del.onclick=e=>{stop(e); if(!confirm("Delete this item for everyone?")) return; S.custom=S.custom.filter(c=>c.id!==row.id); patch({customRemove:[row.id]}); render(); };
   if(S.hidden[row.id]) li.classList.add("ishidden");
   li.append(cb,lab);
   swipeable(li,row.custom?"Delete":"Doesn't apply",()=>{ if(row.custom){ const c=S.custom.find(x=>x.id===row.id); S.custom=S.custom.filter(x=>x.id!==row.id); patch({customRemove:[row.id]}); render(); toast("Deleted",()=>{ S.custom.push(c); patch({customAdd:[c]}); render(); }); }
-    else { S.hidden[row.id]=true; patch({hidden:{[row.id]:true}}); render(); toast("Hidden — swipe again under “show hidden” to restore",()=>{ delete S.hidden[row.id]; patch({hidden:{[row.id]:false}}); render(); }); } });
+    else { S.hidden[row.id]=true; patch({hidden:{[row.id]:true}}); render(); toast("Hidden — restore it from the Hidden items box at the bottom",()=>{ delete S.hidden[row.id]; patch({hidden:{[row.id]:false}}); render(); }); } },
+    row.custom?`Delete "${row.name}" for everyone?`:`Hide "${row.name}"? You can restore it from Hidden items at the bottom.`);
   return li;
 }
 function update(){
@@ -814,11 +842,11 @@ function update(){
       const tag=li.querySelector(".when"); const x=whenDate(w); tag.textContent=WHEN[w]+(x?` · by ${fmt(x)}`:""); tag.classList.toggle("late",!isDone&&isLate(w));
       const hid=!!S.hidden[id]; if(hid) hiddenN++;
       let show=filter==="all"||(filter==="todo"?!isDone:filter==="late"?(!isDone&&isLate(w)):w===filter);
-      if(hid&&!showHidden) show=false;
+      if(hid) show=false;
       li.classList.toggle("hide",!show);
       if(show&&!hid){st++; if(isDone) sd++;}
     });
-    s.style.display=st||showHidden?"":"none";
+    s.style.display=st?"":"none";
     s.querySelector(".n").textContent=`${sd}/${st}`;
     s.dataset.done=(st&&sd===st)?"1":"0";
     total+=st; done+=sd;
@@ -829,9 +857,17 @@ function update(){
   // budget totals (visible, unhidden items)
   let tAll=0,tDone=0; allSections().forEach(sec=>sec.rows.forEach(r=>{ if(S.hidden[r.id]) return; const p=priceOf(r)||0; tAll+=p; if(isTicked(r.id)) tDone+=p; }));
   document.getElementById("budget").innerHTML=`Estimated total <b>$${tAll.toLocaleString()}</b> · bought <b>$${tDone.toLocaleString()}</b> · left to buy <b>$${(tAll-tDone).toLocaleString()}</b> <span class="sub" style="font-size:12px">— rough "nice stuff" estimates; tap a price to edit it</span>`;
-  const hb=document.getElementById("showhidden"); hb.textContent=hiddenN?(showHidden?"Hide the hidden items":`Show ${hiddenN} hidden item${hiddenN>1?"s":""}`):""; hb.style.display=hiddenN?"":"none";
+  renderHiddenBox();
 }
-document.getElementById("showhidden").onclick=()=>{ showHidden=!showHidden; update(); };
+function renderHiddenBox(){
+  const box=document.getElementById("hiddenBox"), ul=document.getElementById("hiddenList");
+  const rows=[]; allSections().forEach(sec=>sec.rows.forEach(r=>{ if(S.hidden[r.id]) rows.push({...r,secTitle:sec.title}); }));
+  box.style.display=rows.length?"":"none"; box.querySelector(".n").textContent=rows.length; ul.innerHTML="";
+  if(!box.dataset.bound){ box.dataset.bound="1"; box.querySelector("button").onclick=()=>{ box.hasAttribute("open")?box.removeAttribute("open"):box.setAttribute("open",""); }; }
+  rows.forEach(r=>{ const li=document.createElement("li"); li.style.display="flex"; li.innerHTML=`<label style="flex:1"><div class="name">${r.name}</div><div class="note">${r.secTitle}</div></label><button type="button" class="opt">Restore</button>`;
+    li.querySelector("button").onclick=()=>{ delete S.hidden[r.id]; patch({hidden:{[r.id]:false}}); render(); toast(`${r.name} restored`); }; ul.appendChild(li); });
+  if(rows.length>1){ const li=document.createElement("li"); li.className="addrow"; li.style.display="block"; li.innerHTML=`<button type="button">Restore all ${rows.length}</button>`; li.querySelector("button").onclick=()=>{ if(!confirm(`Restore all ${rows.length} hidden items?`)) return; rows.forEach(r=>{ delete S.hidden[r.id]; patch({hidden:{[r.id]:false}}); }); render(); toast("All restored"); }; ul.appendChild(li); }
+}
 document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ filter=c.dataset.f; document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===c)); update(); });
 document.getElementById("reset").onclick=async()=>{ if(!confirm("Clear every tick for everyone on this list?")) return; S.ticks={}; try{ await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({reset:true,patch:{}})}); }catch{} render(); };
 
@@ -987,7 +1023,7 @@ function ctRender(){
   else if(hour.length>=3) al.innerHTML='<div class="alert ok">Keep timing. Rest, hydrate, and call if your water breaks or anything worries you.</div>'; else al.innerHTML="";
   document.getElementById("ctLog").innerHTML=st.list.slice(-30).reverse().map((c,i,arr)=>{ const nxt=arr[i+1]; const gap=nxt?c.start-nxt.start:null; return `<div data-start="${c.start}"><span>${new Date(c.start).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}</span><span>lasted ${mmss(c.end-c.start)}</span><span>${gap?mmss(gap)+" apart":""}</span></div>`; }).join(""); ctBindSwipes();
 }
-function ctBindSwipes(){ document.querySelectorAll("#ctLog div[data-start]").forEach(row=>swipeable(row,"Delete",()=>{ const st=ctState(); const k=Number(row.dataset.start); const gone=st.list.find(c=>c.start===k); st.list=st.list.filter(c=>c.start!==k); ctSave(st); ctRender(); toast("Entry deleted",()=>{ const s2=ctState(); s2.list.push(gone); s2.list.sort((a,b)=>a.start-b.start); ctSave(s2); ctRender(); }); })); }
+function ctBindSwipes(){ document.querySelectorAll("#ctLog div[data-start]").forEach(row=>swipeable(row,"Delete",()=>{ const st=ctState(); const k=Number(row.dataset.start); const gone=st.list.find(c=>c.start===k); st.list=st.list.filter(c=>c.start!==k); ctSave(st); ctRender(); toast("Entry deleted",()=>{ const s2=ctState(); s2.list.push(gone); s2.list.sort((a,b)=>a.start-b.start); ctSave(s2); ctRender(); }); },"Delete this contraction entry?")); }
 document.getElementById("ctBtn").onclick=()=>{ const st=ctState(); const now=Date.now(); if(st.open){ st.list.push({start:st.open,end:now}); st.list=st.list.slice(-60); st.open=null; } else st.open=now; ctSave(st); ctRender(); };
 document.getElementById("ctClear").onclick=()=>{ if(confirm("Clear the contraction log?")){ ctSave({open:null,list:[]}); ctRender(); } };
 setInterval(()=>{ if(document.getElementById("pane-tools").classList.contains("active")) ctRender(); },15000);
@@ -1007,7 +1043,7 @@ function kkRender(){ const b=document.getElementById("kkBtn"); b.textContent=kk.
   const ch=document.getElementById("kkChart"); ch.innerHTML=""; const recent=hist.slice(-42); const max=Math.max(...recent.map(h=>h.ms),600000);
   recent.forEach(h=>{ const d=document.createElement("div"); d.style.height=Math.max(4,Math.round(h.ms/max*90))+"px"; if(avg&&h.ms>avg*2&&h.ms>1200000) d.classList.add("slow"); d.title=`${new Date(h.at).toLocaleDateString()} — ${mmss(h.ms)}`; const dt=new Date(h.at); if(dt.getDay()===1||recent.length<12) d.innerHTML=`<span>${dt.getMonth()+1}/${dt.getDate()}</span>`; ch.appendChild(d); });
   document.getElementById("kkLog").innerHTML=hist.slice().reverse().map(h=>{ const slow=avg&&h.ms>avg*2&&h.ms>1200000; return `<div data-at="${h.at}"><span>${new Date(h.at).toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})} · ${new Date(h.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}</span><span>10 kicks in ${mmss(h.ms)}${slow?" ⚠ slower than usual":""}</span></div>`; }).join("")||'<div><span>No sessions yet</span><span></span></div>';
-  document.querySelectorAll("#kkLog div[data-at]").forEach(row=>swipeable(row,"Delete",()=>{ const at=Number(row.dataset.at); const gone=(S.meta.kicks||[]).find(x=>x.at===at); S.meta.kicks=(S.meta.kicks||[]).filter(x=>x.at!==at); patch({meta:{kicks:S.meta.kicks}}); kkRender(); toast("Entry deleted",()=>{ S.meta.kicks=(S.meta.kicks||[]).concat([gone]); patch({meta:{kicks:S.meta.kicks}}); kkRender(); }); }));
+  document.querySelectorAll("#kkLog div[data-at]").forEach(row=>swipeable(row,"Delete",()=>{ const at=Number(row.dataset.at); const gone=(S.meta.kicks||[]).find(x=>x.at===at); S.meta.kicks=(S.meta.kicks||[]).filter(x=>x.at!==at); patch({meta:{kicks:S.meta.kicks}}); kkRender(); toast("Entry deleted",()=>{ S.meta.kicks=(S.meta.kicks||[]).concat([gone]); patch({meta:{kicks:S.meta.kicks}}); kkRender(); }); },"Delete this kick-count entry?"));
   const al=document.getElementById("kkAlert"); const last=hist[hist.length-1];
   if(kk.on&&Date.now()-kk.start>7200000&&kk.count<10) al.innerHTML='<div class="alert go">Fewer than 10 in 2 hours — call your provider.</div>';
   else if(last&&avg&&last.ms>avg*2&&last.ms>1200000&&Date.now()-last.at<86400000) al.innerHTML='<div class="alert go">Last session was much slower than her usual. A change from her normal pattern is worth a call to the provider.</div>';
@@ -1027,7 +1063,7 @@ function namesRender(){ const list=S.meta.names||[]; const box=document.getEleme
       const done=ok=>{ const v=inp.value.trim(); if(ok&&v&&v!==n.n){ n.n=v; S.meta.names=list; patch({meta:{names:list}}); toast("Name updated"); } namesRender(); };
       inp.onkeydown=e=>{ if(e.key==="Enter") done(true); if(e.key==="Escape") done(false); }; inp.onblur=()=>done(true); };
     d.querySelector("button").onclick=()=>{ n.v=n.v||[]; if(mine) n.v=n.v.filter(x=>x!==DEV); else n.v.push(DEV); S.meta.names=list; patch({meta:{names:list}}); namesRender(); };
-    swipeable(d,"Remove",()=>{ S.meta.names=list.filter(x=>x!==n); patch({meta:{names:S.meta.names}}); namesRender(); toast(`${n.n} removed`,()=>{ S.meta.names=(S.meta.names||[]).concat([n]); patch({meta:{names:S.meta.names}}); namesRender(); }); });
+    swipeable(d,"Remove",()=>{ S.meta.names=list.filter(x=>x!==n); patch({meta:{names:S.meta.names}}); namesRender(); toast(`${n.n} removed`,()=>{ S.meta.names=(S.meta.names||[]).concat([n]); patch({meta:{names:S.meta.names}}); namesRender(); }); },`Remove "${n.n}" from the list?`);
     box.appendChild(d); }); }
 document.getElementById("nmAdd").onclick=()=>{ const i=document.getElementById("nmIn"); const v=i.value.trim(); if(!v) return; const list=S.meta.names||[]; if(list.some(x=>x.n.toLowerCase()===v.toLowerCase())){ toast("Already on the list"); return; } list.push({n:v,v:[DEV]}); S.meta.names=list.slice(-100); patch({meta:{names:S.meta.names}}); i.value=""; namesRender(); };
 document.getElementById("nmIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("nmAdd").click(); };
@@ -1047,7 +1083,7 @@ function afterRender(){
     lab.innerHTML=`<div class="name">${it.name}</div><div class="note">${it.note}</div>${due}<div class="tools"><button type="button" class="why">Why it matters</button></div><div class="desc">${it.why}</div>`;
     lab.querySelector(".why").onclick=e=>{ e.preventDefault(); e.stopPropagation(); const d=lab.querySelector(".desc"); const on=d.classList.toggle("show"); e.target.textContent=on?"Hide":"Why it matters"; };
     if(cb.checked) li.classList.add("done"); li.append(cb,lab);
-    swipeable(li,"Doesn't apply",()=>{ S.hidden[it.id]=true; patch({hidden:{[it.id]:true}}); afterRender(); toast("Hidden",()=>{ delete S.hidden[it.id]; patch({hidden:{[it.id]:false}}); afterRender(); }); });
+    swipeable(li,"Doesn't apply",()=>{ S.hidden[it.id]=true; patch({hidden:{[it.id]:true}}); afterRender(); toast("Hidden",()=>{ delete S.hidden[it.id]; patch({hidden:{[it.id]:false}}); afterRender(); }); },`Hide "${it.name}"?`);
     ul.appendChild(li); });
   sec.append(b,ul); box.appendChild(sec);
   const vis=(window.AFTER||[]).filter(it=>!S.hidden[it.id]); const n=vis.length, dn=vis.filter(i=>isTicked(i.id)).length;
