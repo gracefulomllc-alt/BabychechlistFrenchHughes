@@ -2,22 +2,42 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E4D2B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Baby Prep">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>Baby prep</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F4F7F9; --paper:#FFFFFF; --ink:#22304A; --muted:#6B7A93; --line:#DDE4EC;
-    --apricot:#F2A65A; --apricot-soft:#FCEBD6; --sage:#7FA58B; --sage-soft:#E6F0E8; --sky:#CFE3F2;
+    /* CSU Rams: green, gold, white */
+    --bg:#F5F7F4; --paper:#FFFFFF; --ink:#1E4D2B; --muted:#5F6F63; --line:#DDE5DE;
+    --apricot:#C8A83A; --apricot-soft:#F6EFD3; --sage:#1E4D2B; --sage-soft:#E3EDE5; --sky:#EAE5C9;
+    --gold:#C8C372; --green:#1E4D2B;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito','Avenir Next','Segoe UI',sans-serif;line-height:1.45}
-  header{padding:28px 20px 16px;background:var(--paper);border-bottom:1px solid var(--line)}
-  h1{margin:0 0 4px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  header{padding:26px 20px 0;background:linear-gradient(160deg,#1E4D2B 0%,#2A6B3C 70%,#3B7D4A 100%);color:#fff;border-bottom:4px solid var(--gold)}
+  h1{margin:0 0 4px;font-size:30px;font-weight:800;letter-spacing:-.01em;color:#fff}
+  header .sub{color:#E9F2EA}
   .sub{margin:0;color:var(--muted);font-size:15px}
+  .cele{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  .cd{display:flex;gap:8px;margin:14px 0 18px;flex-wrap:wrap}
+  .cd div{flex:1;min-width:64px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 6px;text-align:center}
+  .cd b{display:block;font-size:28px;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+  .cd span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);font-weight:800}
+  .cd-note{font-size:13px;color:#E9F2EA;margin:-8px 0 14px}
+  .tabs{background:transparent}
+  .tab{background:rgba(255,255,255,.14);color:#fff}
+  .tab[aria-selected=true]{background:var(--paper);color:var(--ink)}
+  .share{background:var(--apricot-soft);color:#5B4A12}
+  .share code{color:var(--ink)}
+  .share button{background:var(--green)}
   .progress{margin-top:16px}
-  .bar{height:12px;border-radius:999px;background:var(--sky);overflow:hidden}
-  .bar i{display:block;height:100%;width:0;background:var(--apricot);border-radius:999px;transition:width .35s}
+  .bar{height:12px;border-radius:999px;background:#E3EDE5;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:999px;transition:width .35s}
   .count{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;color:var(--muted)}
   .count b{color:var(--ink);font-size:18px}
   .filters{display:flex;gap:8px;overflow-x:auto;padding:14px 20px 4px;scrollbar-width:none}
@@ -51,11 +71,11 @@
   .where::before{content:"Buy at: ";font-weight:400;color:var(--muted)}
   .where a{color:#3E6B4A;text-decoration:underline;text-decoration-color:#B9D3C0;text-underline-offset:3px}
   .where a:active{color:var(--apricot)}
-  .why{margin-top:8px;background:var(--apricot-soft);color:#9A5A16;border:0;border-radius:999px;padding:5px 12px;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+  .why{margin-top:8px;background:var(--apricot-soft);color:#5B4A12;border:0;border-radius:999px;padding:5px 12px;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
   .desc{display:none;margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:12px;font-size:14px;color:var(--ink)}
   .desc.show{display:block}
-  .when{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--apricot-soft);color:#9A5A16}
-  .when.m3{background:var(--sky);color:#2C5677}.when.m1{background:var(--sage-soft);color:#3E6B4A}.when.bag{background:#EFE6F7;color:#5B3C86}
+  .when{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--apricot-soft);color:#5B4A12}
+  .when.m3{background:#E3EDE5;color:#1E4D2B}.when.m1{background:#EFEBD0;color:#5B4A12}.when.bag{background:#E8E8E8;color:#333}
   input[type=checkbox]{appearance:none;width:26px;height:26px;margin-top:2px;flex:0 0 26px;border:2px solid var(--line);border-radius:9px;background:#fff;display:grid;place-items:center;cursor:pointer;transition:all .15s}
   input[type=checkbox]:checked{background:var(--sage);border-color:var(--sage)}
   input[type=checkbox]:checked::after{content:"";width:8px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
@@ -66,7 +86,7 @@
   .status{font-size:12px;color:var(--muted);margin-top:6px}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-  .tabs{display:flex;gap:6px;padding:12px 20px 0;background:var(--paper)}
+  .tabs{display:flex;gap:6px;padding:12px 20px 0}
   .tab{flex:1;border:0;background:var(--bg);color:var(--muted);padding:12px;border-radius:14px 14px 0 0;font:800 15px/1 inherit;font-family:inherit;cursor:pointer}
   .tab[aria-selected=true]{background:var(--ink);color:#fff}
   .pane{display:none}.pane.active{display:block}
@@ -81,9 +101,9 @@
   .q{font-weight:800;margin:14px 0 8px}
   .opts{display:flex;flex-wrap:wrap;gap:8px}
   .opt{border:1.5px solid var(--line);background:var(--paper);padding:8px 14px;border-radius:999px;font:600 14px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink)}
-  .opt[aria-pressed=true]{background:var(--sky);border-color:#9DC1DD;color:#1E4B6B}
+  .opt[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
   textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:15px/1.4 inherit;font-family:inherit;color:var(--ink);min-height:70px;resize:vertical}
-  .go{width:100%;margin-top:14px;background:var(--apricot);color:#fff;border:0;border-radius:14px;padding:14px;font:800 16px/1 inherit;font-family:inherit;cursor:pointer}
+  .go{width:100%;margin-top:14px;background:var(--green);color:#fff;border:0;border-radius:14px;padding:14px;font:800 16px/1 inherit;font-family:inherit;cursor:pointer}
   .go[disabled]{opacity:.6}
   .theme{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:14px 0}
   .theme svg{width:100%;display:block}
@@ -102,15 +122,46 @@
   .theme li{display:list-item;padding:2px 0;border:0;font-size:14px}
   .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   .acts a,.acts button{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 12px;border-radius:999px;font:700 13px/1 inherit;font-family:inherit;text-decoration:none;cursor:pointer}
-  .acts button.fav[aria-pressed=true]{background:var(--apricot-soft);border-color:var(--apricot);color:#9A5A16}
+  .acts button.fav[aria-pressed=true]{background:var(--apricot-soft);border-color:var(--gold);color:#5B4A12}
   .err{background:#FDECEC;color:#8A2B2B;padding:12px 14px;border-radius:12px;font-size:14px;margin-top:12px}
   .fav-list{margin-top:8px}
+
+  .bar-row{display:flex;gap:10px;align-items:center;padding:14px 20px 0;flex-wrap:wrap}
+  .due{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+  .due input{font:600 14px/1 inherit;font-family:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);background:var(--paper)}
+  .countdown{font-weight:800;color:var(--ink);font-size:15px}
+  .when.late{background:#FDECEC;color:#8A2B2B}
+  .tools{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .tools button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 10px;font:600 12px/1 inherit;font-family:inherit;cursor:pointer}
+  .tools button.on{border-color:var(--sage);color:#3E6B4A;background:var(--sage-soft)}
+  .notebox{display:none;margin-top:8px}
+  .notebox.show{display:block}
+  .notebox textarea{min-height:52px;font-size:14px}
+  .notepreview{margin-top:6px;font-size:13px;color:#3E6B4A;background:var(--sage-soft);padding:6px 10px;border-radius:10px;white-space:pre-wrap}
+  li.custom .name::after{content:" · added by you";font-size:12px;color:var(--muted);font-weight:600}
+  .addrow{padding:10px 10px 12px;border-top:1px solid var(--line)}
+  .addrow button{background:none;border:1.5px dashed var(--line);color:var(--muted);border-radius:12px;padding:10px 14px;width:100%;font:700 14px/1 inherit;font-family:inherit;cursor:pointer}
+  .addform{display:none;margin-top:10px;background:var(--bg);border-radius:12px;padding:12px}
+  .addform.show{display:block}
+  .addform input,.addform select{width:100%;margin-top:8px;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:15px/1.2 inherit;font-family:inherit;color:var(--ink);background:var(--paper)}
+  .addform .row{display:flex;gap:8px;margin-top:10px}
+  .addform .row button{flex:1;border:0;border-radius:10px;padding:10px;font:700 14px/1 inherit;font-family:inherit;cursor:pointer}
+  .addform .save{background:var(--sage);color:#fff}.addform .cancel{background:var(--paper);color:var(--muted);border:1.5px solid var(--line)!important}
+  .hiddenbar{text-align:center;padding:6px 0 0}
+  .hiddenbar button{background:none;border:0;color:var(--muted);text-decoration:underline;font-family:inherit;font-size:13px;cursor:pointer}
+  li.ishidden{opacity:.55}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font:600 14px/1 inherit;z-index:9;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+  .dl{margin-left:auto}
 </style>
 </head>
 <body>
 <header>
-  <h1>Before baby arrives</h1>
-  <p class="sub">Shared checklist and nursery planner. Anyone with your link sees the same list.</p>
+  <div class="cele">🎉 Congratulations, Wesley!</div>
+  <h1>Your baby is almost here</h1>
+  <p class="sub">Counting down to the big day.</p>
+  <div class="cd"><div><b id="cdD">–</b><span>days</span></div><div><b id="cdH">–</b><span>hours</span></div><div><b id="cdM">–</b><span>minutes</span></div><div><b id="cdS">–</b><span>seconds</span></div></div>
+  <div class="cd-note" id="cdNote"></div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="list" aria-selected="true">Checklist</button>
     <button class="tab" role="tab" data-tab="nursery" aria-selected="false">Nursery</button>
@@ -118,9 +169,13 @@
 </header>
 
 <div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button></div>
+<div class="toast" id="toast"></div>
 
 <div id="pane-list" class="pane active">
-  <div class="progress" style="padding:14px 20px 0">
+  <div class="bar-row">
+    <div class="due"><label for="due">Due date</label><input type="date" id="due"><span class="countdown" id="countdown"></span></div>
+  </div>
+  <div class="progress" style="padding:10px 20px 0">
     <div class="bar"><i id="fill"></i></div>
     <div class="count"><span><b id="done">0</b> of <b id="total">0</b> ready</span><span id="pct">0%</span></div>
   </div>
@@ -133,9 +188,11 @@
       <button class="chip" data-f="m1" aria-pressed="false">Final month</button>
       <button class="chip" data-f="bag" aria-pressed="false">Hospital bag</button>
       <button class="chip" data-f="todo" aria-pressed="false">Still to do</button>
+      <button class="chip" data-f="late" aria-pressed="false">Behind</button>
     </div>
   </div>
   <main id="main"></main>
+  <div class="hiddenbar"><button id="showhidden"></button></div>
   <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button></p>
 </div>
 
@@ -144,43 +201,30 @@
     <div class="card">
       <h3>Your room (optional)</h3>
       <p class="sub" style="margin:0 0 10px">Upload a photo of the actual room and every theme will be rendered onto it — same walls and window, new look.</p>
-      <div id="roomwrap">
-        <img id="roomimg" alt="Your room" style="display:none;width:100%;border-radius:12px;aspect-ratio:16/9;object-fit:cover">
-        <div class="acts" style="margin-top:10px">
-          <label class="opt" style="cursor:pointer">Choose photo<input id="roomfile" type="file" accept="image/*" capture="environment" style="display:none"></label>
-          <button class="opt" id="roomclear" type="button" style="display:none">Remove photo</button>
-          <span class="sync" id="roomstatus"></span>
-        </div>
+      <img id="roomimg" alt="Your room" style="display:none;width:100%;border-radius:12px;aspect-ratio:16/9;object-fit:cover">
+      <div class="acts" style="margin-top:10px">
+        <label class="opt" style="cursor:pointer">📷 Take a photo<input id="roomcam" type="file" accept="image/*" capture="environment" style="display:none"></label>
+        <label class="opt" style="cursor:pointer">Upload from photos<input id="roomfile" type="file" accept="image/*" style="display:none"></label>
+        <button class="opt" id="roomclear" type="button" style="display:none">Remove photo</button>
+        <span class="sync" id="roomstatus"></span>
       </div>
     </div>
     <div class="card">
       <h3>Nursery theme planner</h3>
-      <p class="sub" style="margin:0">Pick a few vibes and Claude will design four themes with a palette, paint matches, and a preview of the room.</p>
-      <div class="q">Vibes (pick 1–3)</div>
-      <div class="opts" id="vibes"></div>
-      <div class="q">Room light</div>
-      <div class="opts" id="light"></div>
-      <div class="q">Furniture you're leaning toward</div>
-      <div class="opts" id="furn"></div>
+      <p class="sub" style="margin:0">Pick a few vibes and the designer will create four themes with a palette, paint matches, and a photo of the room.</p>
+      <div class="q">Vibes (pick 1–3)</div><div class="opts" id="vibes"></div>
+      <div class="q">Room light</div><div class="opts" id="light"></div>
+      <div class="q">Furniture you're leaning toward</div><div class="opts" id="furn"></div>
       <div class="q" style="margin-top:22px;font-size:17px">Layout &amp; details <span class="sub" style="font-weight:400;font-size:13px">— the more you answer, the less the AI guesses</span></div>
-      <div class="q">Where does the crib go?</div>
-      <div class="opts" id="crib"></div>
-      <div class="q">Where does the glider / feeding chair go?</div>
-      <div class="opts" id="chair"></div>
-      <div class="q">Dresser / changing station</div>
-      <div class="opts" id="dresser"></div>
-      <div class="q">Window treatment</div>
-      <div class="opts" id="window"></div>
-      <div class="q">Floor</div>
-      <div class="opts" id="floor"></div>
-      <div class="q">Walls</div>
-      <div class="opts" id="walls"></div>
-      <div class="q">Lighting</div>
-      <div class="opts" id="lighting"></div>
-      <div class="q">Extras (pick any)</div>
-      <div class="opts" id="extras"></div>
-      <div class="q">Designer</div>
-      <div class="opts" id="prov"></div>
+      <div class="q">Where does the crib go?</div><div class="opts" id="crib"></div>
+      <div class="q">Where does the glider / feeding chair go?</div><div class="opts" id="chair"></div>
+      <div class="q">Dresser / changing station</div><div class="opts" id="dresser"></div>
+      <div class="q">Window treatment</div><div class="opts" id="window"></div>
+      <div class="q">Floor</div><div class="opts" id="floor"></div>
+      <div class="q">Walls</div><div class="opts" id="walls"></div>
+      <div class="q">Lighting</div><div class="opts" id="lighting"></div>
+      <div class="q">Extras (pick any)</div><div class="opts" id="extras"></div>
+      <div class="q">Designer</div><div class="opts" id="prov"></div>
       <div class="q">Anything else?</div>
       <textarea id="notes" placeholder="e.g. small room, one window facing the street, we love mountains, don't want anything too bright"></textarea>
       <button class="go" id="gen">Design 4 themes</button>
@@ -361,109 +405,167 @@ DATA.find(d=>d.id==="bag").items.push(["Partner's change of clothes and toiletri
 DATA.find(d=>d.id==="bag").items.push(["Cash and a list of who to call", "Vending machines, parking. And the short list of people who get the first text.", "bag", "—", "—"]);
 Object.assign(DESC,{"Pack 'n play / travel crib": "A fold-up crib with mesh sides. Newborns nap 4–5 times a day and you won't want to run upstairs every time, so this lives in the living room. It also becomes the travel bed for hotel rooms and family visits. Buy the fitted sheet for it too.", "Baby swing (optional)": "A powered seat that rocks or sways. Different from a bouncer — it moves on its own. Great for a fussy evening; for awake time only, not sleep. If you'd rather wait and see, this is the one item that's fine to buy after baby arrives.", "Hands-free pumping bra": "A tight bra with slits that hold the pump parts against you, so you can eat, hold baby, or scroll instead of clutching two bottles for 20 minutes.", "Pump spare parts and flange sizing": "Every pump ships with one flange size, and it's wrong for most people. A lactation consultant or a printable ruler measures you in seconds. Spare valves and membranes are cheap and wear out in weeks — have a set.", "Dishwasher basket for bottle parts": "A small lidded cage that holds the tiny bottle and pump parts on the top rack. Without it they melt on the heating element or vanish into the machine.", "Formula pitcher or dispenser (if using formula regularly)": "A pitcher mixes a full day of formula in one go and stores it in the fridge (good for 24 hours). The Brezza is a countertop machine that dispenses a warm, mixed bottle at the push of a button — pricey, but if you end up formula-heavy it's the most-loved gadget in the house.", "Vitamin D drops": "Breast milk is low in vitamin D, so most pediatricians recommend a single daily drop from the first week. Formula already has it added. Confirm with your doctor, but have a bottle at home so you're not making a pharmacy run after the first appointment.", "Petroleum jelly and gauze (if circumcising)": "If you have a boy and choose circumcision, you'll dab petroleum jelly on at each diaper change for about a week so the diaper doesn't stick. The hospital will show you. Buy a small tub — you'll use it for diaper rash afterward anyway.", "Hand sanitizer and pump soap": "You'll wash or sanitize your hands dozens of times a day, and every visitor should before holding baby. Put a bottle everywhere so it actually happens.", "A few 3–6 month pieces": "By the time you notice the 0–3 sleepers are getting tight, you'll be too tired to shop. Having a handful of the next size in the drawer avoids a rushed Target run at week 10.", "Laundry hamper for the nursery and stain remover": "Spit-up and diaper blowouts stain if they sit. A hamper right where you undress baby, and a stain spray you hit the spot with before it goes in, saves a lot of ruined outfits.", "Cotton rounds and saline for cord/eye care": "The cord stump just needs to stay clean and dry — a cotton round dabbed around it. Newborns also get gunky eyes from blocked tear ducts, which you wipe with a damp cotton round from the inside corner out. Nothing fancy, but you want them in the bathroom.", "Emergency numbers saved in both phones": "Every pediatric practice has a 24/7 nurse line — that's who you call at 2am about a fever, not the ER. Put it in both phones now, plus the nearest pediatric urgent care and Poison Control. Loveland: UCHealth Medical Center of the Rockies has a pediatric ER.", "Check smoke and CO detectors": "Test every detector and replace batteries. Add a carbon monoxide detector on the sleeping floor if you don't have one. Two-minute job, easy to forget.", "Stock the house": "The first two weeks you'll run out of ordinary household things and not have the bandwidth to notice until they're gone. Do one big Costco run in the final month: paper goods, trash bags, dishwasher pods, coffee, snacks, pain relievers, pet supplies, and anything you use daily.", "Grocery delivery or pickup set up": "This is the single best way to avoid store runs. Set up King Soopers pickup or Instacart, put your staples in a saved list, and save the payment method. When you're out of milk at 9pm with a sleeping baby, it's a delivery, not a trip.", "Batteries (AA and AAA)": "A surprising amount of baby gear takes batteries, and a dead white noise machine at midnight is a real problem. One bulk pack each.", "Pain relievers and prenatal vitamins for mom": "Recovery is sore whether it's a vaginal birth or a C-section, and the hospital sends you home with a plan that usually alternates over-the-counter ibuprofen and acetaminophen. Have both. Prenatal vitamins continue as long as you're nursing.", "Nursing-friendly pajamas and a robe ×2": "You'll be feeding 8–12 times a day and won't want to change clothes to do it. Two sets of soft, front-opening pajamas and a robe cover the first weeks.", "Visitor plan agreed": "Newborns have no immune system to speak of, and new parents are exhausted. Agree on ground rules before the baby arrives — it's much easier to say 'we're doing no visitors the first week' now than at the door. Pediatricians commonly ask that visitors have a recent Tdap and flu shot.", "Partner's change of clothes and toiletries": "Partners forget to pack for themselves. A change of clothes, toothbrush, deodorant, and a phone charger of their own.", "Cash and a list of who to call": "Some hospital parking and vending takes cash. And when it's 4am and you're delirious, a pre-written list of who to tell (and who can wait) is a kindness to yourself."});
 
-/* ---------- shared state via Netlify Blobs ---------- */
-let ticks={}, favorites=[], filter="all", saveTimer=null, lastUpdated=0;
+
+/* ================= shared state (merge-safe) ================= */
 const url=new URL(location.href);
 let H=(url.searchParams.get("h")||"").replace(/[^a-z0-9]/gi,"");
-if(!H){ H=Math.random().toString(36).slice(2,8).toUpperCase(); url.searchParams.set("h",H); history.replaceState(null,"",url); }
+if(!H){ H=Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join(""); url.searchParams.set("h",H); history.replaceState(null,"",url); }
 document.getElementById("hcode").textContent=H;
-document.getElementById("copy").onclick=async()=>{ try{ await navigator.clipboard.writeText(location.href); setSync("Link copied"); }catch{ prompt("Copy this link:",location.href); } };
+let S={ticks:{},notes:{},hidden:{},custom:[],meta:{},favorites:[],updated:0};
+let filter="all", showHidden=false, pending={}, flushTimer=null;
+
+const toastEl=document.getElementById("toast"); let toastT;
+function toast(t){ toastEl.textContent=t; toastEl.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>toastEl.classList.remove("show"),1800); }
 function setSync(t){ document.getElementById("sync").textContent=t; }
+document.getElementById("copy").onclick=async()=>{ try{ await navigator.clipboard.writeText(location.href); toast("Link copied"); }catch{ prompt("Copy this link:",location.href); } };
 
+const isTicked=id=>!!(S.ticks[id]&&S.ticks[id].v);
+function cache(){ try{ localStorage.setItem("bp2-"+H,JSON.stringify({...S,favorites:S.favorites.map(({image,...r})=>r)})); }catch{} }
 async function load(){
-  try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) throw 0; const d=await r.json(); ticks=d.ticks||{}; favorites=d.favorites||[]; lastUpdated=d.updated||0; setSync("Synced"); }
-  catch{ try{ const c=JSON.parse(localStorage.getItem("bp-"+H)||"{}"); ticks=c.ticks||{}; favorites=c.favorites||[]; }catch{} setSync("Offline — saving on this device only"); }
+  try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) throw 0; S=await r.json(); setSync("Synced"); cache(); }
+  catch{ try{ S=JSON.parse(localStorage.getItem("bp2-"+H))||S; }catch{} setSync("Offline — saving on this device only"); }
 }
-function save(){
-  try{ localStorage.setItem("bp-"+H,JSON.stringify({ticks,favorites:favorites.map(({image,...r})=>r)})); }catch{}
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{
-    try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ticks,favorites})}); const d=await r.json(); lastUpdated=d.updated||lastUpdated; setSync("Synced"); }
-    catch{ setSync("Couldn't sync — will retry"); }
-  },500);
+function patch(p){ // queue a patch; merged server-side
+  for(const k of ["ticks","notes","hidden","meta"]) if(p[k]) pending[k]=Object.assign(pending[k]||{},p[k]);
+  for(const k of ["customAdd","customRemove"]) if(p[k]) pending[k]=(pending[k]||[]).concat(p[k]);
+  if(p.favorites) pending.favorites=p.favorites;
+  cache(); clearTimeout(flushTimer); flushTimer=setTimeout(flush,400);
 }
-// poll for other people's changes
-setInterval(async()=>{
-  if(document.hidden) return;
+async function flush(){
+  const body={patch:pending}; pending={};
+  try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r.json(); if(!r.ok) throw 0; S.updated=d.updated; setSync("Synced"); }
+  catch{ setSync("Couldn't sync — will retry"); for(const k in body.patch) pending[k]=body.patch[k]; flushTimer=setTimeout(flush,5000); }
+}
+setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
-    if((d.updated||0)>lastUpdated){ ticks=d.ticks||{}; favorites=d.favorites||[]; lastUpdated=d.updated; document.querySelectorAll("input[type=checkbox]").forEach(c=>c.checked=!!ticks[c.id]); update(); renderFavs(); setSync("Updated from another device"); }
-  }catch{}
-},8000);
+    if((d.updated||0)>(S.updated||0)){ S=d; cache(); render(); renderFavs(); applyDue(); setSync("Updated from another device"); }
+  }catch{} },8000);
 
-/* ---------- tabs ---------- */
+/* ================= tabs ================= */
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t));
   document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("active",p.id==="pane-"+t.dataset.tab));
   window.scrollTo({top:0});
 });
 
-/* ---------- checklist render ---------- */
+/* ================= due date ================= */
+const OFFSET={now:120,m3:75,m1:30,bag:28};
+function dueDate(){ return S.meta.due?new Date(S.meta.due+"T12:00:00"):null; }
+function whenDate(w){ const d=dueDate(); if(!d) return null; const x=new Date(d); x.setDate(x.getDate()-OFFSET[w]); return x; }
+function fmt(d){ return d.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
+const DEFAULT_DUE="2027-02-20"; // 17 weeks pregnant on Sep 12, 2026 → 40 weeks
+function applyDue(){
+  const inp=document.getElementById("due"), cd=document.getElementById("countdown");
+  if(!S.meta.due){ S.meta.due=DEFAULT_DUE; patch({meta:{due:DEFAULT_DUE}}); }
+  inp.value=S.meta.due||"";
+  const d=dueDate();
+  if(d){ const weeks=40-Math.floor((d-new Date())/(7*86400000)); cd.textContent=`${d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})} · about ${Math.max(0,Math.min(42,weeks))} weeks along`; } else cd.textContent="";
+  document.querySelectorAll(".chip[data-f]").forEach(c=>{ const w=c.dataset.f; if(OFFSET[w]){ const x=whenDate(w); c.textContent=WHEN[w]+(x?` · by ${fmt(x)}`:""); } });
+  update();
+}
+document.getElementById("due").onchange=e=>{ S.meta.due=e.target.value||""; patch({meta:{due:S.meta.due}}); applyDue(); };
+function tick(){
+  const d=dueDate(); const el=id=>document.getElementById(id);
+  if(!d){ ["cdD","cdH","cdM","cdS"].forEach(i=>el(i).textContent="–"); el("cdNote").textContent="Set a due date below to start the countdown."; return; }
+  let ms=d-new Date(); const past=ms<0; ms=Math.abs(ms);
+  const D=Math.floor(ms/86400000), Hh=Math.floor(ms%86400000/3600000), M=Math.floor(ms%3600000/60000), Sx=Math.floor(ms%60000/1000);
+  el("cdD").textContent=D; el("cdH").textContent=String(Hh).padStart(2,"0"); el("cdM").textContent=String(M).padStart(2,"0"); el("cdS").textContent=String(Sx).padStart(2,"0");
+  el("cdNote").textContent=past?"Baby's here! 🎉 (or running fashionably late)":`until ${d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})}`;
+}
+setInterval(tick,1000);
+function isLate(w){ const x=whenDate(w); return x&&x<new Date(); }
+
+/* ================= checklist ================= */
+function allSections(){ // built-in + custom items merged
+  return DATA.map(sec=>{
+    const items=sec.items.map((it,i)=>({id:`${sec.id}-${i}`,name:it[0],note:it[1],when:it[2],brand:it[3],where:it[4],raw:it,custom:false}));
+    S.custom.filter(c=>c.sec===sec.id).forEach(c=>items.push({id:c.id,name:c.name,note:c.note,when:c.when,custom:true}));
+    return {...sec,rows:items};
+  });
+}
 function render(){
   const main=document.getElementById("main"); main.innerHTML="";
   const sel=document.getElementById("jumpsel"); sel.innerHTML='<option value="">Category…</option>';
   DATA.forEach(sec=>{ const o=document.createElement("option"); o.value=sec.id; o.textContent=`${sec.em} ${sec.title}`; sel.appendChild(o); });
   sel.onchange=()=>{ const t=document.getElementById(sel.value); if(t){ t.setAttribute("open",""); t.scrollIntoView({behavior:"smooth",block:"start"}); } sel.value=""; };
-  DATA.forEach(sec=>{
+  allSections().forEach(sec=>{
     const s=document.createElement("section"); s.id=sec.id; s.setAttribute("open","");
     const btn=document.createElement("button");
     btn.innerHTML=`<span class="em">${sec.em}</span><h2>${sec.title}</h2><span class="n"></span><span class="car">▶</span>`;
     btn.onclick=()=>{ s.hasAttribute("open")?s.removeAttribute("open"):s.setAttribute("open",""); };
     const ul=document.createElement("ul");
-    sec.items.forEach((it,i)=>{
-      const id=`${sec.id}-${i}`; const li=document.createElement("li");
-      const cb=document.createElement("input"); cb.type="checkbox"; cb.id=id; cb.checked=!!ticks[id];
-      cb.onchange=()=>{ ticks[id]=cb.checked; if(!cb.checked) delete ticks[id]; save(); update(); };
-      const lab=document.createElement("label"); lab.htmlFor=id;
-      lab.innerHTML=`<div class="name">${it[0]}</div><div class="note">${it[1]}</div><span class="when ${it[2]}">${WHEN[it[2]]}</span>${it[3]&&it[3]!=="—"?`<div class="brand">${it[3]}</div>`:""}${linkWhere(it)}${DESC[it[0]]?`<button class="why" type="button">What's this?</button><div class="desc">${DESC[it[0]]}</div>`:""}`;
-      const why=lab.querySelector(".why"); if(why){ why.onclick=e=>{e.preventDefault(); const d=lab.querySelector(".desc"); const open=d.classList.toggle("show"); why.textContent=open?"Hide":"What's this?";}; }
-      li.dataset.when=it[2]; li.append(cb,lab); ul.appendChild(li);
-    });
+    sec.rows.forEach(row=>ul.appendChild(itemRow(row)));
+    const add=document.createElement("li"); add.className="addrow"; add.style.display="block";
+    add.innerHTML=`<button type="button">+ Add your own item to ${sec.title}</button>
+      <div class="addform"><input placeholder="Item name" maxlength="120"><input placeholder="Note (optional)" maxlength="300">
+      <select><option value="now">Order now</option><option value="m3" selected>2–3 months out</option><option value="m1">Final month</option><option value="bag">Hospital bag</option></select>
+      <div class="row"><button class="save" type="button">Add</button><button class="cancel" type="button">Cancel</button></div></div>`;
+    const form=add.querySelector(".addform"), [nameI,noteI]=add.querySelectorAll("input"), whenS=add.querySelector("select");
+    add.querySelector("button").onclick=()=>{ form.classList.toggle("show"); nameI.focus(); };
+    add.querySelector(".cancel").onclick=()=>form.classList.remove("show");
+    add.querySelector(".save").onclick=()=>{ const name=nameI.value.trim(); if(!name) return; const c={id:"c"+Date.now().toString(36),name,note:noteI.value.trim(),when:whenS.value,sec:sec.id}; S.custom.push(c); patch({customAdd:[c]}); nameI.value=noteI.value=""; form.classList.remove("show"); render(); toast("Added"); };
+    ul.appendChild(add);
     s.append(btn,ul); main.appendChild(s);
   });
   update();
 }
+function itemRow(row){
+  const li=document.createElement("li"); li.dataset.when=row.when; li.dataset.id=row.id;
+  if(row.custom) li.classList.add("custom");
+  const cb=document.createElement("input"); cb.type="checkbox"; cb.id=row.id; cb.checked=isTicked(row.id);
+  cb.onchange=()=>{ S.ticks[row.id]={v:cb.checked,t:Date.now()}; patch({ticks:{[row.id]:S.ticks[row.id]}}); update(); };
+  const lab=document.createElement("label"); lab.htmlFor=row.id;
+  const it=row.raw;
+  lab.innerHTML=`<div class="name">${row.name}</div><div class="note">${row.note||""}</div><span class="when ${row.when}">${WHEN[row.when]}</span>`
+    +(it&&it[3]&&it[3]!=="—"?`<div class="brand">${it[3]}</div>`:"")+(it?linkWhere(it):"")
+    +(S.notes[row.id]?`<div class="notepreview">${S.notes[row.id].replace(/</g,"&lt;")}</div>`:"")
+    +`<div class="tools">${DESC[row.name]?'<button type="button" class="why">What\'s this?</button>':""}<button type="button" class="noteb ${S.notes[row.id]?"on":""}">Note</button><button type="button" class="hideb">${S.hidden[row.id]?"Unhide":"Doesn't apply"}</button>${row.custom?'<button type="button" class="delb">Delete</button>':""}</div>
+    <div class="desc">${DESC[row.name]||""}</div>
+    <div class="notebox"><textarea placeholder="e.g. Ordered 9/14, arrives Oct 2 · Mom is buying this">${S.notes[row.id]||""}</textarea></div>`;
+  const stop=e=>{e.preventDefault();e.stopPropagation();};
+  const why=lab.querySelector(".why"); if(why) why.onclick=e=>{stop(e); const d=lab.querySelector(".desc"); const on=d.classList.toggle("show"); why.textContent=on?"Hide":"What's this?";};
+  lab.querySelector(".noteb").onclick=e=>{stop(e); const b=lab.querySelector(".notebox"); b.classList.toggle("show"); if(b.classList.contains("show")) b.querySelector("textarea").focus();};
+  const ta=lab.querySelector("textarea"); ta.onclick=stop; let nt; ta.oninput=()=>{ clearTimeout(nt); nt=setTimeout(()=>{ S.notes[row.id]=ta.value.trim(); if(!S.notes[row.id]) delete S.notes[row.id]; patch({notes:{[row.id]:S.notes[row.id]||""}}); lab.querySelector(".noteb").classList.toggle("on",!!S.notes[row.id]); },500); };
+  ta.onblur=()=>{ const p=lab.querySelector(".notepreview"); if(S.notes[row.id]){ if(p) p.textContent=S.notes[row.id]; else { const d=document.createElement("div"); d.className="notepreview"; d.textContent=S.notes[row.id]; lab.querySelector(".tools").before(d); } } else if(p) p.remove(); };
+  lab.querySelector(".hideb").onclick=e=>{stop(e); const v=!S.hidden[row.id]; if(v) S.hidden[row.id]=true; else delete S.hidden[row.id]; patch({hidden:{[row.id]:v}}); render(); toast(v?"Hidden — find it under “show hidden”":"Restored"); };
+  const del=lab.querySelector(".delb"); if(del) del.onclick=e=>{stop(e); if(!confirm("Delete this item for everyone?")) return; S.custom=S.custom.filter(c=>c.id!==row.id); patch({customRemove:[row.id]}); render(); };
+  if(S.hidden[row.id]) li.classList.add("ishidden");
+  li.append(cb,lab); return li;
+}
 function update(){
-  let total=0,done=0;
+  let total=0,done=0,hiddenN=0;
   document.querySelectorAll("section").forEach(s=>{
     let st=0,sd=0;
-    s.querySelectorAll("li").forEach(li=>{
-      const cb=li.querySelector("input"); const isDone=cb.checked;
+    s.querySelectorAll("li[data-id]").forEach(li=>{
+      const id=li.dataset.id, w=li.dataset.when, cb=li.querySelector("input"); const isDone=cb.checked;
       li.classList.toggle("done",isDone);
-      const show=filter==="all"||(filter==="todo"?!isDone:li.dataset.when===filter);
+      const tag=li.querySelector(".when"); const x=whenDate(w); tag.textContent=WHEN[w]+(x?` · by ${fmt(x)}`:""); tag.classList.toggle("late",!isDone&&isLate(w));
+      const hid=!!S.hidden[id]; if(hid) hiddenN++;
+      let show=filter==="all"||(filter==="todo"?!isDone:filter==="late"?(!isDone&&isLate(w)):w===filter);
+      if(hid&&!showHidden) show=false;
       li.classList.toggle("hide",!show);
-      if(show){st++; if(isDone) sd++;}
+      if(show&&!hid){st++; if(isDone) sd++;}
     });
-    s.style.display=st?"":"none";
+    s.style.display=st||showHidden?"":"none";
     s.querySelector(".n").textContent=`${sd}/${st}`;
     s.dataset.done=(st&&sd===st)?"1":"0";
     total+=st; done+=sd;
   });
-  document.getElementById("total").textContent=total;
-  document.getElementById("done").textContent=done;
-  const p=total?Math.round(done/total*100):0;
-  document.getElementById("pct").textContent=p+"%";
-  document.getElementById("fill").style.width=p+"%";
+  document.getElementById("total").textContent=total; document.getElementById("done").textContent=done;
+  const p=total?Math.round(done/total*100):0; document.getElementById("pct").textContent=p+"%"; document.getElementById("fill").style.width=p+"%";
+  const hb=document.getElementById("showhidden"); hb.textContent=hiddenN?(showHidden?"Hide the hidden items":`Show ${hiddenN} hidden item${hiddenN>1?"s":""}`):""; hb.style.display=hiddenN?"":"none";
 }
-document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
-  filter=c.dataset.f;
-  document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===c));
-  update();
-});
-document.getElementById("reset").onclick=()=>{
-  if(confirm("Clear every tick for everyone on this list?")){ ticks={}; save(); document.querySelectorAll("input[type=checkbox]").forEach(c=>c.checked=false); update(); }
-};
+document.getElementById("showhidden").onclick=()=>{ showHidden=!showHidden; update(); };
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ filter=c.dataset.f; document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===c)); update(); });
+document.getElementById("reset").onclick=async()=>{ if(!confirm("Clear every tick for everyone on this list?")) return; S.ticks={}; try{ await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({reset:true,patch:{}})}); }catch{} render(); };
 
-/* ---------- nursery planner ---------- */
+/* ================= nursery ================= */
 const VIBES=["Calm & minimal","Playful","Modern","Boho","Woodland","Mountain / Colorado","Coastal","Vintage","Scandinavian","Earthy & warm","Celestial","Botanical"];
-const LIGHT=["Bright, lots of sun","Average","Dim / north-facing"];
-const FURN=["White","Natural wood","Walnut / dark wood","Black","Not sure"];
-function chips(id,list,multi,max){
-  const el=document.getElementById(id);
+function chips(id,list,multi,max){ const el=document.getElementById(id);
   list.forEach(v=>{ const b=document.createElement("button"); b.className="opt"; b.type="button"; b.textContent=v; b.setAttribute("aria-pressed","false");
-    b.onclick=()=>{ if(multi){ const on=b.getAttribute("aria-pressed")==="true"; const n=[...el.querySelectorAll('[aria-pressed=true]')].length; if(!on&&n>=max) return; b.setAttribute("aria-pressed",!on); } else { el.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",x===b)); } };
-    el.appendChild(b); });
-}
-chips("vibes",VIBES,true,3); chips("light",LIGHT,false); chips("furn",FURN,false);
+    b.onclick=()=>{ if(multi){ const on=b.getAttribute("aria-pressed")==="true"; const n=[...el.querySelectorAll('[aria-pressed=true]')].length; if(!on&&n>=max) return; b.setAttribute("aria-pressed",!on); } else el.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",x===b)); };
+    el.appendChild(b); }); }
+chips("vibes",VIBES,true,3); chips("light",["Bright, lots of sun","Average","Dim / north-facing"],false); chips("furn",["White","Natural wood","Walnut / dark wood","Black","Not sure"],false);
 chips("crib",["Under the window","Against the long wall","In a corner","Opposite the door","Let the designer decide"],false);
 chips("chair",["Next to the crib","By the window","In a corner","Opposite the crib","Skip the chair"],false);
 chips("dresser",["Under the window","Beside the crib","On the wall by the door","In the closet nook","Skip it"],false);
@@ -476,42 +578,21 @@ chips("prov",["Claude","Gemini","Auto"],false); document.querySelector("#prov .o
 const picked=id=>[...document.querySelectorAll(`#${id} [aria-pressed=true]`)].map(b=>b.textContent);
 function layout(){ return {crib:picked("crib")[0]||"",chair:picked("chair")[0]||"",dresser:picked("dresser")[0]||"",window:picked("window")[0]||"",floor:picked("floor")[0]||"",walls:picked("walls")[0]||"",lighting:picked("lighting")[0]||"",extras:picked("extras")}; }
 
-function roomSVG(pal){
-  const c=r=>(pal.find(p=>p.role===r)||{}).hex||"#ddd";
-  const wall=c("wall"),accent=c("accent"),tex=c("textile"),trim=c("trim"),pop=c("pop");
-  return `<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nursery preview">
-  <rect width="700" height="380" fill="${wall}"/>
-  <rect x="0" y="0" width="700" height="240" fill="${wall}"/>
-  <path d="M0 240 L700 240 L700 380 L0 380Z" fill="#E9E2D8"/>
-  <path d="M0 240 L700 240" stroke="${trim}" stroke-width="10"/>
-  <rect x="0" y="0" width="260" height="240" fill="${accent}" opacity="0.95"/>
-  <!-- window -->
-  <rect x="420" y="40" width="170" height="140" rx="6" fill="#DCEBF5" stroke="${trim}" stroke-width="8"/>
-  <line x1="505" y1="44" x2="505" y2="176" stroke="${trim}" stroke-width="6"/>
-  <rect x="396" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/><rect x="590" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/>
-  <!-- rug -->
-  <ellipse cx="350" cy="330" rx="190" ry="34" fill="${tex}" opacity="0.85"/>
-  <!-- crib -->
-  <rect x="70" y="150" width="200" height="120" rx="8" fill="${trim}"/>
-  <rect x="80" y="160" width="180" height="100" fill="${wall}" opacity="0.35"/>
-  ${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${88+i*22}" y="160" width="6" height="100" fill="${trim}"/>`).join("")}
-  <rect x="80" y="238" width="180" height="26" fill="${pop}" opacity="0.9"/>
-  <!-- mobile -->
-  <line x1="170" y1="60" x2="170" y2="110" stroke="${trim}" stroke-width="3"/><line x1="130" y1="110" x2="210" y2="110" stroke="${trim}" stroke-width="3"/>
-  <circle cx="135" cy="128" r="9" fill="${pop}"/><circle cx="170" cy="134" r="9" fill="${tex}"/><circle cx="205" cy="128" r="9" fill="${accent}"/>
-  <!-- dresser -->
-  <rect x="470" y="200" width="160" height="70" rx="6" fill="${trim}"/><rect x="480" y="210" width="65" height="22" rx="3" fill="${wall}" opacity="0.5"/><rect x="555" y="210" width="65" height="22" rx="3" fill="${wall}" opacity="0.5"/>
-  <!-- plant -->
-  <rect x="640" y="230" width="34" height="40" rx="6" fill="${pop}"/><path d="M657 230 C640 200 650 180 657 175 C664 180 674 200 657 230Z" fill="${accent}"/><path d="M657 230 C630 215 625 195 632 188 C645 190 655 210 657 230Z" fill="${accent}"/>
-  <!-- art -->
-  <rect x="300" y="70" width="80" height="60" rx="4" fill="${tex}"/><circle cx="340" cy="100" r="16" fill="${pop}"/>
-  <!-- lamp -->
-  <rect x="340" y="200" width="60" height="70" rx="20" fill="${tex}" opacity="0.6"/>
-</svg>`;
-}
-function themeCard(t,i){
+let ROOM=null;
+async function loadRoom(){ try{ const r=await fetch(`/api/room?h=${H}`); const d=await r.json(); if(d.image){ ROOM=d.image; showRoom(); } }catch{} }
+function showRoom(){ const img=document.getElementById("roomimg"), clr=document.getElementById("roomclear"); if(ROOM){ img.src=ROOM; img.style.display=""; clr.style.display=""; } else { img.style.display="none"; clr.style.display="none"; } }
+function shrink(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>{ const im=new Image(); im.onload=()=>{ const max=1400; const k=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); res(c.toDataURL("image/jpeg",0.85)); }; im.onerror=rej; im.src=fr.result; }; fr.onerror=rej; fr.readAsDataURL(file); }); }
+document.getElementById("roomcam").onchange=document.getElementById("roomfile").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const st=document.getElementById("roomstatus"); st.textContent="Uploading…";
+  try{ ROOM=await shrink(f); showRoom(); const r=await fetch(`/api/room?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image:ROOM})}); const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||"upload failed"); st.textContent="Saved — renders will use this room"; }
+  catch(err){ st.textContent="Couldn't save photo: "+err.message; } e.target.value=""; };
+document.getElementById("roomclear").onclick=async()=>{ ROOM=null; showRoom(); document.getElementById("roomstatus").textContent=""; try{ await fetch(`/api/room?h=${H}`,{method:"DELETE"}); }catch{} };
+
+function roomSVG(pal){ const c=r=>(pal.find(p=>p.role===r)||{}).hex||"#ddd"; const wall=c("wall"),accent=c("accent"),tex=c("textile"),trim=c("trim"),pop=c("pop");
+  return `<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nursery preview"><rect width="700" height="380" fill="${wall}"/><path d="M0 240 L700 240 L700 380 L0 380Z" fill="#E9E2D8"/><path d="M0 240 L700 240" stroke="${trim}" stroke-width="10"/><rect x="0" y="0" width="260" height="240" fill="${accent}" opacity="0.95"/><rect x="420" y="40" width="170" height="140" rx="6" fill="#DCEBF5" stroke="${trim}" stroke-width="8"/><line x1="505" y1="44" x2="505" y2="176" stroke="${trim}" stroke-width="6"/><rect x="396" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/><rect x="590" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/><ellipse cx="350" cy="330" rx="190" ry="34" fill="${tex}" opacity="0.85"/><rect x="70" y="150" width="200" height="120" rx="8" fill="${trim}"/><rect x="80" y="160" width="180" height="100" fill="${wall}" opacity="0.35"/>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${88+i*22}" y="160" width="6" height="100" fill="${trim}"/>`).join("")}<rect x="80" y="238" width="180" height="26" fill="${pop}" opacity="0.9"/><line x1="170" y1="60" x2="170" y2="110" stroke="${trim}" stroke-width="3"/><line x1="130" y1="110" x2="210" y2="110" stroke="${trim}" stroke-width="3"/><circle cx="135" cy="128" r="9" fill="${pop}"/><circle cx="170" cy="134" r="9" fill="${tex}"/><circle cx="205" cy="128" r="9" fill="${accent}"/><rect x="470" y="200" width="160" height="70" rx="6" fill="${trim}"/><rect x="640" y="230" width="34" height="40" rx="6" fill="${pop}"/><path d="M657 230 C640 200 650 180 657 175 C664 180 674 200 657 230Z" fill="${accent}"/><rect x="300" y="70" width="80" height="60" rx="4" fill="${tex}"/><circle cx="340" cy="100" r="16" fill="${pop}"/></svg>`; }
+
+function themeCard(t){
   const div=document.createElement("div"); div.className="theme";
-  const isFav=favorites.some(f=>f.name===t.name);
+  const isFav=S.favorites.some(f=>f.name===t.name);
   div.innerHTML=`<div class="shot">${t.image?`<img src="${t.image}" alt="${t.name} nursery render">`:roomSVG(t.palette)+`<div class="rendering">Rendering photo…</div>`}</div><div class="body">
     <h3>${t.name}</h3><div class="vibe">${t.vibe}</div>
     <div class="sw">${t.palette.map(p=>`<div style="background:${p.hex}" title="${p.name} ${p.hex}"><span>${p.role}</span></div>`).join("")}</div>
@@ -522,56 +603,49 @@ function themeCard(t,i){
     <div class="acts">
       <a target="_blank" rel="noopener" href="https://www.pinterest.com/search/pins/?q=${encodeURIComponent((t.search||t.name)+" nursery")}">Pinterest</a>
       <a target="_blank" rel="noopener" href="https://www.houzz.com/photos/query/${encodeURIComponent((t.search||t.name)+" nursery")}">Houzz</a>
-      <a target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent((t.search||t.name)+" nursery")}">Image search</a>
+      <a class="dlb" style="display:${t.image?"":"none"}" download="${t.name.replace(/[^a-z0-9]+/gi,"-")}.png" href="${t.image||"#"}">Download photo</a>
       <button class="fav" aria-pressed="${isFav}">${isFav?"Saved":"Save theme"}</button>
     </div></div>`;
-  if(!t.image) renderPhoto(t,div);
-  div.querySelector(".fav").onclick=e=>{
-    const b=e.currentTarget; const on=b.getAttribute("aria-pressed")==="true";
-    if(on) favorites=favorites.filter(f=>f.name!==t.name); else favorites=[...favorites,t].slice(-20);
-    b.setAttribute("aria-pressed",!on); b.textContent=on?"Save theme":"Saved"; save(); renderFavs();
-  };
+  if(!t.image) renderQueue.push({t,div}), pumpRenders();
+  div.querySelector(".fav").onclick=e=>{ const b=e.currentTarget; const on=b.getAttribute("aria-pressed")==="true";
+    if(on) S.favorites=S.favorites.filter(f=>f.name!==t.name); else S.favorites=[...S.favorites,t].slice(-12);
+    b.setAttribute("aria-pressed",!on); b.textContent=on?"Save theme":"Saved"; patch({favorites:S.favorites}); renderFavs(); };
   return div;
 }
-let ROOM=null;
-async function loadRoom(){ try{ const r=await fetch(`/api/room?h=${H}`); const d=await r.json(); if(d.image){ ROOM=d.image; showRoom(); } }catch{} }
-function showRoom(){ const img=document.getElementById("roomimg"), clr=document.getElementById("roomclear"); if(ROOM){ img.src=ROOM; img.style.display=""; clr.style.display=""; } else { img.style.display="none"; clr.style.display="none"; } }
-function shrink(file){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>{ const im=new Image(); im.onload=()=>{ const max=1400; const k=Math.min(1,max/Math.max(im.width,im.height)); const c=document.createElement("canvas"); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height); res(c.toDataURL("image/jpeg",0.85)); }; im.onerror=rej; im.src=fr.result; }; fr.onerror=rej; fr.readAsDataURL(file); }); }
-document.getElementById("roomfile").onchange=async e=>{
-  const f=e.target.files[0]; if(!f) return; const st=document.getElementById("roomstatus"); st.textContent="Uploading…";
-  try{ ROOM=await shrink(f); showRoom(); const r=await fetch(`/api/room?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({image:ROOM})}); const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||"upload failed"); st.textContent="Saved — renders will use this room"; }
-  catch(err){ st.textContent="Couldn't save photo: "+err.message; }
-  e.target.value="";
-};
-document.getElementById("roomclear").onclick=async()=>{ ROOM=null; showRoom(); document.getElementById("roomstatus").textContent=""; try{ await fetch(`/api/room?h=${H}`,{method:"DELETE"}); }catch{} };
+const renderQueue=[]; let rendering=0;
+async function pumpRenders(){ while(rendering<2&&renderQueue.length){ const j=renderQueue.shift(); rendering++; renderPhoto(j.t,j.div).finally(()=>{rendering--; pumpRenders();}); } }
 async function renderPhoto(t,div){
-  const shot=div.querySelector(".shot");
+  const shot=div.querySelector(".shot"); const body={name:t.name,vibe:t.vibe,palette:t.palette,furniture:t.furniture,accents:t.accents,layout:t.layout||layout(),room:ROOM};
+  const fail=m=>{ const b=shot.querySelector(".rendering"); if(b){ b.textContent="Photo unavailable — "+m; b.classList.add("bad"); } };
+  const done=img=>{ t.image=img; shot.innerHTML=`<img src="${img}" alt="${t.name} nursery render">`; const dl=div.querySelector(".dlb"); dl.href=img; dl.style.display=""; const f=S.favorites.find(x=>x.name===t.name); if(f){ f.image=img; patch({favorites:S.favorites}); } };
   try{
-    const r=await fetch("/api/render",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name:t.name,vibe:t.vibe,palette:t.palette,furniture:t.furniture,accents:t.accents,layout:t.layout||layout(),room:ROOM})});
-    const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||"render failed");
-    t.image=d.image; shot.innerHTML=`<img src="${d.image}" alt="${t.name} nursery render">`;
-    const f=favorites.find(x=>x.name===t.name); if(f){ f.image=d.image; save(); }
-  }catch(e){ const b=shot.querySelector(".rendering"); if(b){ b.textContent="Photo unavailable — "+e.message; b.classList.add("bad"); } }
+    // Prefer the background job (no 10 s limit); fall back to the sync endpoint.
+    const r=await fetch(`/api/render-start?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    if(r.status===202){ const {job}=await r.json(); const t0=Date.now();
+      while(Date.now()-t0<120000){ await new Promise(s=>setTimeout(s,2500)); const q=await fetch(`/api/render-status?job=${encodeURIComponent(job)}`); const d=await q.json();
+        if(d.status==="done") return done(d.image); if(d.status==="error") throw new Error(d.error); if(d.status==="missing") break; }
+      throw new Error("timed out");
+    }
+    if(r.status===429||r.status===400){ const d=await r.json(); throw new Error(d.error); }
+    const r2=await fetch(`/api/render?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r2.json(); if(!r2.ok||d.error) throw new Error(d.error||"render failed"); done(d.image);
+  }catch(e){ fail(e.message); }
 }
-function renderFavs(){
-  const card=document.getElementById("favcard"), box=document.getElementById("favs");
-  box.innerHTML=""; card.style.display=favorites.length?"":"none";
-  favorites.forEach(t=>box.appendChild(themeCard(t)));
-}
+function renderFavs(){ const card=document.getElementById("favcard"), box=document.getElementById("favs"); box.innerHTML=""; card.style.display=S.favorites.length?"":"none"; S.favorites.forEach(t=>box.appendChild(themeCard(t))); }
 document.getElementById("gen").onclick=async()=>{
   const btn=document.getElementById("gen"), out=document.getElementById("themes"), err=document.getElementById("nerr");
   err.innerHTML=""; btn.disabled=true; btn.textContent="Designing…";
   try{
-    const r=await fetch("/api/nursery",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({provider:(picked("prov")[0]||"auto").toLowerCase(),vibes:picked("vibes"),light:picked("light")[0]||"",furniture:picked("furn")[0]||"",layout:layout(),notes:document.getElementById("notes").value})});
+    const r=await fetch(`/api/nursery?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({provider:(picked("prov")[0]||"auto").toLowerCase(),vibes:picked("vibes"),light:picked("light")[0]||"",furniture:picked("furn")[0]||"",layout:layout(),notes:document.getElementById("notes").value})});
     const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||"Request failed");
     const L=layout(); const furn=picked("furn")[0]||""; d.themes.forEach(t=>{ t.layout=L; t.furniture=t.furniture||furn; });
-    out.innerHTML=`<div class="sub" style="margin:8px 4px 0">Designed by ${d.provider==="gemini"?"Gemini":"Claude"}</div>`; d.themes.forEach((t,i)=>out.appendChild(themeCard(t,i)));
+    out.innerHTML=`<div class="sub" style="margin:8px 4px 0">Designed by ${d.provider==="gemini"?"Gemini":"Claude"}</div>`; d.themes.forEach(t=>out.appendChild(themeCard(t)));
     out.scrollIntoView({behavior:"smooth"});
   }catch(e){ err.innerHTML=`<div class="err">${e.message}</div>`; }
   btn.disabled=false; btn.textContent="Design 4 themes";
 };
 
-load().then(()=>{ render(); renderFavs(); loadRoom(); });
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
+load().then(()=>{ render(); renderFavs(); applyDue(); tick(); loadRoom(); });
 </script>
 </body>
 </html>

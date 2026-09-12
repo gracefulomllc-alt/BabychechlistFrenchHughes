@@ -74,8 +74,14 @@ async function askGemini(key, prompt) {
   return (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("\n");
 }
 
+import { clean, takeQuota } from "../shared/lib.mjs";
+
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  const h = clean(new URL(req.url).searchParams.get("h"));
+  if (!h) return Response.json({ error: "missing household code" }, { status: 400 });
+  const q = await takeQuota(h, "design", 20, 150);
+  if (!q.ok) return Response.json({ error: q.error }, { status: 429 });
   const claudeKey = (process.env.ANTHROPIC_API_KEY || "").trim();
   const geminiKey = (process.env.GEMINI_API_KEY || "").trim();
   if (!claudeKey && !geminiKey) {
