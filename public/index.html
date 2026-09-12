@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baby prep</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F7F9; --paper:#FFFFFF; --ink:#22304A; --muted:#6B7A93; --line:#DDE4EC;
+    --apricot:#F2A65A; --apricot-soft:#FCEBD6; --sage:#7FA58B; --sage-soft:#E6F0E8; --sky:#CFE3F2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Nunito','Avenir Next','Segoe UI',sans-serif;line-height:1.45}
+  header{padding:28px 20px 16px;background:var(--paper);border-bottom:1px solid var(--line)}
+  h1{margin:0 0 4px;font-size:30px;font-weight:800;letter-spacing:-.01em}
+  .sub{margin:0;color:var(--muted);font-size:15px}
+  .progress{margin-top:16px}
+  .bar{height:12px;border-radius:999px;background:var(--sky);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:var(--apricot);border-radius:999px;transition:width .35s}
+  .count{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;color:var(--muted)}
+  .count b{color:var(--ink);font-size:18px}
+  .filters{display:flex;gap:8px;overflow-x:auto;padding:14px 20px 4px;scrollbar-width:none}
+  .filters::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px;border-radius:999px;font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
+  .chip[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sticky{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-bottom:8px}
+  .jump{display:flex;align-items:center;gap:10px;padding:12px 20px 0}
+  .jump label{font-size:14px;font-weight:600;color:var(--muted)}
+  .jump select{flex:1;font:600 15px/1.2 inherit;font-family:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7A93' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+  section{scroll-margin-top:120px}
+  main{padding:8px 16px 60px}
+  section{background:var(--paper);border:1px solid var(--line);border-radius:18px;margin:12px 0;overflow:hidden}
+  section>button{width:100%;display:flex;align-items:center;gap:12px;background:none;border:0;padding:16px 18px;text-align:left;font-family:inherit;color:var(--ink);cursor:pointer}
+  section>button .em{font-size:22px}
+  section>button h2{margin:0;font-size:18px;font-weight:800;flex:1}
+  section>button .n{font-size:13px;color:var(--muted);font-weight:600}
+  section>button .car{transition:transform .2s;color:var(--muted)}
+  section[open]>button .car{transform:rotate(90deg)}
+  section[data-done="1"]>button h2{color:var(--sage)}
+  ul{list-style:none;margin:0;padding:0 8px 8px;display:none}
+  section[open] ul{display:block}
+  li{display:flex;gap:12px;align-items:flex-start;padding:12px 10px;border-top:1px solid var(--line)}
+  li.hide{display:none}
+  li label{flex:1;cursor:pointer}
+  .name{font-weight:600;font-size:16px}
+  .note{color:var(--muted);font-size:14px;margin-top:2px}
+  .brand{margin-top:6px;font-size:13.5px;font-weight:600;color:#2C5677}
+  .brand::before{content:"Picks: ";font-weight:400;color:var(--muted)}
+  .where{margin-top:3px;font-size:13.5px;font-weight:600;color:#3E6B4A}
+  .where::before{content:"Buy at: ";font-weight:400;color:var(--muted)}
+  .where a{color:#3E6B4A;text-decoration:underline;text-decoration-color:#B9D3C0;text-underline-offset:3px}
+  .where a:active{color:var(--apricot)}
+  .why{margin-top:8px;background:var(--apricot-soft);color:#9A5A16;border:0;border-radius:999px;padding:5px 12px;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+  .desc{display:none;margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:12px;font-size:14px;color:var(--ink)}
+  .desc.show{display:block}
+  .when{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--apricot-soft);color:#9A5A16}
+  .when.m3{background:var(--sky);color:#2C5677}.when.m1{background:var(--sage-soft);color:#3E6B4A}.when.bag{background:#EFE6F7;color:#5B3C86}
+  input[type=checkbox]{appearance:none;width:26px;height:26px;margin-top:2px;flex:0 0 26px;border:2px solid var(--line);border-radius:9px;background:#fff;display:grid;place-items:center;cursor:pointer;transition:all .15s}
+  input[type=checkbox]:checked{background:var(--sage);border-color:var(--sage)}
+  input[type=checkbox]:checked::after{content:"";width:8px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+  input[type=checkbox]:focus-visible{outline:3px solid var(--apricot);outline-offset:2px}
+  li.done .name{text-decoration:line-through;color:var(--muted)}
+  .foot{color:var(--muted);font-size:13px;text-align:center;padding:20px}
+  .foot button{background:none;border:0;color:var(--muted);text-decoration:underline;font-family:inherit;font-size:13px;cursor:pointer}
+  .status{font-size:12px;color:var(--muted);margin-top:6px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  .tabs{display:flex;gap:6px;padding:12px 20px 0;background:var(--paper)}
+  .tab{flex:1;border:0;background:var(--bg);color:var(--muted);padding:12px;border-radius:14px 14px 0 0;font:800 15px/1 inherit;font-family:inherit;cursor:pointer}
+  .tab[aria-selected=true]{background:var(--ink);color:#fff}
+  .pane{display:none}.pane.active{display:block}
+  .share{margin:12px 20px 0;padding:12px 14px;background:var(--sage-soft);border-radius:14px;font-size:14px;color:#3E6B4A;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .share code{background:#fff;padding:3px 8px;border-radius:8px;font-weight:800;letter-spacing:.06em}
+  .share button{margin-left:auto;background:var(--sage);color:#fff;border:0;border-radius:999px;padding:8px 14px;font:700 13px/1 inherit;font-family:inherit;cursor:pointer}
+  .sync{font-size:12px;color:var(--muted);margin-top:4px}
+  /* nursery */
+  .nur{padding:16px 20px 60px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:12px 0}
+  .card h3{margin:0 0 6px;font-size:18px}
+  .q{font-weight:800;margin:14px 0 8px}
+  .opts{display:flex;flex-wrap:wrap;gap:8px}
+  .opt{border:1.5px solid var(--line);background:var(--paper);padding:8px 14px;border-radius:999px;font:600 14px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink)}
+  .opt[aria-pressed=true]{background:var(--sky);border-color:#9DC1DD;color:#1E4B6B}
+  textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:15px/1.4 inherit;font-family:inherit;color:var(--ink);min-height:70px;resize:vertical}
+  .go{width:100%;margin-top:14px;background:var(--apricot);color:#fff;border:0;border-radius:14px;padding:14px;font:800 16px/1 inherit;font-family:inherit;cursor:pointer}
+  .go[disabled]{opacity:.6}
+  .theme{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:14px 0}
+  .theme svg{width:100%;display:block}
+  .theme .body{padding:14px 18px 18px}
+  .theme h3{margin:0;font-size:20px}
+  .vibe{color:var(--muted);font-size:14px;margin:4px 0 12px}
+  .sw{display:flex;gap:6px;margin:10px 0}
+  .sw div{flex:1;height:46px;border-radius:10px;position:relative;border:1px solid rgba(0,0,0,.06)}
+  .sw span{position:absolute;left:6px;bottom:4px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+  .kv{font-size:14px;margin:6px 0}.kv b{color:var(--muted);font-weight:600}
+  .theme ul{list-style:disc;padding-left:20px;margin:6px 0;display:block}
+  .theme li{display:list-item;padding:2px 0;border:0;font-size:14px}
+  .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .acts a,.acts button{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 12px;border-radius:999px;font:700 13px/1 inherit;font-family:inherit;text-decoration:none;cursor:pointer}
+  .acts button.fav[aria-pressed=true]{background:var(--apricot-soft);border-color:var(--apricot);color:#9A5A16}
+  .err{background:#FDECEC;color:#8A2B2B;padding:12px 14px;border-radius:12px;font-size:14px;margin-top:12px}
+  .fav-list{margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Before baby arrives</h1>
+  <p class="sub">Shared checklist and nursery planner. Anyone with your link sees the same list.</p>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="list" aria-selected="true">Checklist</button>
+    <button class="tab" role="tab" data-tab="nursery" aria-selected="false">Nursery</button>
+  </div>
+</header>
+
+<div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button></div>
+
+<div id="pane-list" class="pane active">
+  <div class="progress" style="padding:14px 20px 0">
+    <div class="bar"><i id="fill"></i></div>
+    <div class="count"><span><b id="done">0</b> of <b id="total">0</b> ready</span><span id="pct">0%</span></div>
+  </div>
+  <div class="sticky">
+    <div class="jump"><label for="jumpsel">Go to</label><select id="jumpsel"><option value="">Category…</option></select></div>
+    <div class="filters" role="group" aria-label="Filter by timing">
+      <button class="chip" data-f="all" aria-pressed="true">Everything</button>
+      <button class="chip" data-f="now" aria-pressed="false">Order now</button>
+      <button class="chip" data-f="m3" aria-pressed="false">2–3 months out</button>
+      <button class="chip" data-f="m1" aria-pressed="false">Final month</button>
+      <button class="chip" data-f="bag" aria-pressed="false">Hospital bag</button>
+      <button class="chip" data-f="todo" aria-pressed="false">Still to do</button>
+    </div>
+  </div>
+  <main id="main"></main>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button></p>
+</div>
+
+<div id="pane-nursery" class="pane">
+  <div class="nur">
+    <div class="card">
+      <h3>Nursery theme planner</h3>
+      <p class="sub" style="margin:0">Pick a few vibes and Claude will design four themes with a palette, paint matches, and a preview of the room.</p>
+      <div class="q">Vibes (pick 1–3)</div>
+      <div class="opts" id="vibes"></div>
+      <div class="q">Room light</div>
+      <div class="opts" id="light"></div>
+      <div class="q">Furniture you're leaning toward</div>
+      <div class="opts" id="furn"></div>
+      <div class="q">Anything else?</div>
+      <textarea id="notes" placeholder="e.g. small room, one window facing the street, we love mountains, don't want anything too bright"></textarea>
+      <button class="go" id="gen">Design 4 themes</button>
+      <div id="nerr"></div>
+    </div>
+    <div id="themes"></div>
+    <div class="card" id="favcard" style="display:none"><h3>Saved themes</h3><div class="fav-list" id="favs"></div></div>
+  </div>
+</div>
+
+<script>
+const WHEN={now:"Order now",m3:"2–3 months out",m1:"Final month",bag:"Hospital bag"};
+const DATA=[
+ {id:"sleep",em:"🌙",title:"Sleep",items:[
+  ["Bedside bassinet","Sits at mattress height so night feeds don't mean getting up. Used roughly 0–5 months. Premium picks: a smart bassinet (auto-rocking) or a wooden sidecar style.","now","SNOO (buy or rent) · Halo BassiNest Premiere","happiestbaby.com (SNOO, buy or rent) · Target (Halo)"],
+  ["Crib","Buy one that converts to a toddler bed so it lasts years. Allow 4–8 weeks for delivery on nicer brands.","now","Babyletto Hudson · Nestig Wave · Stokke Sleepi (premium)","Nordstrom.com · Babyletto.com · Pottery Barn Kids (Park Meadows)"],
+  ["Crib mattress","Firm, flat, fits the crib with no gap. Breathable or dual-sided (firm infant / softer toddler) are worth the upgrade.","now","Newton Baby Breathable · Naturepedic Organic Breathable","newtonbaby.com · Amazon"],
+  ["Fitted crib sheets ×3","One on, one in the wash, one spare. Bamboo or organic cotton feel noticeably softer.","m3","Kyte Baby bamboo · Crane Baby","kytebaby.com · Amazon"],
+  ["Bassinet sheets ×3","Bassinet sizes are specific — buy the ones made for your model.","m3","Buy your bassinet brand's own sheets","Same site as the bassinet"],
+  ["Waterproof mattress protectors ×2","One for crib, one for bassinet. Middle-of-the-night changes are easier with one already on.","m3","Naturepedic · Newton","Amazon"],
+  ["Swaddles ×4–6","Velcro or zip-up swaddle sacks are far easier than blankets at 3am. Mix newborn and 0–3 sizes.","m3","Halo SleepSack Swaddle · Love to Dream Swaddle Up","Target · Amazon"],
+  ["Sleep sacks ×3","Wearable blankets for when swaddling stops (usually around 8–12 weeks). Loose blankets don't go in the crib.","m1","Kyte Baby · Woolino · Halo","kytebaby.com · Target (Halo)"],
+  ["White noise machine","Continuous, not a timer. Some do a soft night-light too.","m3","Hatch Rest (2nd gen) · Yogasleep Hushh (portable)","Amazon · Target"],
+  ["Baby monitor","Video with a good app is the sweet spot; wearable breathing-tracking models are the premium option if it'll help you sleep.","m3","Nanit Pro · Owlet Dream Sock (breathing tracker add-on)","Amazon · Best Buy (Nanit, Owlet)"],
+  ["Blackout curtains for nursery","Daytime naps go better dark. Also a dimmable lamp for feeds.","m3","Sleepout (portable) · NICETOWN","Amazon"]
+ ]},
+ {id:"feed",em:"🍼",title:"Feeding (covers both paths)",items:[
+  ["Breast pump","In the US your insurance usually covers one — call them now, some need a prescription. A wearable pump is the luxury add-on later.","now","Spectra S1 Plus (insurance) · Elvie Stride or Willow (wearable)","Your insurer's portal (Aeroflow or Byram) · Elvie/Willow direct"],
+  ["Bottles ×6 (slow-flow nipples)","Buy two brands, 2–3 each, until you know what baby takes. Slow-flow matters for combo feeding.","m3","Dr. Brown's Anti-Colic · Philips Avent Natural · Comotomo","Target · Amazon"],
+  ["Formula (one small can)","Have a starter tin on hand even if breastfeeding — takes the pressure off in week one. Ask your pediatrician which type.","m1","Bobbie · Kendamil · Similac 360 Total Care — pediatrician's call","Target · hibobbie.com · Amazon"],
+  ["Bottle brush and drying rack","Plus dish soap made for baby bottles.","m3","Boon Grass rack · OXO Tot brush · Dapple soap","Target · Amazon"],
+  ["Bottle sterilizer / warmer","Steam sterilizer with dryer is a real time-saver. A warmer is optional but nice.","m3","Baby Brezza Sterilizer Dryer · Papablic","Amazon · Target"],
+  ["Nursing pillow","Helps positioning for both breast and bottle. Get a spare cover.","m3","My Brest Friend · Boppy · Snuggle Me Feeding Support","Amazon · Target"],
+  ["Nursing bras ×3 and nursing pads","Wait until the last 4–6 weeks for sizing.","m1","Kindred Bravely · Bodily · Bamboobies pads","kindredbravely.com · Amazon"],
+  ["Nipple cream and haakaa/milk collector","Small items, big relief in the first weeks.","m1","Lansinoh · Earth Mama · Haakaa Silicone Collector","Amazon · Target"],
+  ["Milk storage bags","Only needed if pumping — buy one box to start.","m1","Lansinoh · Kiinde Twist","Amazon · Target"],
+  ["Burp cloths ×10–12","You'll use more than you think. Cloth diapers work great as burp cloths.","m3","Burt's Bees · Gerber flat-fold cloth diapers","Target · Amazon"],
+  ["Bibs ×6","Drool bibs for now; feeding bibs come around 6 months.","m3","Copper Pearl · Kyte Baby","Amazon · kytebaby.com"],
+  ["Comfortable feeding chair","A glider or recliner for the nursery. Long lead times on quality ones — order early.","now","Nurture& The Glider Plus · West Elm Graham · Pottery Barn Kids Dream","nurtureand.com · Pottery Barn Kids (sit in one first) · West Elm"]
+ ]},
+ {id:"diaper",em:"🧷",title:"Diapering",items:[
+  ["Newborn diapers (1–2 boxes)","Don't overbuy newborn size — many babies outgrow it in 2–4 weeks. Size 1 is the bigger stock-up.","m1","Coterie (premium) · Pampers Swaddlers · Huggies Little Snugglers","coterie.com · Target · Amazon Subscribe & Save"],
+  ["Size 1 diapers (2–3 boxes)","Set up a subscription so you never run out.","m1","Same brand — Coterie or Pampers Swaddlers subscription","Same — set up the subscription"],
+  ["Wipes (bulk)","Unscented, water-based. You'll go through thousands.","m1","WaterWipes · Coterie · Honest","Amazon Subscribe & Save · Costco · Target"],
+  ["Changing pad + 2 covers","Contoured pad on a dresser is fine — no need for a dedicated changing table. Wipe-clean pads are the upgrade.","m3","Keekaroo Peanut · Hatch Grow (built-in scale)","Amazon · Target"],
+  ["Portable changing pad","For the diaper bag and for downstairs.","m3","Skip Hop Pronto","Target · Amazon"],
+  ["Diaper pail with refills","Odor-sealing pail is worth it. Keep it next to the changing spot.","m3","Ubbi (steel, takes regular bags) · Munchkin Step","Target · Amazon"],
+  ["Diaper cream","One tube of zinc oxide cream plus a barrier balm.","m1","Desitin Maximum Strength · Boudreaux's · Aquaphor","Target · Walgreens"],
+  ["Diaper caddy","Diapers, wipes, cream in a tote you can carry room to room.","m3","Parker Baby · Munchkin","Amazon"]
+ ]},
+ {id:"clothes",em:"👶",title:"Clothing",items:[
+  ["Bodysuits / onesies ×8 newborn, ×8 size 0–3","Kimono-style or wide-neck for the early weeks — easier than pulling over the head.","m3","Kyte Baby · Hanna Andersson · Carter's Little Planet","kytebaby.com · Carter's (Foothills, Fort Collins) · Target"],
+  ["Footed sleepers with zippers ×6–8","Zippers, not snaps. Two-way zips for night changes are the nice touch.","m3","Kyte Baby · Little Sleepies · Magnetic Me (magnets, no zips)","kytebaby.com · littlesleepies.com · Nordstrom.com"],
+  ["Mittens, hats, socks","2 soft hats, 3–4 pairs of socks, scratch mittens for the first weeks.","m3","Kyte Baby · Burt's Bees · Hanna Andersson","Target · Carter's · Clothes Pony (Old Town Fort Collins)"],
+  ["Going-home outfit","One newborn and one 0–3 in case baby arrives bigger than expected.","m1","Kyte Baby · Quincy Mae","Clothes Pony · kytebaby.com · Nordstrom.com"],
+  ["Baby laundry detergent","Fragrance-free. Wash everything before the due date.","m1","Dreft · Puracy · Dropps","Target · Amazon"],
+  ["Layers for the season","Loveland winters: a fleece bunting for the car seat (no puffy coats under the straps) and warm hats.","m1","7AM Enfant Nido or JJ Cole Bundleme (car-seat safe covers)","Nordstrom.com · Amazon"],
+  ["Dresser or drawer organizers","Bins by size so you can find things half-asleep.","m3","Skip Hop · mDesign","Target · Amazon"]
+ ]},
+ {id:"bath",em:"🛁",title:"Bath, health and grooming",items:[
+  ["Baby bathtub","A sling or sink-insert style for newborns; sponge baths only until the cord falls off.","m3","Frida Baby 4-in-1 · Stokke Flexi Bath (premium) · Angelcare","Target · Amazon"],
+  ["Hooded towels ×3 and washcloths ×8","Bamboo ones are noticeably softer.","m3","Kyte Baby · Natemia","kytebaby.com · Amazon"],
+  ["Gentle baby wash and lotion","Fragrance-free. One of each is enough.","m3","Tubby Todd · Aveeno Baby · Cetaphil Baby","Target · tubbytodd.com"],
+  ["Digital thermometer","Rectal is the reliable one for infants; a forehead one is convenient later.","m1","Frida Baby Quick-Read Rectal · Braun ThermoScan","Target · Amazon"],
+  ["Nasal aspirator","The electric or tube-suction kind beats the bulb.","m1","Frida NoseFrida · Braun electric","Target · Amazon"],
+  ["Baby nail file / clippers","Nails grow fast and babies scratch their faces.","m1","Frida NailFrida · Haakaa file","Target · Amazon"],
+  ["Infant medicine kit","Saline drops, gas drops, gripe water. Ask the pediatrician before giving anything else.","m1","Little Remedies saline · Mylicon · Mommy's Bliss gripe water","Target · Walgreens · King Soopers"],
+  ["Soft-bristle brush and comb","Helps with cradle cap later.","m3","Frida DermaFrida · Safety 1st","Target · Amazon"],
+  ["Humidifier","Cool mist for the nursery — Colorado air is dry.","m3","Canopy · Crane · Vicks Filter-Free","Amazon · Target"]
+ ]},
+ {id:"travel",em:"🚗",title:"Car and getting out",items:[
+  ["Infant car seat","Non-negotiable — the hospital won't discharge without one. Choose one that clicks into your stroller. Check expiry dates.","now","Nuna Pipa RX · UPPAbaby Aria · Clek Liing","Nordstrom (Cherry Creek or online) · Pottery Barn Kids · nunababy.com"],
+  ["Car seat base ×2","One per vehicle. Get the seat installed and inspected (many fire stations and CPST techs do this free).","m3","Match your seat (Nuna, UPPAbaby, Clek)","Same retailer as the seat"],
+  ["Stroller","A full-size modular stroller that takes the car seat now and a bassinet/toddler seat later is the premium route.","now","UPPAbaby Vista V3 · Nuna Mixx Next · Bugaboo Fox 5 · Mockingbird (value)","Nordstrom (try in store, buy online) · uppababy.com · hellomockingbird.com"],
+  ["Baby carrier or wrap","A soft structured carrier (with newborn insert) or a stretchy wrap for the first months. Hands-free is a lifesaver.","m3","Ergobaby Omni Breeze · BabyBjörn Mini · Solly wrap","Nordstrom.com · ergobaby.com · sollybaby.com"],
+  ["Diaper bag","Backpack style. Stock it in the final month so it's ready.","m3","Dagne Dover Indi · Béis Baby · Freshly Picked","dagnedover.com · Nordstrom.com · beis.com"],
+  ["Car mirror and window shades","Rear-facing mirror so you can see baby while driving.","m1","Munchkin Brica · Shynerk","Amazon · Target"],
+  ["Stroller accessories","Rain cover, footmuff for cold weather, cup holder.","m1","Brand-matched (UPPAbaby/Nuna/Bugaboo)","Same site as the stroller"]
+ ]},
+ {id:"home",em:"🏠",title:"Around the house",items:[
+  ["Bouncer or baby lounger","Somewhere safe to set baby down while you eat or shower. Supervised use only.","m3","BabyBjörn Bliss bouncer · Snuggle Me Organic · DockATot Deluxe","Nordstrom.com · Amazon · snugglemeorganic.com"],
+  ["Play mat / activity gym","For tummy time from the first weeks.","m3","Lovevery Play Gym · Skip Hop","lovevery.com · Target"],
+  ["Pacifiers ×4","Two styles. Newborn size.","m1","Philips Avent Soothie · BIBS · Nanobébé","Target · Amazon"],
+  ["Muslin blankets ×4","Multipurpose: shade, burp cloth, swaddle in a pinch.","m3","Aden + Anais","Target · Amazon"],
+  ["Rocking chair or glider","If not already in the feeding section — one comfy chair somewhere you'll spend hours.","now","See feeding chair pick","See feeding chair"],
+  ["Nightlight for nursery and hallway","Warm, dim, motion-activated ones are handy.","m3","Hatch Rest · Vava","Amazon · Target"],
+  ["Outlet covers and anchor straps","Not urgent yet, but easy to do while you're setting up the room.","m3","Safety 1st · Wonder Baby","Target · Home Depot"]
+ ]},
+ {id:"parents",em:"💛",title:"For you two",items:[
+  ["Postpartum recovery kit","Peri bottle, pads, witch hazel pads, stool softener, comfortable high-waist underwear. Buy before, not after.","m1","Frida Mom Postpartum Kit · Bodily Care for Birth","fridababy.com · Target · itsbodily.com"],
+  ["Meal prep and freezer stock","Freeze 10–15 meals, or set up a meal train / delivery credits. This is the most-thanked item on any list.","m1","Meal Train (free) · Daily Harvest · CookUnity","mealtrain.com (free) · Costco · Daily Harvest"],
+  ["Water bottle with straw and snacks","Nursing thirst is real. Keep one at every feeding spot.","m1","Owala FreeSip · Stanley Quencher","Target · Costco"],
+  ["Phone charger and long cable by the chair","You'll be sitting there a lot.","m1","Anker 10 ft cable","Amazon"],
+  ["Help lined up","Family visits, a postpartum doula, or a house cleaner for the first month. Book now — good ones fill up.","now","DONA International (doula directory) · local postpartum doula groups","dona.org directory · local Facebook parent groups"],
+  ["Pediatrician chosen","Interview 1–2 practices now. The hospital will ask who to send records to.","now","Ask friends + check Healthgrades reviews","Your insurer's directory · UCHealth or Banner (Loveland)"],
+  ["Insurance and paperwork","Confirm how to add baby to your plan (usually a 30-day window), your leave dates, and hospital pre-registration.","now","Your HR + insurer","Your HR + insurer"],
+  ["Infant CPR class","One evening, worth it for both of you.","m3","American Red Cross · American Heart Association","redcross.org · UCHealth classes"],
+  ["Birth plan and hospital tour","Tour the hospital, know where to park, pre-register.","m3","Your delivering hospital","Your delivering hospital"],
+  ["Install car seat and get it inspected","Do this 3–4 weeks before the due date.","m1","Safe Kids CPST locator · local fire station","safekids.org inspection locator · Loveland Fire"]
+ ]},
+ {id:"bag",em:"🧳",title:"Hospital bag",items:[
+  ["Photo ID, insurance card, birth plan","Plus pediatrician's name and phone.","bag","—","—"],
+  ["Comfortable going-home clothes for mom","Loose, soft, dark colors. Slip-on shoes.","bag","Kindred Bravely · Bodily · Lululemon Align","kindredbravely.com · Nordstrom.com"],
+  ["Toiletries and lip balm","Hospital air is dry. Hair ties, dry shampoo.","bag","Aquaphor lip · Batiste dry shampoo","Target · Walgreens"],
+  ["Phone chargers (long cable), earbuds","Outlets are never where you want them.","bag","Anker","Amazon"],
+  ["Snacks and drinks","For both of you — labor and the night after.","bag","Liquid I.V. · granola bars · Honey Stinger","Costco · King Soopers"],
+  ["Nursing bra or comfy bra","Plus a robe or zip-up for skin-to-skin.","bag","Kindred Bravely · Bodily robe","kindredbravely.com"],
+  ["Pillow and blanket for partner","Partner chairs are not comfortable.","bag","From home","From home"],
+  ["Baby's going-home outfit and a swaddle","Two sizes. The hospital supplies diapers, wipes, and hats while you're there.","bag","Kyte Baby · Aden + Anais","kytebaby.com · Target"],
+  ["Car seat installed in the car","Not in the trunk — installed and inspected.","bag","—","—"],
+  ["Pack it by 36 weeks","Leave it by the door.","bag","—","—"]
+ ]}
+];
+
+
+const SEARCH={
+ "amazon":q=>`https://www.amazon.com/s?k=${q}`,
+ "target":q=>`https://www.target.com/s?searchTerm=${q}`,
+ "nordstrom":q=>`https://www.nordstrom.com/sr?keyword=${q}`,
+ "costco":q=>`https://www.costco.com/CatalogSearch?keyword=${q}`,
+ "walgreens":q=>`https://www.walgreens.com/search/results.jsp?Ntt=${q}`,
+ "best buy":q=>`https://www.bestbuy.com/site/searchpage.jsp?st=${q}`,
+ "home depot":q=>`https://www.homedepot.com/s/${q}`,
+ "pottery barn kids":q=>`https://www.potterybarnkids.com/search/results.html?words=${q}`,
+ "west elm":q=>`https://www.westelm.com/search/results.html?words=${q}`,
+ "carter's":q=>`https://www.carters.com/search?q=${q}`,
+ "king soopers":q=>`https://www.kingsoopers.com/search?query=${q}`,
+ "clothes pony":()=>`https://clothespony.com`,
+ "young at heart":()=>`https://www.youngatheartclothingco.com/`,
+ "aeroflow":()=>`https://aeroflowbreastpumps.com`,
+ "byram":()=>`https://breastpumps.byramhealthcare.com`,
+ "uchealth":()=>`https://www.uchealth.org`,
+ "banner":()=>`https://www.bannerhealth.com`,
+ "loveland fire":()=>`https://www.lovelandfirerescue.org`,
+ "daily harvest":()=>`https://www.daily-harvest.com`,
+ "elvie":()=>`https://www.elvie.com`,
+ "willow":()=>`https://www.willowpump.com`
+};
+function q(it){
+  const brand=(it[3]||"").split(" · ")[0].replace(/\(.*?\)/g,"").trim();
+  const item=it[0].replace(/×.*$/,"").replace(/\(.*?\)/g,"").trim();
+  return encodeURIComponent((brand&&!/^see|^same|^buy|^match|^brand|^your|^ask|^from|^—/i.test(brand)?brand+" ":"")+item);
+}
+function linkWhere(it){
+  if(!it[4]||it[4]==="—") return "";
+  const parts=it[4].split(" · ").map(p=>{
+    const low=p.toLowerCase();
+    for(const k in SEARCH){ if(low.includes(k)) return `<a href="${SEARCH[k](q(it))}" target="_blank" rel="noopener">${p}</a>`; }
+    const dom=p.match(/([a-z0-9-]+\.(com|org))/i);
+    if(dom) return `<a href="https://${dom[1]}" target="_blank" rel="noopener">${p}</a>`;
+    return p;
+  });
+  return `<div class="where">${parts.join(" · ")}</div>`;
+}
+
+const DESC={"Bedside bassinet": "A small, portable bed for the first few months that sits right next to your side of the bed. Newborns feed every 2–3 hours at night, so having them within arm's reach means you can scoop them up without walking down a hall. Babies outgrow it by 4–6 months or once they start rolling, which is when they move to the crib.", "Crib": "The full-size bed baby will sleep in from a few months old until they're a toddler. It has slatted sides so baby can't climb out and you can see in. A 'convertible' crib has a side you remove later to turn it into a toddler bed, so one purchase lasts 3–4 years.", "Crib mattress": "Cribs don't come with a mattress — you buy it separately. Infant mattresses must be firm and flat (soft surfaces are a suffocation risk) and fit the crib frame with no gap at the edges. 'Breathable' models let air pass through the whole mattress, which many parents find reassuring.", "Fitted crib sheets ×3": "Just like your own fitted sheet, sized for a crib mattress. Fitted only — no flat sheets, blankets, or bumpers go in a crib. Three lets you rotate while one is in the wash after a leak.", "Bassinet sheets ×3": "Bassinets use their own oddly-shaped mattress, so regular crib sheets won't fit. Each brand sells sheets cut for its model.", "Waterproof mattress protectors ×2": "A thin waterproof layer that goes between the mattress and the sheet. Diapers leak, spit-up happens, and this keeps the mattress itself clean so you only have to change the sheet.", "Swaddles ×4–6": "Newborns have a startle reflex that jerks their arms and wakes them up. A swaddle wraps their arms snugly against their body so they sleep longer. Modern versions are sacks with velcro or zippers — no blanket-folding skill required. Swaddling stops once baby can roll (around 2–3 months).", "Sleep sacks ×3": "A wearable blanket — a zip-up sleeping bag with arm holes. Because loose blankets aren't safe in a crib, this is how baby stays warm at night after swaddling ends. They come in different thicknesses for different room temperatures.", "White noise machine": "A small speaker that plays a steady 'shhh' sound all night. It mimics the constant noise of the womb, helps baby settle, and masks household sounds (doors, dogs, dishwashers) so they don't wake up. Runs continuously, not on a timer.", "Baby monitor": "A camera in the nursery that streams to your phone or a handheld screen, so you can see and hear baby from another room. Video models also show breathing motion and room temperature. Wearable versions (a sock) track heart rate and oxygen for extra peace of mind.", "Blackout curtains for nursery": "Curtains that block nearly all light. Newborns nap during the day and wake at dawn; a dark room helps them sleep longer and makes the 'it's nighttime' cue clearer.", "Breast pump": "A device that expresses milk from the breast into bottles. Even if you plan to breastfeed directly, a pump lets you build a stash, lets your partner do a feed, and keeps supply up if you're apart. Insurance almost always covers a standard pump; 'wearable' pumps fit inside a bra so you can move around.", "Bottles ×6 (slow-flow nipples)": "For feeding pumped milk or formula. The nipple (the rubber part) comes in flow rates; 'slow' or 'newborn' flow makes baby work at the pace of breastfeeding so they can switch between breast and bottle without getting confused. Babies are picky, so try two brands before buying a full set.", "Formula (one small can)": "Powdered milk substitute you mix with water. Having a can on hand means that if breastfeeding is slow to start or you just need a break at 3am, you're not running to a store. Your pediatrician can point you to the right type.", "Bottle brush and drying rack": "A long thin brush that cleans inside bottles and nipples, plus a rack to air-dry all the parts. You'll wash bottles several times a day, so a dedicated setup by the sink saves real time.", "Bottle sterilizer / warmer": "A sterilizer uses steam to kill germs on bottles and pump parts (recommended for the first few months). A warmer gently heats a bottle from the fridge to body temperature — faster and safer than a microwave, which creates hot spots.", "Nursing pillow": "A firm, curved pillow that sits around your waist and holds baby at breast or bottle height so you're not hunching over or straining your arms during 8+ feeds a day. Also useful for propped tummy time later.", "Nursing bras ×3 and nursing pads": "Bras with a clip or pull-aside panel so you can feed without undressing. Nursing pads are small absorbent discs that go inside the bra to catch leaks between feeds.", "Nipple cream and haakaa/milk collector": "Nipple cream soothes soreness in the first weeks of breastfeeding. A Haakaa is a simple silicone cup that suctions onto one breast and catches milk that leaks while baby feeds on the other — free milk with zero effort.", "Milk storage bags": "Pre-sterilized freezer bags with measurement lines for storing pumped milk. Lie flat, stack in the freezer, thaw as needed.", "Burp cloths ×10–12": "Absorbent cloths you drape over your shoulder while burping baby to catch spit-up. Babies spit up a lot. You'll want one within reach in every room.", "Bibs ×6": "Small bibs that catch drool and milk dribbles so you're not changing outfits five times a day. Bigger feeding bibs come later when solids start.", "Comfortable feeding chair": "A glider or recliner in the nursery where you'll spend hours feeding, rocking, and doing night wake-ups. Comfort matters more than you'd think — arms at the right height, a smooth rocking motion, and ideally a footrest.", "Newborn diapers (1–2 boxes)": "The smallest size, for babies under about 10 lb. Many babies outgrow it within a few weeks, so don't stock up heavily.", "Size 1 diapers (2–3 boxes)": "Fits roughly 8–14 lb — this is the size baby will be in for a couple of months, so it's the one to buy in bulk and put on subscription.", "Wipes (bulk)": "Wet wipes for cleaning at diaper changes. You'll use 10+ a day for months, so buy in bulk. Water-based, fragrance-free ones are gentlest on newborn skin.", "Changing pad + 2 covers": "A contoured foam pad with raised sides that you strap to the top of a dresser to make a changing station. The soft covers are like a fitted sheet for it — two so one can be in the wash.", "Portable changing pad": "A foldable mat you can lay on any surface for a diaper change — in the diaper bag, downstairs, at a restaurant.", "Diaper pail with refills": "A trash can with an odor-sealing lid for dirty diapers. A regular bin will make the nursery smell within a day. Some take special bag refills; others take normal trash bags (cheaper long-term).", "Diaper cream": "A thick paste applied at changes to prevent or treat diaper rash. Zinc oxide creams treat existing rash; petroleum-based balms prevent it.", "Diaper caddy": "A tote with compartments for diapers, wipes, and cream that you can carry room to room so you can change baby wherever you are.", "Bodysuits / onesies ×8 newborn, ×8 size 0–3": "The basic baby shirt — a one-piece that snaps between the legs so it doesn't ride up. Worn alone in warm weather or as a base layer. 'Kimono' or side-snap styles avoid pulling anything over a newborn's head.", "Footed sleepers with zippers ×6–8": "One-piece pajamas with covered feet — baby's main outfit for the first months, day and night. Zippers (especially two-way ones) are dramatically easier than a row of snaps during a 3am change.", "Mittens, hats, socks": "Newborns lose heat through their heads and can't regulate temperature well yet, so a soft hat and socks go on most of the time indoors. Scratch mittens cover their hands so they don't scratch their own face.", "Going-home outfit": "What baby wears leaving the hospital. Purely for photos and sentiment — but have a newborn and a 0–3 month size because you won't know how big they are until they arrive.", "Baby laundry detergent": "A fragrance- and dye-free detergent. Newborn skin is sensitive, and everything baby wears or sleeps on gets washed in it before the due date.", "Layers for the season": "Puffy coats are unsafe in a car seat because the straps can't be tightened properly. Instead you use a car-seat cover or a thin fleece bunting that goes over the buckled straps, plus warm hats.", "Dresser or drawer organizers": "Small bins that divide drawers by size (newborn, 0–3, 3–6). Baby clothes are tiny and identical-looking; this stops you digging through a pile half-asleep.", "Baby bathtub": "A small tub with a sloped, non-slip surface that supports a newborn who can't sit up. Until the umbilical cord stump falls off (1–2 weeks), you only sponge-bathe; after that, 2–3 baths a week is plenty.", "Hooded towels ×3 and washcloths ×8": "Baby-sized towels with a corner hood to keep their head warm straight out of the bath, plus soft small washcloths.", "Gentle baby wash and lotion": "A mild, tear-free body and hair wash, and a fragrance-free moisturizer. Baby skin dries out easily, especially in Colorado's air.", "Digital thermometer": "For checking a fever. In babies under 3 months, a fever is a call-the-doctor situation, and a rectal reading is the only truly accurate one at that age. A forehead scanner is fine for quick checks later.", "Nasal aspirator": "Babies can't blow their noses, and a stuffy nose makes feeding and sleeping miserable. This gently suctions mucus out. The tube-suction style works far better than the old rubber bulb.", "Baby nail file / clippers": "Newborn nails are paper-thin and grow fast; babies scratch their own faces. A file or electric buffer is safer than clippers on tiny fingers.", "Infant medicine kit": "Saline drops loosen a stuffy nose; gas drops (simethicone) and gripe water help with fussiness from trapped gas. Have them on hand before you need them at midnight. Nothing else without the pediatrician's OK.", "Soft-bristle brush and comb": "For gently brushing hair and loosening cradle cap (harmless flaky scalp most babies get).", "Humidifier": "Adds moisture to the nursery air. Dry air, especially in Colorado winters, dries out baby's nose and skin and makes colds worse. Cool-mist is the safe type around kids.", "Infant car seat": "A rear-facing seat for newborns to about 1 year. It clicks in and out of a base that stays in the car, so you can carry a sleeping baby inside without unbuckling. The hospital will not let you leave without one installed.", "Car seat base ×2": "The bracket that's installed into the car with seat belt or LATCH anchors. The car seat clicks onto it. One per vehicle so you're never reinstalling.", "Stroller": "A modular stroller accepts the infant car seat directly (click it on, go), then later takes a bassinet attachment and a toddler seat. That's why the premium ones cost more — one frame from newborn to age 4.", "Baby carrier or wrap": "A way to wear baby on your chest so your hands are free. A stretchy wrap is a long piece of fabric you tie on — cozy for newborns. A structured carrier has buckles and straps and lasts into toddlerhood. Babies sleep beautifully in either.", "Diaper bag": "A bag with organized pockets for diapers, wipes, a change of clothes, bottles, and the changing pad. Backpack style keeps hands free for the stroller or carrier.", "Car mirror and window shades": "Rear-facing car seats face away from you. A mirror strapped to the back headrest lets you see baby in your rearview. Shades keep sun off their face.", "Stroller accessories": "Rain cover, a warm footmuff for winter walks, a cup holder, a snack tray later — bought to match your stroller brand.", "Bouncer or baby lounger": "Somewhere safe to set baby down while you shower or eat. A bouncer is an angled seat that gently rocks with baby's movements. A lounger is a padded nest for the floor or couch. Both are for awake, supervised time only — never for sleep.", "Play mat / activity gym": "A padded mat with an arch that hangs toys overhead. From week one, babies need daily 'tummy time' (lying on their front) to build neck and core strength, and this gives them something to look at while they do it.", "Pacifiers ×4": "A soother to suck on between feeds. Many babies find it calming and it's associated with lower SIDS risk. Some babies refuse them entirely, so buy two styles, not a bulk pack.", "Muslin blankets ×4": "Large, thin, breathable cotton squares. Used as a nursing cover, a stroller sun shade, a burp cloth, a swaddle in a pinch, a play surface — the Swiss Army knife of baby cloth.", "Rocking chair or glider": "Same as the feeding chair — you only need one. Listed here in case you want it in the living room rather than the nursery.", "Nightlight for nursery and hallway": "A dim, warm light for night feeds and changes so you don't turn on overhead lights (which fully wake both of you). Motion-activated hallway lights help you get there without stubbing a toe.", "Outlet covers and anchor straps": "Plastic plugs for electrical outlets and straps that bolt furniture to the wall so it can't tip. Not needed until baby is mobile (6+ months), but easy to install while you're setting up the room.", "Postpartum recovery kit": "Supplies for mom's recovery after birth: a peri bottle (squeeze bottle for rinsing instead of wiping), heavy-duty pads, cooling witch hazel pads, mesh or high-waist underwear, and stool softener. You want these in the bathroom before you get home.", "Meal prep and freezer stock": "Cooking is the first thing to fall apart with a newborn. Batch-freeze meals now, or set up a meal train (friends sign up to drop off dinners) or delivery credits.", "Water bottle with straw and snacks": "Breastfeeding and recovery make you intensely thirsty and hungry, and you'll be stuck in a chair with a baby on you. A bottle you can drink one-handed at every feeding spot.", "Phone charger and long cable by the chair": "You'll be in the feeding chair for hours at odd times. A long cable reaches from the outlet to your hand.", "Help lined up": "Whoever will actually be around the first month: family, a postpartum doula (a trained helper who comes to your home to support recovery, feeding, and sleep), a cleaner. Booking now matters — good help fills up.", "Pediatrician chosen": "Baby's doctor. The first visit is within days of birth, and the hospital asks for the name before discharge. Most practices do free 'meet and greet' visits for expecting parents.", "Insurance and paperwork": "Baby must be added to your health plan within a set window (usually 30 days). Also: hospital pre-registration, your leave dates, and a will or guardianship note if you don't have one.", "Infant CPR class": "A short class teaching CPR and choking response for babies, which is different from adult CPR. One evening. Both of you.", "Birth plan and hospital tour": "Visit the hospital, learn where to park and check in, and pre-register so you're not filling out forms in labor. A birth plan is a one-page note of your preferences for the care team.", "Install car seat and get it inspected": "Most car seats are installed wrong. A certified technician (CPST) checks yours for free — many fire stations and hospitals offer it. Do it 3–4 weeks before the due date in case baby comes early.", "Photo ID, insurance card, birth plan": "The hospital needs these at check-in.", "Comfortable going-home clothes for mom": "You'll still look about six months pregnant and be sore. Loose, soft, dark clothes and slip-on shoes.", "Toiletries and lip balm": "Hospital air is dry and labor is long. Lip balm is the item everyone forgets and wishes they had.", "Phone chargers (long cable), earbuds": "Hospital outlets are far from the bed.", "Snacks and drinks": "You'll be hungry after delivery and hospital food is limited at night.", "Nursing bra or comfy bra": "For the first feeds and skin-to-skin contact. A robe or zip-up sweatshirt makes skin-to-skin easier.", "Pillow and blanket for partner": "Partner chairs are hard and the room is cold.", "Baby's going-home outfit and a swaddle": "The hospital provides diapers, wipes, blankets, and a hat while you're there — you only need the outfit to leave in.", "Car seat installed in the car": "Installed and inspected — the nurse will check it before discharge.", "Pack it by 36 weeks": "About 10% of babies come before 37 weeks. Have the bag by the door."};
+DATA.find(d=>d.id==="sleep").items.push(["Pack 'n play / travel crib", "A second safe sleep spot for downstairs naps, plus it's what baby sleeps in at grandma's or on trips.", "m3", "Guava Lotus · 4moms Breeze · Graco Pack 'n Play", "Amazon · Target · guavafamily.com"]);
+DATA.find(d=>d.id==="sleep").items.push(["Baby swing (optional)", "Some babies only settle in motion. Not essential, but many parents call it the sanity-saver.", "m3", "4moms MamaRoo · Graco Soothe My Way", "Amazon · Target"]);
+DATA.find(d=>d.id==="feed").items.push(["Hands-free pumping bra", "Holds the pump flanges in place so both hands are free. Makes pumping bearable.", "m1", "Kindred Bravely Sublime · Simple Wishes", "kindredbravely.com · Amazon"]);
+DATA.find(d=>d.id==="feed").items.push(["Pump spare parts and flange sizing", "Flanges (the funnel part) come in sizes; the wrong size hurts and reduces output. Get measured and buy a spare set.", "m1", "Your pump's brand · Maymom (aftermarket)", "Your pump brand's site · Amazon"]);
+DATA.find(d=>d.id==="feed").items.push(["Dishwasher basket for bottle parts", "Keeps nipples, valves and pump pieces from falling through the dishwasher rack.", "m3", "OXO Tot · Munchkin", "Target · Amazon"]);
+DATA.find(d=>d.id==="feed").items.push(["Formula pitcher or dispenser (if using formula regularly)", "Mix a day's worth at once instead of scoop-and-shake at 3am.", "m1", "Dr. Brown's Formula Pitcher · Baby Brezza Formula Pro (premium)", "Amazon · Target"]);
+DATA.find(d=>d.id==="feed").items.push(["Vitamin D drops", "Pediatricians recommend them for breastfed babies from birth — ask at your first visit.", "m1", "Carlson Baby's Super Daily D3 · Enfamil D-Vi-Sol", "Amazon · Walgreens"]);
+DATA.find(d=>d.id==="diaper").items.push(["Petroleum jelly and gauze (if circumcising)", "For care during healing the first week or so.", "m1", "Vaseline · Aquaphor", "Target · Walgreens"]);
+DATA.find(d=>d.id==="diaper").items.push(["Hand sanitizer and pump soap", "One at the changing station, one by the front door for visitors.", "m1", "Purell · Mrs. Meyer's", "Target · Costco"]);
+DATA.find(d=>d.id==="clothes").items.push(["A few 3–6 month pieces", "Babies hit this size around 3 months and it sneaks up fast. 4–6 sleepers and onesies to start.", "m1", "Kyte Baby · Carter's", "kytebaby.com · Target · Carter's (Foothills)"]);
+DATA.find(d=>d.id==="clothes").items.push(["Laundry hamper for the nursery and stain remover", "Baby laundry is its own daily load. A hamper by the changing station and a spray for spit-up and blowouts.", "m3", "Dreft stain remover · OxiClean Baby", "Target · Amazon"]);
+DATA.find(d=>d.id==="bath").items.push(["Cotton rounds and saline for cord/eye care", "For gently cleaning around the umbilical stump and wiping crusty eyes.", "m1", "Any cotton rounds · Little Remedies saline", "Target · Walgreens"]);
+DATA.find(d=>d.id==="bath").items.push(["Emergency numbers saved in both phones", "Pediatrician's after-hours nurse line, nearest pediatric ER, Poison Control (1-800-222-1222).", "m1", "—", "—"]);
+DATA.find(d=>d.id==="bath").items.push(["Check smoke and CO detectors", "Fresh batteries, and one in or near the nursery.", "m3", "First Alert · Google Nest Protect", "Home Depot · Amazon"]);
+DATA.find(d=>d.id==="home").items.push(["Stock the house", "Paper plates and towels, toilet paper, trash bags, coffee, cleaning wipes, pet food, your own medicine cabinet basics.", "m1", "Costco run", "Costco · King Soopers pickup"]);
+DATA.find(d=>d.id==="home").items.push(["Grocery delivery or pickup set up", "Create the account and save your regulars now so reordering is two taps.", "m1", "King Soopers pickup · Instacart · Amazon Fresh", "kingsoopers.com · instacart.com"]);
+DATA.find(d=>d.id==="home").items.push(["Batteries (AA and AAA)", "Swings, sound machines, monitors, toys — half of it runs on batteries.", "m1", "Amazon Basics · Energizer", "Costco · Amazon"]);
+DATA.find(d=>d.id==="parents").items.push(["Pain relievers and prenatal vitamins for mom", "Ibuprofen and acetaminophen for recovery; keep taking prenatals while breastfeeding.", "m1", "Ritual Prenatal · Nature Made · store-brand ibuprofen", "Target · Costco · ritual.com"]);
+DATA.find(d=>d.id==="parents").items.push(["Nursing-friendly pajamas and a robe ×2", "Button-front or pull-down tops you can live in for two weeks.", "m1", "Kindred Bravely · Bodily · Hatch", "kindredbravely.com · Nordstrom.com"]);
+DATA.find(d=>d.id==="parents").items.push(["Visitor plan agreed", "Decide together now: who visits, when, how long, and that visitors wash hands and are up to date on vaccines.", "m3", "—", "—"]);
+DATA.find(d=>d.id==="bag").items.push(["Partner's change of clothes and toiletries", "You may be there 2–3 days.", "bag", "—", "—"]);
+DATA.find(d=>d.id==="bag").items.push(["Cash and a list of who to call", "Vending machines, parking. And the short list of people who get the first text.", "bag", "—", "—"]);
+Object.assign(DESC,{"Pack 'n play / travel crib": "A fold-up crib with mesh sides. Newborns nap 4–5 times a day and you won't want to run upstairs every time, so this lives in the living room. It also becomes the travel bed for hotel rooms and family visits. Buy the fitted sheet for it too.", "Baby swing (optional)": "A powered seat that rocks or sways. Different from a bouncer — it moves on its own. Great for a fussy evening; for awake time only, not sleep. If you'd rather wait and see, this is the one item that's fine to buy after baby arrives.", "Hands-free pumping bra": "A tight bra with slits that hold the pump parts against you, so you can eat, hold baby, or scroll instead of clutching two bottles for 20 minutes.", "Pump spare parts and flange sizing": "Every pump ships with one flange size, and it's wrong for most people. A lactation consultant or a printable ruler measures you in seconds. Spare valves and membranes are cheap and wear out in weeks — have a set.", "Dishwasher basket for bottle parts": "A small lidded cage that holds the tiny bottle and pump parts on the top rack. Without it they melt on the heating element or vanish into the machine.", "Formula pitcher or dispenser (if using formula regularly)": "A pitcher mixes a full day of formula in one go and stores it in the fridge (good for 24 hours). The Brezza is a countertop machine that dispenses a warm, mixed bottle at the push of a button — pricey, but if you end up formula-heavy it's the most-loved gadget in the house.", "Vitamin D drops": "Breast milk is low in vitamin D, so most pediatricians recommend a single daily drop from the first week. Formula already has it added. Confirm with your doctor, but have a bottle at home so you're not making a pharmacy run after the first appointment.", "Petroleum jelly and gauze (if circumcising)": "If you have a boy and choose circumcision, you'll dab petroleum jelly on at each diaper change for about a week so the diaper doesn't stick. The hospital will show you. Buy a small tub — you'll use it for diaper rash afterward anyway.", "Hand sanitizer and pump soap": "You'll wash or sanitize your hands dozens of times a day, and every visitor should before holding baby. Put a bottle everywhere so it actually happens.", "A few 3–6 month pieces": "By the time you notice the 0–3 sleepers are getting tight, you'll be too tired to shop. Having a handful of the next size in the drawer avoids a rushed Target run at week 10.", "Laundry hamper for the nursery and stain remover": "Spit-up and diaper blowouts stain if they sit. A hamper right where you undress baby, and a stain spray you hit the spot with before it goes in, saves a lot of ruined outfits.", "Cotton rounds and saline for cord/eye care": "The cord stump just needs to stay clean and dry — a cotton round dabbed around it. Newborns also get gunky eyes from blocked tear ducts, which you wipe with a damp cotton round from the inside corner out. Nothing fancy, but you want them in the bathroom.", "Emergency numbers saved in both phones": "Every pediatric practice has a 24/7 nurse line — that's who you call at 2am about a fever, not the ER. Put it in both phones now, plus the nearest pediatric urgent care and Poison Control. Loveland: UCHealth Medical Center of the Rockies has a pediatric ER.", "Check smoke and CO detectors": "Test every detector and replace batteries. Add a carbon monoxide detector on the sleeping floor if you don't have one. Two-minute job, easy to forget.", "Stock the house": "The first two weeks you'll run out of ordinary household things and not have the bandwidth to notice until they're gone. Do one big Costco run in the final month: paper goods, trash bags, dishwasher pods, coffee, snacks, pain relievers, pet supplies, and anything you use daily.", "Grocery delivery or pickup set up": "This is the single best way to avoid store runs. Set up King Soopers pickup or Instacart, put your staples in a saved list, and save the payment method. When you're out of milk at 9pm with a sleeping baby, it's a delivery, not a trip.", "Batteries (AA and AAA)": "A surprising amount of baby gear takes batteries, and a dead white noise machine at midnight is a real problem. One bulk pack each.", "Pain relievers and prenatal vitamins for mom": "Recovery is sore whether it's a vaginal birth or a C-section, and the hospital sends you home with a plan that usually alternates over-the-counter ibuprofen and acetaminophen. Have both. Prenatal vitamins continue as long as you're nursing.", "Nursing-friendly pajamas and a robe ×2": "You'll be feeding 8–12 times a day and won't want to change clothes to do it. Two sets of soft, front-opening pajamas and a robe cover the first weeks.", "Visitor plan agreed": "Newborns have no immune system to speak of, and new parents are exhausted. Agree on ground rules before the baby arrives — it's much easier to say 'we're doing no visitors the first week' now than at the door. Pediatricians commonly ask that visitors have a recent Tdap and flu shot.", "Partner's change of clothes and toiletries": "Partners forget to pack for themselves. A change of clothes, toothbrush, deodorant, and a phone charger of their own.", "Cash and a list of who to call": "Some hospital parking and vending takes cash. And when it's 4am and you're delirious, a pre-written list of who to tell (and who can wait) is a kindness to yourself."});
+
+/* ---------- shared state via Netlify Blobs ---------- */
+let ticks={}, favorites=[], filter="all", saveTimer=null, lastUpdated=0;
+const url=new URL(location.href);
+let H=(url.searchParams.get("h")||"").replace(/[^a-z0-9]/gi,"");
+if(!H){ H=Math.random().toString(36).slice(2,8).toUpperCase(); url.searchParams.set("h",H); history.replaceState(null,"",url); }
+document.getElementById("hcode").textContent=H;
+document.getElementById("copy").onclick=async()=>{ try{ await navigator.clipboard.writeText(location.href); setSync("Link copied"); }catch{ prompt("Copy this link:",location.href); } };
+function setSync(t){ document.getElementById("sync").textContent=t; }
+
+async function load(){
+  try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) throw 0; const d=await r.json(); ticks=d.ticks||{}; favorites=d.favorites||[]; lastUpdated=d.updated||0; setSync("Synced"); }
+  catch{ try{ const c=JSON.parse(localStorage.getItem("bp-"+H)||"{}"); ticks=c.ticks||{}; favorites=c.favorites||[]; }catch{} setSync("Offline — saving on this device only"); }
+}
+function save(){
+  localStorage.setItem("bp-"+H,JSON.stringify({ticks,favorites}));
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({ticks,favorites})}); const d=await r.json(); lastUpdated=d.updated||lastUpdated; setSync("Synced"); }
+    catch{ setSync("Couldn't sync — will retry"); }
+  },500);
+}
+// poll for other people's changes
+setInterval(async()=>{
+  if(document.hidden) return;
+  try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
+    if((d.updated||0)>lastUpdated){ ticks=d.ticks||{}; favorites=d.favorites||[]; lastUpdated=d.updated; document.querySelectorAll("input[type=checkbox]").forEach(c=>c.checked=!!ticks[c.id]); update(); renderFavs(); setSync("Updated from another device"); }
+  }catch{}
+},8000);
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t));
+  document.querySelectorAll(".pane").forEach(p=>p.classList.toggle("active",p.id==="pane-"+t.dataset.tab));
+  window.scrollTo({top:0});
+});
+
+/* ---------- checklist render ---------- */
+function render(){
+  const main=document.getElementById("main"); main.innerHTML="";
+  const sel=document.getElementById("jumpsel"); sel.innerHTML='<option value="">Category…</option>';
+  DATA.forEach(sec=>{ const o=document.createElement("option"); o.value=sec.id; o.textContent=`${sec.em} ${sec.title}`; sel.appendChild(o); });
+  sel.onchange=()=>{ const t=document.getElementById(sel.value); if(t){ t.setAttribute("open",""); t.scrollIntoView({behavior:"smooth",block:"start"}); } sel.value=""; };
+  DATA.forEach(sec=>{
+    const s=document.createElement("section"); s.id=sec.id; s.setAttribute("open","");
+    const btn=document.createElement("button");
+    btn.innerHTML=`<span class="em">${sec.em}</span><h2>${sec.title}</h2><span class="n"></span><span class="car">▶</span>`;
+    btn.onclick=()=>{ s.hasAttribute("open")?s.removeAttribute("open"):s.setAttribute("open",""); };
+    const ul=document.createElement("ul");
+    sec.items.forEach((it,i)=>{
+      const id=`${sec.id}-${i}`; const li=document.createElement("li");
+      const cb=document.createElement("input"); cb.type="checkbox"; cb.id=id; cb.checked=!!ticks[id];
+      cb.onchange=()=>{ ticks[id]=cb.checked; if(!cb.checked) delete ticks[id]; save(); update(); };
+      const lab=document.createElement("label"); lab.htmlFor=id;
+      lab.innerHTML=`<div class="name">${it[0]}</div><div class="note">${it[1]}</div><span class="when ${it[2]}">${WHEN[it[2]]}</span>${it[3]&&it[3]!=="—"?`<div class="brand">${it[3]}</div>`:""}${linkWhere(it)}${DESC[it[0]]?`<button class="why" type="button">What's this?</button><div class="desc">${DESC[it[0]]}</div>`:""}`;
+      const why=lab.querySelector(".why"); if(why){ why.onclick=e=>{e.preventDefault(); const d=lab.querySelector(".desc"); const open=d.classList.toggle("show"); why.textContent=open?"Hide":"What's this?";}; }
+      li.dataset.when=it[2]; li.append(cb,lab); ul.appendChild(li);
+    });
+    s.append(btn,ul); main.appendChild(s);
+  });
+  update();
+}
+function update(){
+  let total=0,done=0;
+  document.querySelectorAll("section").forEach(s=>{
+    let st=0,sd=0;
+    s.querySelectorAll("li").forEach(li=>{
+      const cb=li.querySelector("input"); const isDone=cb.checked;
+      li.classList.toggle("done",isDone);
+      const show=filter==="all"||(filter==="todo"?!isDone:li.dataset.when===filter);
+      li.classList.toggle("hide",!show);
+      if(show){st++; if(isDone) sd++;}
+    });
+    s.style.display=st?"":"none";
+    s.querySelector(".n").textContent=`${sd}/${st}`;
+    s.dataset.done=(st&&sd===st)?"1":"0";
+    total+=st; done+=sd;
+  });
+  document.getElementById("total").textContent=total;
+  document.getElementById("done").textContent=done;
+  const p=total?Math.round(done/total*100):0;
+  document.getElementById("pct").textContent=p+"%";
+  document.getElementById("fill").style.width=p+"%";
+}
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+  filter=c.dataset.f;
+  document.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===c));
+  update();
+});
+document.getElementById("reset").onclick=()=>{
+  if(confirm("Clear every tick for everyone on this list?")){ ticks={}; save(); document.querySelectorAll("input[type=checkbox]").forEach(c=>c.checked=false); update(); }
+};
+
+/* ---------- nursery planner ---------- */
+const VIBES=["Calm & minimal","Playful","Modern","Boho","Woodland","Mountain / Colorado","Coastal","Vintage","Scandinavian","Earthy & warm","Celestial","Botanical"];
+const LIGHT=["Bright, lots of sun","Average","Dim / north-facing"];
+const FURN=["White","Natural wood","Walnut / dark wood","Black","Not sure"];
+function chips(id,list,multi,max){
+  const el=document.getElementById(id);
+  list.forEach(v=>{ const b=document.createElement("button"); b.className="opt"; b.type="button"; b.textContent=v; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ if(multi){ const on=b.getAttribute("aria-pressed")==="true"; const n=[...el.querySelectorAll('[aria-pressed=true]')].length; if(!on&&n>=max) return; b.setAttribute("aria-pressed",!on); } else { el.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed",x===b)); } };
+    el.appendChild(b); });
+}
+chips("vibes",VIBES,true,3); chips("light",LIGHT,false); chips("furn",FURN,false);
+const picked=id=>[...document.querySelectorAll(`#${id} [aria-pressed=true]`)].map(b=>b.textContent);
+
+function roomSVG(pal){
+  const c=r=>(pal.find(p=>p.role===r)||{}).hex||"#ddd";
+  const wall=c("wall"),accent=c("accent"),tex=c("textile"),trim=c("trim"),pop=c("pop");
+  return `<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nursery preview">
+  <rect width="700" height="380" fill="${wall}"/>
+  <rect x="0" y="0" width="700" height="240" fill="${wall}"/>
+  <path d="M0 240 L700 240 L700 380 L0 380Z" fill="#E9E2D8"/>
+  <path d="M0 240 L700 240" stroke="${trim}" stroke-width="10"/>
+  <rect x="0" y="0" width="260" height="240" fill="${accent}" opacity="0.95"/>
+  <!-- window -->
+  <rect x="420" y="40" width="170" height="140" rx="6" fill="#DCEBF5" stroke="${trim}" stroke-width="8"/>
+  <line x1="505" y1="44" x2="505" y2="176" stroke="${trim}" stroke-width="6"/>
+  <rect x="396" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/><rect x="590" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/>
+  <!-- rug -->
+  <ellipse cx="350" cy="330" rx="190" ry="34" fill="${tex}" opacity="0.85"/>
+  <!-- crib -->
+  <rect x="70" y="150" width="200" height="120" rx="8" fill="${trim}"/>
+  <rect x="80" y="160" width="180" height="100" fill="${wall}" opacity="0.35"/>
+  ${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${88+i*22}" y="160" width="6" height="100" fill="${trim}"/>`).join("")}
+  <rect x="80" y="238" width="180" height="26" fill="${pop}" opacity="0.9"/>
+  <!-- mobile -->
+  <line x1="170" y1="60" x2="170" y2="110" stroke="${trim}" stroke-width="3"/><line x1="130" y1="110" x2="210" y2="110" stroke="${trim}" stroke-width="3"/>
+  <circle cx="135" cy="128" r="9" fill="${pop}"/><circle cx="170" cy="134" r="9" fill="${tex}"/><circle cx="205" cy="128" r="9" fill="${accent}"/>
+  <!-- dresser -->
+  <rect x="470" y="200" width="160" height="70" rx="6" fill="${trim}"/><rect x="480" y="210" width="65" height="22" rx="3" fill="${wall}" opacity="0.5"/><rect x="555" y="210" width="65" height="22" rx="3" fill="${wall}" opacity="0.5"/>
+  <!-- plant -->
+  <rect x="640" y="230" width="34" height="40" rx="6" fill="${pop}"/><path d="M657 230 C640 200 650 180 657 175 C664 180 674 200 657 230Z" fill="${accent}"/><path d="M657 230 C630 215 625 195 632 188 C645 190 655 210 657 230Z" fill="${accent}"/>
+  <!-- art -->
+  <rect x="300" y="70" width="80" height="60" rx="4" fill="${tex}"/><circle cx="340" cy="100" r="16" fill="${pop}"/>
+  <!-- lamp -->
+  <rect x="340" y="200" width="60" height="70" rx="20" fill="${tex}" opacity="0.6"/>
+</svg>`;
+}
+function themeCard(t,i){
+  const div=document.createElement("div"); div.className="theme";
+  const isFav=favorites.some(f=>f.name===t.name);
+  div.innerHTML=roomSVG(t.palette)+`<div class="body">
+    <h3>${t.name}</h3><div class="vibe">${t.vibe}</div>
+    <div class="sw">${t.palette.map(p=>`<div style="background:${p.hex}" title="${p.name} ${p.hex}"><span>${p.role}</span></div>`).join("")}</div>
+    <div class="kv"><b>Colors:</b> ${t.palette.map(p=>`${p.name} <code>${p.hex}</code>`).join(" · ")}</div>
+    <div class="kv"><b>Paint matches:</b> ${(t.paint||[]).join(" · ")} <span style="color:var(--muted)">(grab a sample chip to confirm)</span></div>
+    <div class="kv"><b>Furniture:</b> ${t.furniture||""}</div>
+    <div class="kv"><b>Accents</b></div><ul>${(t.accents||[]).map(a=>`<li>${a}</li>`).join("")}</ul>
+    <div class="acts">
+      <a target="_blank" rel="noopener" href="https://www.pinterest.com/search/pins/?q=${encodeURIComponent((t.search||t.name)+" nursery")}">Pinterest</a>
+      <a target="_blank" rel="noopener" href="https://www.houzz.com/photos/query/${encodeURIComponent((t.search||t.name)+" nursery")}">Houzz</a>
+      <a target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent((t.search||t.name)+" nursery")}">Image search</a>
+      <button class="fav" aria-pressed="${isFav}">${isFav?"Saved":"Save theme"}</button>
+    </div></div>`;
+  div.querySelector(".fav").onclick=e=>{
+    const b=e.currentTarget; const on=b.getAttribute("aria-pressed")==="true";
+    if(on) favorites=favorites.filter(f=>f.name!==t.name); else favorites=[...favorites,t].slice(-20);
+    b.setAttribute("aria-pressed",!on); b.textContent=on?"Save theme":"Saved"; save(); renderFavs();
+  };
+  return div;
+}
+function renderFavs(){
+  const card=document.getElementById("favcard"), box=document.getElementById("favs");
+  box.innerHTML=""; card.style.display=favorites.length?"":"none";
+  favorites.forEach(t=>box.appendChild(themeCard(t)));
+}
+document.getElementById("gen").onclick=async()=>{
+  const btn=document.getElementById("gen"), out=document.getElementById("themes"), err=document.getElementById("nerr");
+  err.innerHTML=""; btn.disabled=true; btn.textContent="Designing…";
+  try{
+    const r=await fetch("/api/nursery",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({vibes:picked("vibes"),light:picked("light")[0]||"",furniture:picked("furn")[0]||"",notes:document.getElementById("notes").value})});
+    const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||"Request failed");
+    out.innerHTML=""; d.themes.forEach((t,i)=>out.appendChild(themeCard(t,i)));
+    out.scrollIntoView({behavior:"smooth"});
+  }catch(e){ err.innerHTML=`<div class="err">${e.message}</div>`; }
+  btn.disabled=false; btn.textContent="Design 4 themes";
+};
+
+load().then(()=>{ render(); renderFavs(); });
+</script>
+</body>
+</html>
