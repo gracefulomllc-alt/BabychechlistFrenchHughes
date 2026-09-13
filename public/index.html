@@ -380,10 +380,10 @@
 </header>
 
 <div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button></div>
-<div class="whobar">This phone is: <button class="who" data-who="leslie" type="button"><img src="/badge.png" alt="">Leslie</button><button class="who" data-who="anthony" type="button"><img src="/ball.svg" alt="">Anthony</button><button class="who" data-who="" type="button">Ask each time</button></div>
+<div class="whobar">This phone is: <button class="who" data-who="leslie" type="button"><img src="/badge.png" alt="">Leslie</button><button class="who" data-who="anthony" type="button"><img src="/ball.svg" alt="">Terel</button><button class="who" data-who="" type="button">Ask each time</button></div>
 <div class="whopop" id="whopop"><div class="whocard"><div class="wq">Who took care of this?</div><div class="whoopts">
   <button type="button" data-who="leslie"><img src="/badge.png" alt="">Leslie</button>
-  <button type="button" data-who="anthony"><img src="/ball.svg" alt="">Anthony</button>
+  <button type="button" data-who="anthony"><img src="/ball.svg" alt="">Terel</button>
   <button type="button" data-who="both"><span class="pair"><img src="/badge.png" alt=""><img src="/ball.svg" alt=""></span>Both</button>
   <button type="button" data-who="other"><span class="giftav">🎁</span>Someone else</button>
 </div>
@@ -425,7 +425,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v22 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v24 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -847,7 +847,7 @@ document.getElementById("icsBtn").onclick=ics;
 function priceOf(row){ const o=(S.meta.prices||{})[row.id]; if(o!=null) return o; const d=(window.PRICES||{})[row.name]; return d==null?null:d; }
 document.getElementById("priceTog").onclick=()=>{ const on=!document.body.classList.toggle("prices"); document.getElementById("priceTog").setAttribute("aria-pressed",!on); document.getElementById("priceTog").textContent=on?"Show prices":"Hide prices"; document.getElementById("budget").style.display=on?"none":""; update(); };
 /* ================= who did it ================= */
-const AV={leslie:'<img src="/badge.png" alt="Leslie" title="Leslie">',anthony:'<img src="/ball.svg" alt="Anthony" title="Anthony">',both:'<img src="/badge.png" alt="Leslie" title="Leslie & Anthony"><img src="/ball.svg" alt="Anthony" title="Leslie & Anthony">'};
+const AV={leslie:'<img src="/badge.png" alt="Leslie" title="Leslie">',anthony:'<img src="/ball.svg" alt="Terel" title="Terel">',both:'<img src="/badge.png" alt="Leslie" title="Leslie & Terel"><img src="/ball.svg" alt="Terel" title="Leslie & Terel">'};
 function whoAmI(){ return localStorage.getItem("bp-who")||""; }
 function setWho(w){ localStorage.setItem("bp-who",w); document.querySelectorAll(".whobar .who").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===w)); }
 document.querySelectorAll(".whobar .who").forEach(b=>b.onclick=()=>{ setWho(b.dataset.who); toast(b.dataset.who?`Ticks from this phone will be marked as ${b.textContent.trim()}`:"You'll be asked on each tick"); });
