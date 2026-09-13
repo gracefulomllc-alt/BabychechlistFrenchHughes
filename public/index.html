@@ -357,6 +357,8 @@
   .bagcat ul{list-style:none;margin:0;padding:6px 8px}
   .bagcat li{padding:8px 6px;border-top:1px dotted #B9C4B8;display:flex;gap:10px;align-items:flex-start}
   .bagcat li:first-child{border-top:0}
+
+  .bumpempty{margin-top:8px;padding:16px;text-align:center;border:1px dashed #9AA89A;border-radius:8px;color:var(--muted);font-size:13.5px;background:#F5F7F4}
 </style>
 </head>
 <body>
@@ -370,12 +372,12 @@
     <option value="list">☑ Checklist</option><option value="nursery">🎨 Nursery</option><option value="week">📅 This Week</option><option value="tools">⏱ Tools</option><option value="after">🍼 After Baby</option><option value="gifts">🎁 Gifts</option>
   </select></div>
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" data-tab="list" aria-selected="true">Checklist</button>
-    <button class="tab" role="tab" data-tab="nursery" aria-selected="false">Nursery</button>
-    <button class="tab" role="tab" data-tab="week" aria-selected="false">This Week</button>
-    <button class="tab" role="tab" data-tab="tools" aria-selected="false">Tools</button>
-    <button class="tab" role="tab" data-tab="after" aria-selected="false">After Baby</button>
-    <button class="tab" role="tab" data-tab="gifts" aria-selected="false">Gifts</button>
+    <button class="tab" role="tab" data-tab="list" aria-selected="true">☑ Checklist</button>
+    <button class="tab" role="tab" data-tab="nursery" aria-selected="false">🎨 Nursery</button>
+    <button class="tab" role="tab" data-tab="week" aria-selected="false">📅 This Week</button>
+    <button class="tab" role="tab" data-tab="tools" aria-selected="false">⏱ Tools</button>
+    <button class="tab" role="tab" data-tab="after" aria-selected="false">🍼 After Baby</button>
+    <button class="tab" role="tab" data-tab="gifts" aria-selected="false">🎁 Gifts</button>
   </div>
 </header>
 
@@ -425,7 +427,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v24 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v25 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -484,8 +486,10 @@
       <div class="bump">
         <div class="wkq">📸 Bump photo</div>
         <img id="bumpImg" alt="" style="display:none">
+        <div id="bumpEmpty" class="bumpempty">No photo saved for this week yet.</div>
         <div class="acts" style="margin-top:8px">
-          <label class="opt" style="cursor:pointer">Add this week's photo<input id="bumpFile" type="file" accept="image/*" style="display:none"></label>
+          <label class="opt" style="cursor:pointer">📷 Take a photo<input id="bumpCam" type="file" accept="image/*" capture="environment" style="display:none"></label>
+          <label class="opt" style="cursor:pointer">Choose from library<input id="bumpFile" type="file" accept="image/*" style="display:none"></label>
           <button class="opt" id="bumpDel" type="button" style="display:none">Remove</button>
         </div>
         <div class="bumpstrip" id="bumpStrip"></div>
@@ -516,12 +520,13 @@
       <div class="wkq" style="margin-top:12px">Time to 10 kicks, by day</div>
       <div id="kkChart" class="kkchart"></div>
       <div class="log" id="kkLog"></div>
-      <div class="acts" style="margin-top:10px"><button id="kkExport" type="button">Copy report for provider</button></div>
+      <div class="acts" style="margin-top:10px"><button id="kkExport" type="button">Copy report for provider</button><button id="kkClearToday" type="button">Clear today's sessions</button></div>
     </div>
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
       <p class="sub" style="margin:0 0 6px">Shared shortlist. Add a name, tap it to edit, swipe left to remove, ♥ to vote. Two hearts means you both like it.</p>
       <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
+      <div class="acts" style="margin-top:10px"><button class="opt" id="nmSort" type="button" data-mode="top">Sort: Top rated</button><button class="opt" id="nmBoth" type="button" aria-pressed="false">💚💛 Both hearts only</button></div>
       <div class="names" id="names"></div>
     </div>
   </div>
@@ -1216,6 +1221,7 @@ function kkRender(){ const b=document.getElementById("kkBtn"); b.textContent=kk.
   if(kk.on&&Date.now()-kk.start>7200000&&kk.count<10) al.innerHTML='<div class="alert go">Fewer than 10 in 2 hours — call your provider.</div>';
   else if(last&&avg&&last.ms>avg*2&&last.ms>1200000&&Date.now()-last.at<86400000) al.innerHTML='<div class="alert go">Last session was much slower than her usual. A change from her normal pattern is worth a call to the provider.</div>';
   else al.innerHTML=""; }
+document.getElementById("kkClearToday").onclick=()=>{ const today=new Date().toDateString(); const has=(S.meta.kicks||[]).some(h=>new Date(h.at).toDateString()===today); if(!has) return; if(!confirm("Clear all of today's kick-count sessions?")) return; const removed=(S.meta.kicks||[]).filter(h=>new Date(h.at).toDateString()===today); S.meta.kicks=(S.meta.kicks||[]).filter(h=>new Date(h.at).toDateString()!==today); patch({meta:{kicks:S.meta.kicks}}); kkRender(); toast("Today's sessions cleared",()=>{ S.meta.kicks=(S.meta.kicks||[]).concat(removed); patch({meta:{kicks:S.meta.kicks}}); kkRender(); }); };
 document.getElementById("kkExport").onclick=async()=>{ const hist=(S.meta.kicks||[]).slice().sort((a,b)=>a.at-b.at); const avg=hist.length?hist.reduce((x,h)=>x+h.ms,0)/hist.length:0;
   const txt=`Kick count log — Leslie\nDue ${S.meta.due||"?"} · ${hist.length} sessions · average ${mmss(avg)} to 10 kicks\n\n`+hist.map(h=>`${new Date(h.at).toLocaleDateString()} ${new Date(h.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}: 10 kicks in ${mmss(h.ms)}`).join("\n");
   try{ await navigator.clipboard.writeText(txt); toast("Report copied — paste it into a text or email"); }catch{ prompt("Copy this:",txt); } };
@@ -1224,8 +1230,13 @@ document.getElementById("kkBtn").onclick=()=>{ buzz(15); if(!kk.on){ kk={on:true
 
 /* ================= tools: names ================= */
 const DEV=(()=>{ let d=localStorage.getItem("bp-dev"); if(!d){ d=Math.random().toString(36).slice(2,8); localStorage.setItem("bp-dev",d);} return d; })();
+let nmSortMode="top", nmBothOnly=false;
 function namesRender(){ const list=S.meta.names||[]; const box=document.getElementById("names"); box.innerHTML="";
-  list.slice().sort((a,b)=>(b.v||[]).length-(a.v||[]).length).forEach(n=>{ const d=document.createElement("div"); d.className="nm"; const mine=(n.v||[]).includes(DEV);
+  let rows=list.slice();
+  if(nmBothOnly) rows=rows.filter(n=>(n.v||[]).length>=2);
+  rows.sort(nmSortMode==="az"?(a,b)=>a.n.localeCompare(b.n):(a,b)=>(b.v||[]).length-(a.v||[]).length);
+  if(!rows.length) box.innerHTML='<p class="sub" style="padding:8px 0">'+(nmBothOnly?"No names with two hearts yet.":"No names yet — add one above.")+'</p>';
+  rows.forEach(n=>{ const d=document.createElement("div"); d.className="nm"; const mine=(n.v||[]).includes(DEV);
     d.innerHTML=`<span class="n" title="Tap to edit">${n.n}</span><span class="by">${(n.v||[]).length} ♥</span><button class="${mine?"on":""}" type="button">♥</button>`;
     d.querySelector(".n").onclick=()=>{ const sp=d.querySelector(".n"); if(sp.querySelector("input")) return; const inp=document.createElement("input"); inp.value=n.n; inp.maxLength=40; inp.style.cssText="font:inherit;width:100%;border:1px solid #8E8A45;border-radius:6px;padding:4px 8px"; sp.textContent=""; sp.appendChild(inp); inp.focus(); inp.select();
       const done=ok=>{ const v=inp.value.trim(); if(ok&&v&&v!==n.n){ n.n=v; S.meta.names=list; patch({meta:{names:list}}); toast("Name updated"); } namesRender(); };
@@ -1235,6 +1246,8 @@ function namesRender(){ const list=S.meta.names||[]; const box=document.getEleme
     box.appendChild(d); }); }
 document.getElementById("nmAdd").onclick=()=>{ const i=document.getElementById("nmIn"); const v=i.value.trim(); if(!v) return; const list=S.meta.names||[]; if(list.some(x=>x.n.toLowerCase()===v.toLowerCase())){ toast("Already on the list"); return; } list.push({n:v,v:[DEV]}); S.meta.names=list.slice(-100); patch({meta:{names:S.meta.names}}); i.value=""; namesRender(); };
 document.getElementById("nmIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("nmAdd").click(); };
+document.getElementById("nmSort").onclick=e=>{ nmSortMode=nmSortMode==="top"?"az":"top"; e.currentTarget.textContent="Sort: "+(nmSortMode==="top"?"Top rated":"A–Z"); namesRender(); };
+document.getElementById("nmBoth").onclick=e=>{ nmBothOnly=!nmBothOnly; e.currentTarget.setAttribute("aria-pressed",nmBothOnly); namesRender(); };
 
 
 /* ================= feeding & diapers ================= */
@@ -1300,9 +1313,10 @@ async function bumpList(){ try{ const r=await fetch(`/api/bump?h=${H}`); const d
 async function bumpRender(){
   const w=wkSel, img=document.getElementById("bumpImg"), del=document.getElementById("bumpDel"), strip=document.getElementById("bumpStrip");
   strip.innerHTML=""; BUMPS.forEach(b=>{ const t=document.createElement("img"); fetch(`/api/bump?h=${H}&w=${b}`).then(r=>r.json()).then(d=>{ t.src=d.image||""; }).catch(()=>{}); t.alt=`Week ${b}`; t.title=`Week ${b}`; if(b===w) t.classList.add("cur"); t.onclick=()=>showWeek(b); strip.appendChild(t); });
-  if(BUMPS.includes(w)){ img.style.display=""; del.style.display=""; try{ const r=await fetch(`/api/bump?h=${H}&w=${w}`); const d=await r.json(); img.src=d.image||""; }catch{} } else { img.style.display="none"; del.style.display="none"; }
+  const empty=document.getElementById("bumpEmpty");
+  if(BUMPS.includes(w)){ img.style.display=""; del.style.display=""; empty.style.display="none"; try{ const r=await fetch(`/api/bump?h=${H}&w=${w}`); const d=await r.json(); img.src=d.image||""; }catch{} } else { img.style.display="none"; del.style.display="none"; empty.style.display=""; }
 }
-document.getElementById("bumpFile").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const data=await shrink(f); const r=await fetch(`/api/bump?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({w:wkSel,image:data})}); if(!r.ok) throw 0; if(!BUMPS.includes(wkSel)) BUMPS.push(wkSel), BUMPS.sort((a,b)=>a-b); toast(`Week ${wkSel} photo saved`); bumpRender(); }catch{ toast("Couldn't save photo"); } e.target.value=""; };
+document.getElementById("bumpCam").onchange=document.getElementById("bumpFile").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const data=await shrink(f); const r=await fetch(`/api/bump?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({w:wkSel,image:data})}); if(!r.ok) throw 0; if(!BUMPS.includes(wkSel)) BUMPS.push(wkSel), BUMPS.sort((a,b)=>a-b); toast(`Week ${wkSel} photo saved`); bumpRender(); }catch{ toast("Couldn't save photo"); } e.target.value=""; };
 document.getElementById("bumpDel").onclick=async()=>{ if(!confirm(`Remove week ${wkSel} photo?`)) return; await fetch(`/api/bump?h=${H}&w=${wkSel}`,{method:"DELETE"}).catch(()=>{}); BUMPS=BUMPS.filter(b=>b!==wkSel); bumpRender(); };
 
 document.getElementById("partyBtn").onclick=()=>window.party&&window.party();

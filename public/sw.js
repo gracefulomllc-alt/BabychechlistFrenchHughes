@@ -1,5 +1,5 @@
 // Minimal service worker: caches the shell so the app opens offline; API calls always go to the network.
-const C="baby-prep-v24";
+const C="baby-prep-v25";
 self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(["/","/ball.svg","/party.js","/ram.svg","/weeks.js","/after.js","/prices.js","/manifest.json","/icon-192.png"])));self.skipWaiting();});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));});
 self.addEventListener("fetch",e=>{
