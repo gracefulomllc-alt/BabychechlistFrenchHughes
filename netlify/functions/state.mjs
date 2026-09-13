@@ -23,9 +23,10 @@ export default async (req) => {
     const p = body.patch || {};
     if (p.ticks) for (const [id, t] of Object.entries(p.ticks)) {
       const cur = doc.ticks[id];
-      if (!cur || (t.t || 0) >= (cur.t || 0)) doc.ticks[id] = { v: !!t.v, t: t.t || Date.now() };
+      if (!cur || (t.t || 0) >= (cur.t || 0)) doc.ticks[id] = { v: !!t.v, t: t.t || Date.now(), by: ["leslie", "anthony", "both", "other"].includes(t.by) ? t.by : undefined, byName: t.byName ? String(t.byName).slice(0, 40) : undefined };
     }
     if (p.notes) for (const [id, n] of Object.entries(p.notes)) { if (n) doc.notes[id] = String(n).slice(0, 500); else delete doc.notes[id]; }
+    if (p.sources) for (const [id, v] of Object.entries(p.sources)) { if (v && v.from) doc.sources[id] = { type: String(v.type || "gift").slice(0, 20), from: String(v.from).slice(0, 60) }; else delete doc.sources[id]; }
     if (p.hidden) for (const [id, v] of Object.entries(p.hidden)) { if (v) doc.hidden[id] = true; else delete doc.hidden[id]; }
     if (p.customAdd) for (const c of p.customAdd) {
       if (!c.id || !c.name) continue;

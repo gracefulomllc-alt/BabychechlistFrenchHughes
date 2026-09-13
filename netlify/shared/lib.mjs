@@ -16,7 +16,7 @@ export async function takeQuota(h, kind, perHouse, globalCap) {
   return { ok: true, used: hc + 1, left: perHouse - hc - 1 };
 }
 
-export function emptyDoc() { return { ticks: {}, notes: {}, hidden: {}, custom: [], meta: {}, favorites: [], updated: 0 }; }
+export function emptyDoc() { return { ticks: {}, notes: {}, hidden: {}, custom: [], sources: {}, meta: {}, favorites: [], updated: 0 }; }
 
 // Upgrade old {id:true} ticks to {id:{v:true,t:ts}}
 export function normalize(doc) {

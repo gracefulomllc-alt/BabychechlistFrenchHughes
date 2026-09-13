@@ -61,7 +61,7 @@
   section[open] ul{display:block}
   li{display:flex;gap:12px;align-items:flex-start;padding:12px 10px;border-top:1px solid var(--line)}
   li.hide{display:none}
-  li label{flex:1;cursor:pointer}
+  li label,li .itembody{flex:1;min-width:0}
   .name{font-weight:600;font-size:16px}
   .note{color:var(--muted);font-size:14px;margin-top:2px}
   .brand{margin-top:6px;font-size:13.5px;font-weight:600;color:#2C5677}
@@ -162,7 +162,7 @@
   header{overflow:hidden}
   header::after{content:"";display:block;height:6px;background:repeating-linear-gradient(90deg,var(--gold) 0 14px,#1E4D2B 14px 18px);margin:0 -20px}
   html,body{overflow-x:hidden;max-width:100%}
-  .swp>.swi{min-width:0} .swp>.swi>label{min-width:0} .name{overflow-wrap:anywhere}
+  .swp>.swi{min-width:0} .swp>.swi>.itembody{min-width:0} .name{overflow-wrap:anywhere}
   .cele{justify-content:center;font-size:14px;text-shadow:0 1px 0 rgba(0,0,0,.6);letter-spacing:.14em}
   h1{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:32px;letter-spacing:0;text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 12px rgba(255,255,255,.25)}
   header .sub{text-shadow:0 1px 0 rgba(0,0,0,.5)}
@@ -315,12 +315,48 @@
   body.compact li:not(.open) .note,body.compact li:not(.open) .brand,body.compact li:not(.open) .where,body.compact li:not(.open) .tools,body.compact li:not(.open) .desc,body.compact li:not(.open) .notebox{display:none}
   body.compact li:not(.open) .notepreview{display:none}
   body.compact li{padding:9px 10px}
-  body.compact .name{cursor:pointer}
+  body.compact .name{cursor:pointer} #hiddenBox .name::after{content:""!important}
   body.compact .name::after{content:" ▾";color:var(--muted);font-size:12px}
   body.compact li.open .name::after{content:" ▴"}
   body.compact li .when{margin-top:3px}
   body.compact li.hasnote:not(.open) .name::before{content:"📝 ";font-size:12px}
   @media(max-width:640px){ body.compact section:not([open])>button{border-radius:10px} }
+
+  .whobar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 16px 0;font-size:13px;color:var(--muted)}
+  .who{display:inline-flex;align-items:center;gap:6px;border:1px solid #8E8A45;border-radius:999px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:5px 10px 5px 5px;font:700 13px/1 inherit;font-family:inherit;color:var(--ink);cursor:pointer}
+  .who img{width:22px;height:22px;border-radius:50%}
+  .who[aria-pressed=true]{background:linear-gradient(180deg,#5AA36F,#1E4D2B);color:#fff;border-color:#143A1F}
+  .whopop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+  .whopop.show{display:flex}
+  .whocard{background:var(--paper);border:1px solid #9AA89A;border-radius:14px;padding:18px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.4);text-align:center}
+  .wq{font-family:Georgia,serif;font-size:20px;color:var(--ink);margin-bottom:14px}
+  .whoopts{display:flex;gap:10px}
+  .whoopts button{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid #8E8A45;border-radius:12px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:12px 6px;font:800 14px/1 inherit;font-family:inherit;color:var(--ink);cursor:pointer;box-shadow:inset 0 1px 0 #fff,0 2px 3px rgba(0,0,0,.25)}
+  .whoopts img{width:56px;height:56px;border-radius:50%}
+  .whoopts .pair{display:flex} .whoopts .pair img{width:40px;height:40px;margin:0 -6px}
+  .byav{display:inline-flex;align-items:center;vertical-align:middle;margin-left:8px;cursor:pointer}
+  .byav img{width:22px;height:22px;border-radius:50%;border:1.5px solid #C8C372;box-shadow:0 1px 2px rgba(0,0,0,.3);background:#fff}
+  .byav img+img{margin-left:-8px}
+  body.compact li:not(.open) .byav{display:inline-flex}
+
+  .whoopts .giftav{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#FBF6DE,#EFE6B8);border:1px solid #B9AF63;display:flex;align-items:center;justify-content:center;font-size:30px}
+  .whoother{display:none;margin-top:12px;text-align:left}
+  .whoother.show{display:block}
+  .whoother input,.whoother select{width:100%;margin-top:8px;border:1px solid #8E8A45;border-radius:6px;padding:10px 12px;font:15px/1.2 inherit;font-family:inherit;background:#fff}
+  .byav .init{width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#FBF6DE,#EFE6B8);border:1.5px solid #B9AF63;font:800 11px/22px inherit;text-align:center;color:#5B4A12}
+  .gf{display:block!important}
+  .gf .swi{display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:8px 10px}
+  .gf .gfhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .gf .gfitem{font-family:Georgia,serif;font-size:16px;color:var(--ink)}
+  .gf .gffrom{color:var(--muted);font-size:13px}
+  .gf .thank{border:1px solid #8E8A45;border-radius:999px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:6px 10px;font:700 12px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink);white-space:nowrap}
+  .gf .thank[aria-pressed=true]{background:linear-gradient(180deg,#5AA36F,#1E4D2B);color:#fff;border-color:#143A1F}
+
+  .bagcat{background:var(--paper);border:1px solid #9AA89A;border-radius:10px;margin:10px 16px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,.15)}
+  .bagcat h4{margin:0;padding:10px 14px;font-family:Georgia,serif;font-size:16px;background:linear-gradient(180deg,#F7F9F5,#E6EBE3);border-bottom:1px solid #C9D3C8;display:flex;justify-content:space-between}
+  .bagcat ul{list-style:none;margin:0;padding:6px 8px}
+  .bagcat li{padding:8px 6px;border-top:1px dotted #B9C4B8;display:flex;gap:10px;align-items:flex-start}
+  .bagcat li:first-child{border-top:0}
 </style>
 </head>
 <body>
@@ -331,7 +367,7 @@
   <div class="cd"><div><b id="cdD">–</b><span>days</span></div><div><b id="cdH">–</b><span>hours</span></div><div><b id="cdM">–</b><span>minutes</span></div><div><b id="cdS">–</b><span>seconds</span></div></div>
   <div class="cd-note" id="cdNote"></div>
   <div class="tabsel-wrap"><select id="tabsel" aria-label="Go to section">
-    <option value="list">☑ Checklist</option><option value="nursery">🎨 Nursery</option><option value="week">📅 This Week</option><option value="tools">⏱ Tools</option><option value="after">🍼 After Baby</option>
+    <option value="list">☑ Checklist</option><option value="nursery">🎨 Nursery</option><option value="week">📅 This Week</option><option value="tools">⏱ Tools</option><option value="after">🍼 After Baby</option><option value="gifts">🎁 Gifts</option>
   </select></div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="list" aria-selected="true">Checklist</button>
@@ -339,10 +375,20 @@
     <button class="tab" role="tab" data-tab="week" aria-selected="false">This Week</button>
     <button class="tab" role="tab" data-tab="tools" aria-selected="false">Tools</button>
     <button class="tab" role="tab" data-tab="after" aria-selected="false">After Baby</button>
+    <button class="tab" role="tab" data-tab="gifts" aria-selected="false">Gifts</button>
   </div>
 </header>
 
 <div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button></div>
+<div class="whobar">This phone is: <button class="who" data-who="leslie" type="button"><img src="/badge.png" alt="">Leslie</button><button class="who" data-who="anthony" type="button"><img src="/ball.svg" alt="">Anthony</button><button class="who" data-who="" type="button">Ask each time</button></div>
+<div class="whopop" id="whopop"><div class="whocard"><div class="wq">Who took care of this?</div><div class="whoopts">
+  <button type="button" data-who="leslie"><img src="/badge.png" alt="">Leslie</button>
+  <button type="button" data-who="anthony"><img src="/ball.svg" alt="">Anthony</button>
+  <button type="button" data-who="both"><span class="pair"><img src="/badge.png" alt=""><img src="/ball.svg" alt=""></span>Both</button>
+  <button type="button" data-who="other"><span class="giftav">🎁</span>Someone else</button>
+</div>
+<div class="whoother" id="whoother"><input id="woName" placeholder="Their name" maxlength="40" list="gfNames"><select id="woRel"><option value="">Relation…</option><option>Mom</option><option>Dad</option><option>Sister</option><option>Brother</option><option>Grandparent</option><option>Aunt / Uncle</option><option>Cousin</option><option>Friend</option><option>Coworker</option><option>Neighbor</option><option>Other</option></select><select id="woKind"><option value="gift">Gift</option><option value="handmedown">Hand-me-down</option><option value="borrowed">Borrowed</option></select><button class="go" type="button" id="woSave" style="margin-top:8px">Save &amp; log the gift</button></div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <div id="pane-list" class="pane active">
@@ -367,17 +413,19 @@
       <button class="chip" data-f="m3" aria-pressed="false">2–3 months out</button>
       <button class="chip" data-f="m1" aria-pressed="false">Final month</button>
       <button class="chip" data-f="bag" aria-pressed="false">Hospital bag</button>
+      <button class="chip" id="bagToggle" type="button" aria-pressed="false">📋 Packing view</button>
       <button class="chip" data-f="todo" aria-pressed="false">Still to do</button>
       <button class="chip" data-f="late" aria-pressed="false">Behind</button>
     </div>
   </div>
   <div class="allDone" id="allDone"><img src="/ram.svg" alt=""><div>Every item is checked off. Leslie, you're ready for this baby.</div></div>
+  <div id="bagView" style="display:none"></div>
   <main id="main"></main>
   <section id="hiddenBox" style="display:none;margin:12px 16px">
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v18 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v22 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -456,7 +504,7 @@
       <div class="stat"><div><b id="ctCount">0</b><span>this hour</span></div><div><b id="ctLen">–</b><span>avg length</span></div><div><b id="ctGap">–</b><span>avg apart</span></div></div>
       <div id="ctAlert"></div>
       <div class="log" id="ctLog"></div>
-      <div class="acts" style="margin-top:10px"><button id="ctClear" type="button">Clear log</button></div>
+      <div class="acts" style="margin-top:10px"><button id="ctCopy" type="button">Copy summary for triage</button><button id="ctClear" type="button">Clear log</button></div>
     </div>
     <div class="tool">
       <h3 style="margin:0 0 4px">Kick counter</h3>
@@ -479,9 +527,46 @@
   </div>
 </div>
 
+<div id="pane-gifts" class="pane">
+  <div class="nur">
+    <div class="tool">
+      <h3 style="margin:0 0 4px">Gifts &amp; where things came from</h3>
+      <p class="sub" style="margin:0 0 10px">Who gave what, so nothing gets forgotten and every thank-you gets sent.</p>
+      <div class="stat"><div><b id="gfCount">0</b><span>gifts</span></div><div><b id="gfThanks">0</b><span>thank-yous to send</span></div><div><b id="gfPeople">0</b><span>people</span></div></div>
+      <div class="addform show" style="margin-top:6px">
+        <input id="gfItem" placeholder="What (e.g. Stroller, $50 gift card, bag of onesies)" maxlength="80">
+        <input id="gfFrom" placeholder="From (name)" maxlength="40" list="gfNames"><datalist id="gfNames"></datalist>
+        <select id="gfRel"><option value="">Relation…</option><option>Mom</option><option>Dad</option><option>Sister</option><option>Brother</option><option>Grandparent</option><option>Aunt / Uncle</option><option>Cousin</option><option>Friend</option><option>Coworker</option><option>Neighbor</option><option>Other</option></select>
+        <select id="gfKind"><option value="gift">Gift</option><option value="handmedown">Hand-me-down</option><option value="borrowed">Borrowed (return later)</option><option value="bought">We bought it</option><option value="registry">From the registry</option></select>
+        <input id="gfNote" placeholder="Note (optional — shower, mailed, etc.)" maxlength="120">
+        <div class="row"><button class="save" type="button" id="gfAdd">Add</button></div>
+      </div>
+      <div class="acts" style="margin-top:10px"><button class="opt" id="gfFilter" type="button" aria-pressed="false">Show only un-thanked</button><button class="opt" id="gfCopy" type="button">Copy thank-you list</button></div>
+      <div class="log" id="gfLog" style="max-height:none"></div>
+    </div>
+  </div>
+</div>
+
 <div id="pane-after" class="pane">
   <div class="nur">
     <div class="born"><span>Baby's birth date</span><input type="date" id="born"><span class="sub" id="bornNote"></span></div>
+    <div class="tool" id="feedCard">
+      <h3 style="margin:0 0 4px">Feeding &amp; diapers</h3>
+      <p class="sub" style="margin:0 0 12px">Quick taps to log — the first weeks are all about output and intake. General guide, not medical advice: your pediatrician sets the real targets at each visit.</p>
+      <div class="stat"><div><b id="fdWet">0</b><span>wet today</span></div><div><b id="fdDirty">0</b><span>dirty today</span></div><div><b id="fdFeeds">0</b><span>feeds today</span></div><div><b id="fdLast">–</b><span>last feed</span></div></div>
+      <div class="wkq" style="margin-top:10px">Diaper</div>
+      <div class="acts"><button class="opt" id="dWet" type="button">💧 Wet</button><button class="opt" id="dDirty" type="button">💩 Dirty</button><button class="opt" id="dBoth" type="button">💧💩 Both</button></div>
+      <div class="wkq" style="margin-top:14px">Feeding</div>
+      <div class="acts">
+        <button class="opt" id="fL" type="button">🤱 Start — Left</button><button class="opt" id="fR" type="button">🤱 Start — Right</button>
+      </div>
+      <div class="acts" style="margin-top:8px">
+        <button class="opt" id="fB2">Bottle 2oz</button><button class="opt" id="fB3">Bottle 3oz</button><button class="opt" id="fB4">Bottle 4oz</button><button class="opt" id="fBx">Bottle, other</button>
+      </div>
+      <div id="fdActive" class="alert ok" style="display:none;margin-top:10px"></div>
+      <div class="acts" style="margin-top:10px"><button class="opt" id="fdExport" type="button">Copy report for pediatrician</button></div>
+      <div class="log" id="fdLog"></div>
+    </div>
     <div id="afterList"></div>
   </div>
 </div>
@@ -705,7 +790,7 @@ async function flush(){
 }
 setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
-    if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); setSync("Updated from another device"); }
+    if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); setSync("Updated from another device"); }
   }catch{} },8000);
 
 /* ================= tabs ================= */
@@ -761,7 +846,74 @@ document.getElementById("icsBtn").onclick=ics;
 /* ================= prices ================= */
 function priceOf(row){ const o=(S.meta.prices||{})[row.id]; if(o!=null) return o; const d=(window.PRICES||{})[row.name]; return d==null?null:d; }
 document.getElementById("priceTog").onclick=()=>{ const on=!document.body.classList.toggle("prices"); document.getElementById("priceTog").setAttribute("aria-pressed",!on); document.getElementById("priceTog").textContent=on?"Show prices":"Hide prices"; document.getElementById("budget").style.display=on?"none":""; update(); };
+/* ================= who did it ================= */
+const AV={leslie:'<img src="/badge.png" alt="Leslie" title="Leslie">',anthony:'<img src="/ball.svg" alt="Anthony" title="Anthony">',both:'<img src="/badge.png" alt="Leslie" title="Leslie & Anthony"><img src="/ball.svg" alt="Anthony" title="Leslie & Anthony">'};
+function whoAmI(){ return localStorage.getItem("bp-who")||""; }
+function setWho(w){ localStorage.setItem("bp-who",w); document.querySelectorAll(".whobar .who").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===w)); }
+document.querySelectorAll(".whobar .who").forEach(b=>b.onclick=()=>{ setWho(b.dataset.who); toast(b.dataset.who?`Ticks from this phone will be marked as ${b.textContent.trim()}`:"You'll be asked on each tick"); });
+setWho(whoAmI());
+let whoResolve=null;
+function askWho(){ return new Promise(res=>{ whoResolve=res; document.getElementById("whopop").classList.add("show"); }); }
+document.querySelectorAll("#whopop .whoopts button").forEach(b=>b.onclick=()=>{ if(b.dataset.who==="other"){ document.getElementById("whoother").classList.add("show"); document.getElementById("woName").focus(); return; } document.getElementById("whopop").classList.remove("show"); document.getElementById("whoother").classList.remove("show"); const r=whoResolve; whoResolve=null; if(r) r(b.dataset.who); });
+document.getElementById("woSave").onclick=()=>{ const name=document.getElementById("woName").value.trim(); if(!name){ document.getElementById("woName").focus(); return; } const rel=document.getElementById("woRel").value, kind=document.getElementById("woKind").value; document.getElementById("whopop").classList.remove("show"); document.getElementById("whoother").classList.remove("show"); document.getElementById("woName").value=""; const r=whoResolve; whoResolve=null; if(r) r({who:"other",name,rel,kind}); };
+document.getElementById("whopop").onclick=e=>{ if(e.target.id==="whopop"){ e.currentTarget.classList.remove("show"); const r=whoResolve; whoResolve=null; if(r) r(null); } };
+function itemName(id){ let n=""; allSections().forEach(sec=>sec.rows.forEach(r=>{ if(r.id===id) n=r.name; })); if(!n){ const a=(window.AFTER||[]).find(x=>x.id===id); if(a) n=a.name; } return n; }
+function applyWho(id,by){ if(by&&typeof by==="object"){ S.ticks[id]={v:true,t:Date.now(),by:"other",byName:by.name}; addGift({item:itemName(id),from:by.name,rel:by.rel,kind:by.kind,itemId:id}); } else S.ticks[id]={v:true,t:Date.now(),by}; patch({ticks:{[id]:S.ticks[id]}}); }
+async function tickWithWho(id,checked,rerender){
+  if(checked){ const by=whoAmI()||await askWho(); if(by===null){ const cb=document.getElementById(id); if(cb) cb.checked=false; return false; } applyWho(id,by); }
+  else { S.ticks[id]={v:false,t:Date.now()}; patch({ticks:{[id]:S.ticks[id]}}); }
+  rerender(); return true;
+}
+function byAvatar(id){ const t=S.ticks[id]; if(!(t&&t.v&&t.by)) return ""; if(t.by==="other") return `<span class="byav" data-for="${id}" title="${t.byName||"Someone else"} — tap to change"><span class="init">${(t.byName||"?").trim()[0].toUpperCase()}</span></span>`; if(!AV[t.by]) return ""; return `<span class="byav" data-for="${id}" title="Tap to change">${AV[t.by]}</span>`; }
+document.addEventListener("click",async e=>{ const a=e.target.closest(".byav"); if(!a) return; e.preventDefault(); e.stopPropagation(); const id=a.dataset.for; const by=await askWho(); if(!by) return; applyWho(id,by); render(); afterRender(); });
+
+const BAGGROUP=[
+ ["Mom",["clothes for mom","toiletries","nursing bra","nursing pajamas","robe","comfy pajamas","comfortable going-home","phone chargers","snacks and drinks","pillow and blanket","cash"]],
+ ["Partner",["partner's change","pillow and blanket for partner"]],
+ ["Baby",["going-home outfit and a swaddle","car seat installed"]],
+ ["Paperwork & practical",["photo id","insurance card","birth plan","car seat installed in the car","cash and a list"]]
+];
+function bagBucket(name){ const low=name.toLowerCase(); for(const [g,keys] of BAGGROUP) if(keys.some(k=>low.includes(k))) return g; return "Other"; }
+function bagRender(){
+  const box=document.getElementById("bagView"); const on=document.getElementById("bagToggle").getAttribute("aria-pressed")==="true";
+  box.style.display=on?"":"none"; if(!on) return; box.innerHTML="";
+  const rows=[]; allSections().forEach(sec=>sec.rows.forEach(r=>{ if(r.when==="bag"&&!S.hidden[r.id]) rows.push(r); }));
+  const groups={}; rows.forEach(r=>{ const g=bagBucket(r.name); (groups[g]=groups[g]||[]).push(r); });
+  const order=["Mom","Partner","Baby","Paperwork & practical","Other"];
+  order.filter(g=>groups[g]&&groups[g].length).forEach(g=>{
+    const done=groups[g].filter(r=>isTicked(r.id)).length;
+    const d=document.createElement("div"); d.className="bagcat";
+    d.innerHTML=`<h4>${g}<span>${done}/${groups[g].length}</span></h4><ul></ul>`;
+    const ul=d.querySelector("ul");
+    groups[g].forEach(r=>{ const li=document.createElement("li"); const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=isTicked(r.id); cb.onchange=()=>{ buzz(12); tickWithWho(r.id,cb.checked,()=>{ update(); bagRender(); }); }; const sp=document.createElement("span"); sp.textContent=r.name; sp.style.cssText=cb.checked?"text-decoration:line-through;color:var(--muted)":""; li.append(cb,sp); ul.appendChild(li); });
+    box.appendChild(d);
+  });
+  if(!rows.length) box.innerHTML='<p class="sub" style="padding:10px 16px">No hospital-bag items yet.</p>';
+}
+document.getElementById("bagToggle").onclick=e=>{ const on=e.currentTarget.getAttribute("aria-pressed")!=="true"; e.currentTarget.setAttribute("aria-pressed",on); document.getElementById("main").style.display=on?"none":""; bagRender(); };
+/* ================= gifts ================= */
+function gifts(){ return S.meta.gifts||[]; }
+function saveGifts(g){ S.meta.gifts=g.slice(-300); patch({meta:{gifts:S.meta.gifts}}); giftsRender(); }
+function addGift(g){ saveGifts(gifts().concat([{id:"g"+Date.now().toString(36),item:g.item||"",from:g.from||"",rel:g.rel||"",kind:g.kind||"gift",note:g.note||"",itemId:g.itemId||"",at:Date.now(),thanked:g.kind==="bought"||g.kind==="registry"&&false?true:false}])); }
+const KIND={gift:"Gift",handmedown:"Hand-me-down",borrowed:"Borrowed",bought:"We bought",registry:"Registry"};
+let gfOnly=false;
+function giftsRender(){
+  const g=gifts(); const people=[...new Set(g.filter(x=>x.from).map(x=>x.from))];
+  document.getElementById("gfNames").innerHTML=people.map(p=>`<option value="${p.replace(/"/g,"&quot;")}">`).join("");
+  document.getElementById("gfCount").textContent=g.filter(x=>x.kind!=="bought").length; document.getElementById("gfThanks").textContent=g.filter(x=>!x.thanked&&x.kind!=="bought").length; document.getElementById("gfPeople").textContent=people.length;
+  const box=document.getElementById("gfLog"); box.innerHTML="";
+  g.slice().reverse().filter(x=>!gfOnly||(!x.thanked&&x.kind!=="bought")).forEach(x=>{ const d=document.createElement("div"); d.className="gf";
+    d.innerHTML=`<div class="gfhead"><div><div class="gfitem">${x.item||"(unnamed)"}</div><div class="gffrom">${x.kind==="bought"?"We bought it":`${KIND[x.kind]||"Gift"} from <b>${x.from||"?"}</b>${x.rel?` (${x.rel})`:""}`} · ${new Date(x.at).toLocaleDateString([],{month:"short",day:"numeric"})}${x.note?` · ${x.note}`:""}</div></div>${x.kind==="bought"?"":`<button class="thank" type="button" aria-pressed="${!!x.thanked}">${x.thanked?"✓ Thanked":"Thank-you sent?"}</button>`}</div>`;
+    const tb=d.querySelector(".thank"); if(tb) tb.onclick=()=>{ x.thanked=!x.thanked; saveGifts(g); };
+    swipeable(d,"Delete",()=>{ saveGifts(g.filter(y=>y!==x)); toast("Gift removed",()=>saveGifts(gifts().concat([x]))); },`Remove "${x.item}" from ${x.from||"the list"}?`);
+    box.appendChild(d); });
+  if(!box.children.length) box.innerHTML='<div><span>Nothing logged yet.</span><span></span></div>';
+}
+document.getElementById("gfAdd").onclick=()=>{ const item=document.getElementById("gfItem").value.trim(); if(!item){ document.getElementById("gfItem").focus(); return; } addGift({item,from:document.getElementById("gfFrom").value.trim(),rel:document.getElementById("gfRel").value,kind:document.getElementById("gfKind").value,note:document.getElementById("gfNote").value.trim()}); ["gfItem","gfFrom","gfNote"].forEach(i=>document.getElementById(i).value=""); toast("Logged"); };
+document.getElementById("gfFilter").onclick=e=>{ gfOnly=!gfOnly; e.currentTarget.setAttribute("aria-pressed",gfOnly); giftsRender(); };
+document.getElementById("gfCopy").onclick=async()=>{ const g=gifts().filter(x=>!x.thanked&&x.kind!=="bought"); const txt="Thank-you notes to send:\n"+g.map(x=>`• ${x.from||"?"}${x.rel?` (${x.rel})`:""} — ${x.item}`).join("\n"); try{ await navigator.clipboard.writeText(txt); toast("Copied"); }catch{ prompt("Copy:",txt); } };
 /* ================= compact mode ================= */
+document.addEventListener("click",e=>{ const n=e.target.closest(".name"); if(!n) return; if(e.target.closest(".price")||e.target.closest(".byav")) return; const li=n.closest("li"); if(!li||li.closest("#hiddenBox")) return; li.classList.toggle("open"); });
 const openSecs=new Set();
 function setDense(on){ document.body.classList.toggle("compact",on); const b=document.getElementById("denseTog"); b.setAttribute("aria-pressed",on); b.textContent=on?"Compact":"Detailed"; localStorage.setItem("bp-dense",on?"1":"0"); }
 setDense(localStorage.getItem("bp-dense")!=="0");
@@ -778,7 +930,7 @@ function render(){
   const main=document.getElementById("main"); main.innerHTML="";
   const sel=document.getElementById("jumpsel"); sel.innerHTML='<option value="">Category…</option>';
   DATA.forEach(sec=>{ const o=document.createElement("option"); o.value=sec.id; o.textContent=`${sec.em} ${sec.title}`; sel.appendChild(o); });
-  sel.onchange=()=>{ const t=document.getElementById(sel.value); if(t){ t.setAttribute("open",""); t.scrollIntoView({behavior:"smooth",block:"start"}); } sel.value=""; };
+  sel.onchange=()=>{ const t=document.getElementById(sel.value); if(t){ t.setAttribute("open",""); openSecs.add(sel.value); t.scrollIntoView({behavior:"smooth",block:"start"}); } sel.value=""; };
   allSections().forEach(sec=>{
     const s=document.createElement("section"); s.id=sec.id; if(!(innerWidth<=640&&document.body.classList.contains("compact"))||openSecs.has(sec.id)) s.setAttribute("open","");
     const btn=document.createElement("button");
@@ -805,11 +957,11 @@ function itemRow(row){
   const li=document.createElement("li"); li.dataset.when=row.when; li.dataset.id=row.id;
   if(row.custom) li.classList.add("custom");
   const cb=document.createElement("input"); cb.type="checkbox"; cb.id=row.id; cb.checked=isTicked(row.id);
-  cb.onchange=()=>{ S.ticks[row.id]={v:cb.checked,t:Date.now()}; patch({ticks:{[row.id]:S.ticks[row.id]}}); update(); };
-  const lab=document.createElement("label"); lab.htmlFor=row.id;
+  cb.onchange=()=>{ buzz(12); tickWithWho(row.id,cb.checked,()=>{ update(); const nm=lab.querySelector(".name"); const old=nm.querySelector(".byav"); if(old) old.remove(); nm.insertAdjacentHTML("beforeend",byAvatar(row.id)); }); };
+  const lab=document.createElement("div"); lab.className="itembody";
   const it=row.raw;
   const pr=priceOf(row);
-  lab.innerHTML=`<div class="name">${row.name}${pr!=null?`<span class="price" title="Tap to edit estimate">~$${pr}</span>`:""}</div><div class="note">${row.note||""}</div><span class="when ${row.when}">${WHEN[row.when]}</span>`
+  lab.innerHTML=`<div class="name">${row.name}${pr!=null?`<span class="price" title="Tap to edit estimate">~$${pr}</span>`:""}${byAvatar(row.id)}</div><div class="note">${row.note||""}</div><span class="when ${row.when}">${WHEN[row.when]}</span>`
     +(it&&it[3]&&it[3]!=="—"?`<div class="brand">${it[3]}</div>`:"")+(it?linkWhere(it):"")
     +(S.notes[row.id]?`<div class="notepreview">${S.notes[row.id].replace(/</g,"&lt;")}</div>`:"")
     +`<div class="tools">${DESC[row.name]?'<button type="button" class="why">What\'s this?</button>':""}<button type="button" class="noteb ${S.notes[row.id]?"on":""}">Note</button><button type="button" class="hideb">${S.hidden[row.id]?"Unhide":"Doesn't apply"}</button>${row.custom?'<button type="button" class="delb">Delete</button>':""}</div>
@@ -817,7 +969,7 @@ function itemRow(row){
     <div class="notebox"><textarea placeholder="e.g. Ordered 9/14, arrives Oct 2 · Mom is buying this">${S.notes[row.id]||""}</textarea></div>`;
   const stop=e=>{e.preventDefault();e.stopPropagation();};
   if(S.notes[row.id]) li.classList.add("hasnote");
-  lab.querySelector(".name").onclick=e=>{ if(!document.body.classList.contains("compact")) return; stop(e); li.classList.toggle("open"); };
+
   const pe=lab.querySelector(".price"); if(pe) pe.onclick=e=>{stop(e); const v=prompt(`Estimated price for "${row.name}" (blank = default)`, String(pr)); if(v===null) return; const n=v.trim()===""?null:Math.max(0,parseInt(v,10)||0); S.meta.prices=S.meta.prices||{}; if(n===null) delete S.meta.prices[row.id]; else S.meta.prices[row.id]=n; patch({meta:{prices:S.meta.prices}}); render(); };
   const why=lab.querySelector(".why"); if(why) why.onclick=e=>{stop(e); const d=lab.querySelector(".desc"); const on=d.classList.toggle("show"); why.textContent=on?"Hide":"What's this?";};
   lab.querySelector(".noteb").onclick=e=>{stop(e); const b=lab.querySelector(".notebox"); b.classList.toggle("show"); if(b.classList.contains("show")) b.querySelector("textarea").focus();};
@@ -857,6 +1009,7 @@ function update(){
   // budget totals (visible, unhidden items)
   let tAll=0,tDone=0; allSections().forEach(sec=>sec.rows.forEach(r=>{ if(S.hidden[r.id]) return; const p=priceOf(r)||0; tAll+=p; if(isTicked(r.id)) tDone+=p; }));
   document.getElementById("budget").innerHTML=`Estimated total <b>$${tAll.toLocaleString()}</b> · bought <b>$${tDone.toLocaleString()}</b> · left to buy <b>$${(tAll-tDone).toLocaleString()}</b> <span class="sub" style="font-size:12px">— rough "nice stuff" estimates; tap a price to edit it</span>`;
+  if(typeof bagRender==="function") bagRender();
   renderHiddenBox();
 }
 function renderHiddenBox(){
@@ -907,6 +1060,16 @@ document.getElementById("roomclear").onclick=async()=>{ ROOM=null; showRoom(); d
 function roomSVG(pal){ const c=r=>(pal.find(p=>p.role===r)||{}).hex||"#ddd"; const wall=c("wall"),accent=c("accent"),tex=c("textile"),trim=c("trim"),pop=c("pop");
   return `<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nursery preview"><rect width="700" height="380" fill="${wall}"/><path d="M0 240 L700 240 L700 380 L0 380Z" fill="#E9E2D8"/><path d="M0 240 L700 240" stroke="${trim}" stroke-width="10"/><rect x="0" y="0" width="260" height="240" fill="${accent}" opacity="0.95"/><rect x="420" y="40" width="170" height="140" rx="6" fill="#DCEBF5" stroke="${trim}" stroke-width="8"/><line x1="505" y1="44" x2="505" y2="176" stroke="${trim}" stroke-width="6"/><rect x="396" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/><rect x="590" y="24" width="30" height="180" fill="${tex}" opacity="0.9"/><ellipse cx="350" cy="330" rx="190" ry="34" fill="${tex}" opacity="0.85"/><rect x="70" y="150" width="200" height="120" rx="8" fill="${trim}"/><rect x="80" y="160" width="180" height="100" fill="${wall}" opacity="0.35"/>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${88+i*22}" y="160" width="6" height="100" fill="${trim}"/>`).join("")}<rect x="80" y="238" width="180" height="26" fill="${pop}" opacity="0.9"/><line x1="170" y1="60" x2="170" y2="110" stroke="${trim}" stroke-width="3"/><line x1="130" y1="110" x2="210" y2="110" stroke="${trim}" stroke-width="3"/><circle cx="135" cy="128" r="9" fill="${pop}"/><circle cx="170" cy="134" r="9" fill="${tex}"/><circle cx="205" cy="128" r="9" fill="${accent}"/><rect x="470" y="200" width="160" height="70" rx="6" fill="${trim}"/><rect x="640" y="230" width="34" height="40" rx="6" fill="${pop}"/><path d="M657 230 C640 200 650 180 657 175 C664 180 674 200 657 230Z" fill="${accent}"/><rect x="300" y="70" width="80" height="60" rx="4" fill="${tex}"/><circle cx="340" cy="100" r="16" fill="${pop}"/></svg>`; }
 
+function paintLink(name){
+  const low=name.toLowerCase();
+  let url;
+  if(low.includes("sherwin")) url=`https://www.sherwin-williams.com/en-us/color/search?q=${encodeURIComponent(name.replace(/sherwin-?williams/i,"").trim())}`;
+  else if(low.includes("benjamin moore")) url=`https://www.benjaminmoore.com/en-us/color-overview/find-your-color/color/${encodeURIComponent(name.replace(/benjamin moore/i,"").trim().toLowerCase().replace(/\s+/g,"-"))}`;
+  else if(low.includes("behr")) url=`https://www.behr.com/consumer/search?text=${encodeURIComponent(name.replace(/behr/i,"").trim())}`;
+  else if(low.includes("valspar")) url=`https://www.valspar.com/en/search?q=${encodeURIComponent(name.replace(/valspar/i,"").trim())}`;
+  else url=`https://www.google.com/search?q=${encodeURIComponent(name+" paint color")}`;
+  return `<a target="_blank" rel="noopener" href="${url}">${name}</a>`;
+}
 function themeCard(t){
   const div=document.createElement("div"); div.className="theme";
   const isFav=S.favorites.some(f=>f.name===t.name);
@@ -914,7 +1077,7 @@ function themeCard(t){
     <h3>${t.name}</h3><div class="vibe">${t.vibe}</div>
     <div class="sw">${t.palette.map(p=>`<div style="background:${p.hex}" title="${p.name} ${p.hex}"><span>${p.role}</span></div>`).join("")}</div>
     <div class="kv"><b>Colors:</b> ${t.palette.map(p=>`${p.name} <code>${p.hex}</code>`).join(" · ")}</div>
-    <div class="kv"><b>Paint matches:</b> ${(t.paint||[]).join(" · ")} <span style="color:var(--muted)">(grab a sample chip to confirm)</span></div>
+    <div class="kv"><b>Paint matches:</b> ${(t.paint||[]).map(paintLink).join(" · ")} <span style="color:var(--muted)">(tap to search the color — grab a sample chip to confirm in person)</span></div>
     <div class="kv"><b>Furniture:</b> ${t.furniture||""}</div>
     <div class="kv"><b>Accents</b></div><ul>${(t.accents||[]).map(a=>`<li>${a}</li>`).join("")}</ul>
     <div class="acts">
@@ -1011,6 +1174,7 @@ let lastWk=currentWeek(); setInterval(()=>{ const c=currentWeek(); if(c!==lastWk
 function ctState(){ return S.meta.ct||{open:null,list:[]}; }
 function ctSave(st){ S.meta.ct=st; patch({meta:{ct:st}}); }
 function mmss(ms){ const s=Math.round(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
+function buzz(ms){ try{ navigator.vibrate&&navigator.vibrate(ms||15); }catch{} }
 function ctRender(){
   const st=ctState(), btn=document.getElementById("ctBtn"); btn.textContent=st.open?"Contraction ended":"Contraction started"; btn.classList.toggle("stop",!!st.open);
   const now=Date.now(), hour=st.list.filter(c=>c.start>now-3600000);
@@ -1024,7 +1188,11 @@ function ctRender(){
   document.getElementById("ctLog").innerHTML=st.list.slice(-30).reverse().map((c,i,arr)=>{ const nxt=arr[i+1]; const gap=nxt?c.start-nxt.start:null; return `<div data-start="${c.start}"><span>${new Date(c.start).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}</span><span>lasted ${mmss(c.end-c.start)}</span><span>${gap?mmss(gap)+" apart":""}</span></div>`; }).join(""); ctBindSwipes();
 }
 function ctBindSwipes(){ document.querySelectorAll("#ctLog div[data-start]").forEach(row=>swipeable(row,"Delete",()=>{ const st=ctState(); const k=Number(row.dataset.start); const gone=st.list.find(c=>c.start===k); st.list=st.list.filter(c=>c.start!==k); ctSave(st); ctRender(); toast("Entry deleted",()=>{ const s2=ctState(); s2.list.push(gone); s2.list.sort((a,b)=>a.start-b.start); ctSave(s2); ctRender(); }); },"Delete this contraction entry?")); }
-document.getElementById("ctBtn").onclick=()=>{ const st=ctState(); const now=Date.now(); if(st.open){ st.list.push({start:st.open,end:now}); st.list=st.list.slice(-60); st.open=null; } else st.open=now; ctSave(st); ctRender(); };
+document.getElementById("ctBtn").onclick=()=>{ buzz(20); const st=ctState(); const now=Date.now(); if(st.open){ st.list.push({start:st.open,end:now}); st.list=st.list.slice(-60); st.open=null; } else st.open=now; ctSave(st); ctRender(); };
+document.getElementById("ctCopy").onclick=async()=>{ const st=ctState(); const now=Date.now(); const hour=st.list.filter(c=>c.start>now-3600000);
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0; const L=avg(hour.map(c=>c.end-c.start)); const gaps=hour.slice(1).map((c,i)=>c.start-hour[i].start); const G=avg(gaps);
+  const txt=`Contractions — last hour: ${hour.length} · avg length ${mmss(L)} · avg apart ${mmss(G)}\n\nRecent:\n`+hour.slice(-10).reverse().map(c=>`${new Date(c.start).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})} — lasted ${mmss(c.end-c.start)}`).join("\n");
+  try{ await navigator.clipboard.writeText(txt); toast("Copied — paste it for triage or the OB line"); }catch{ prompt("Copy this:",txt); } };
 document.getElementById("ctClear").onclick=()=>{ if(confirm("Clear the contraction log?")){ ctSave({open:null,list:[]}); ctRender(); } };
 setInterval(()=>{ if(document.getElementById("pane-tools").classList.contains("active")) ctRender(); },15000);
 
@@ -1051,7 +1219,7 @@ function kkRender(){ const b=document.getElementById("kkBtn"); b.textContent=kk.
 document.getElementById("kkExport").onclick=async()=>{ const hist=(S.meta.kicks||[]).slice().sort((a,b)=>a.at-b.at); const avg=hist.length?hist.reduce((x,h)=>x+h.ms,0)/hist.length:0;
   const txt=`Kick count log — Leslie\nDue ${S.meta.due||"?"} · ${hist.length} sessions · average ${mmss(avg)} to 10 kicks\n\n`+hist.map(h=>`${new Date(h.at).toLocaleDateString()} ${new Date(h.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}: 10 kicks in ${mmss(h.ms)}`).join("\n");
   try{ await navigator.clipboard.writeText(txt); toast("Report copied — paste it into a text or email"); }catch{ prompt("Copy this:",txt); } };
-document.getElementById("kkBtn").onclick=()=>{ if(!kk.on){ kk={on:true,start:Date.now(),count:0}; kkT=setInterval(kkRender,1000); }
+document.getElementById("kkBtn").onclick=()=>{ buzz(15); if(!kk.on){ kk={on:true,start:Date.now(),count:0}; kkT=setInterval(kkRender,1000); }
   else { kk.count++; if(kk.count>=10){ const h=(S.meta.kicks||[]).concat([{at:Date.now(),ms:Date.now()-kk.start}]).slice(-150); S.meta.kicks=h; patch({meta:{kicks:h}}); clearInterval(kkT); kk={on:false,start:0,count:0}; toast("10 kicks logged 🎉"); } } kkRender(); };
 
 /* ================= tools: names ================= */
@@ -1068,6 +1236,41 @@ function namesRender(){ const list=S.meta.names||[]; const box=document.getEleme
 document.getElementById("nmAdd").onclick=()=>{ const i=document.getElementById("nmIn"); const v=i.value.trim(); if(!v) return; const list=S.meta.names||[]; if(list.some(x=>x.n.toLowerCase()===v.toLowerCase())){ toast("Already on the list"); return; } list.push({n:v,v:[DEV]}); S.meta.names=list.slice(-100); patch({meta:{names:S.meta.names}}); i.value=""; namesRender(); };
 document.getElementById("nmIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("nmAdd").click(); };
 
+
+/* ================= feeding & diapers ================= */
+function feedList(){ return S.meta.feed||[]; } function diaperList(){ return S.meta.diaper||[]; }
+function saveFeed(l){ S.meta.feed=l.slice(-400); patch({meta:{feed:S.meta.feed}}); feedRender(); }
+function saveDiaper(l){ S.meta.diaper=l.slice(-400); patch({meta:{diaper:S.meta.diaper}}); feedRender(); }
+function isToday(ts){ return new Date(ts).toDateString()===new Date().toDateString(); }
+let feedActive=null; // {side,start}
+function logDiaper(wet,dirty){ buzz(15); saveDiaper(diaperList().concat([{at:Date.now(),wet,dirty}])); toast(wet&&dirty?"Wet + dirty logged":wet?"Wet logged":"Dirty logged"); }
+document.getElementById("dWet").onclick=()=>logDiaper(true,false);
+document.getElementById("dDirty").onclick=()=>logDiaper(false,true);
+document.getElementById("dBoth").onclick=()=>logDiaper(true,true);
+function logFeed(entry){ buzz(15); saveFeed(feedList().concat([entry])); }
+function startFeed(side){ buzz(20); if(feedActive){ if(feedActive.side===side){ logFeed({at:feedActive.start,type:"breast",side,minutes:Math.round((Date.now()-feedActive.start)/60000)}); feedActive=null; feedRender(); return; } }
+  feedActive={side,start:Date.now()}; feedRender(); }
+document.getElementById("fL").onclick=()=>startFeed("left"); document.getElementById("fR").onclick=()=>startFeed("right");
+[["fB2",2],["fB3",3],["fB4",4]].forEach(([id,oz])=>document.getElementById(id).onclick=()=>{ logFeed({at:Date.now(),type:"bottle",oz}); toast(`${oz}oz logged`); });
+document.getElementById("fBx").onclick=()=>{ const v=prompt("Ounces?"); const oz=parseFloat(v); if(!oz||oz<=0) return; logFeed({at:Date.now(),type:"bottle",oz}); toast(`${oz}oz logged`); };
+function feedRender(){
+  const f=feedList(), d=diaperList();
+  const tf=f.filter(x=>isToday(x.at)), td=d.filter(x=>isToday(x.at));
+  document.getElementById("fdWet").textContent=td.filter(x=>x.wet).length; document.getElementById("fdDirty").textContent=td.filter(x=>x.dirty).length; document.getElementById("fdFeeds").textContent=tf.length;
+  const last=f[f.length-1]; document.getElementById("fdLast").textContent=last?Math.round((Date.now()-last.at)/60000)+"m ago":"–";
+  const act=document.getElementById("fdActive"); if(feedActive){ act.style.display=""; act.textContent=`Feeding on the ${feedActive.side} — ${mmss(Date.now()-feedActive.start)} (tap the same side to stop)`; } else act.style.display="none";
+  const rows=f.map(x=>({...x,kind:"feed"})).concat(d.map(x=>({...x,kind:"diaper"}))).sort((a,b)=>b.at-a.at).slice(0,60);
+  const box=document.getElementById("fdLog"); box.innerHTML="";
+  if(!rows.length){ box.innerHTML='<div><span>Nothing logged yet.</span><span></span></div>'; return; }
+  rows.forEach(x=>{ const row=document.createElement("div"); row.dataset.k=x.kind; row.dataset.at=x.at;
+    const label=x.kind==="diaper"?(x.wet&&x.dirty?"Wet + dirty":x.wet?"Wet":"Dirty"):(x.type==="bottle"?`Bottle ${x.oz}oz`:`Nursed ${x.side}${x.minutes?` · ${x.minutes} min`:""}`);
+    row.innerHTML=`<span>${new Date(x.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}</span><span>${label}</span>`;
+    swipeable(row,"Delete",()=>{ if(x.kind==="diaper") saveDiaper(diaperList().filter(y=>y.at!==x.at)); else saveFeed(feedList().filter(y=>y.at!==x.at)); toast("Entry deleted"); },"Delete this entry?");
+    box.appendChild(row); });
+}
+document.getElementById("fdExport").onclick=async()=>{ const f=feedList().filter(x=>isToday(x.at)), d=diaperList().filter(x=>isToday(x.at));
+  const txt=`Today — ${new Date().toLocaleDateString()}\nWet diapers: ${d.filter(x=>x.wet).length} · Dirty diapers: ${d.filter(x=>x.dirty).length}\nFeeds: ${f.length}\n\n`+f.concat(d).sort((a,b)=>a.at-b.at).map(x=>{ const t=new Date(x.at).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}); if(x.wet!==undefined) return `${t} — diaper: ${x.wet&&x.dirty?"wet+dirty":x.wet?"wet":"dirty"}`; return `${t} — ${x.type==="bottle"?`bottle ${x.oz}oz`:`nursed ${x.side}${x.minutes?` (${x.minutes} min)`:""}`}`; }).join("\n");
+  try{ await navigator.clipboard.writeText(txt); toast("Copied — paste it for the pediatrician"); }catch{ prompt("Copy this:",txt); } };
 /* ================= after baby ================= */
 function afterRender(){
   const born=S.meta.born?new Date(S.meta.born+"T12:00:00"):null; document.getElementById("born").value=S.meta.born||"";
@@ -1077,10 +1280,10 @@ function afterRender(){
   const b=document.createElement("button"); b.innerHTML=`<span class="em">🍼</span><h2>The first weeks</h2><span class="n"></span><span class="car">▶</span>`; b.onclick=()=>{ sec.hasAttribute("open")?sec.removeAttribute("open"):sec.setAttribute("open",""); };
   const ul=document.createElement("ul");
   (window.AFTER||[]).filter(it=>!S.hidden[it.id]).forEach(it=>{ const li=document.createElement("li"); li.dataset.id=it.id;
-    const cb=document.createElement("input"); cb.type="checkbox"; cb.id=it.id; cb.checked=isTicked(it.id); cb.onchange=()=>{ S.ticks[it.id]={v:cb.checked,t:Date.now()}; patch({ticks:{[it.id]:S.ticks[it.id]}}); afterRender(); };
-    const lab=document.createElement("label"); lab.htmlFor=it.id;
+    const cb=document.createElement("input"); cb.type="checkbox"; cb.id=it.id; cb.checked=isTicked(it.id); cb.onchange=()=>{ buzz(12); tickWithWho(it.id,cb.checked,afterRender); };
+    const lab=document.createElement("div"); lab.className="itembody";
     let due=""; if(born){ const dd=new Date(born.getTime()+it.day*86400000); const late=!cb.checked&&dd<new Date(); due=`<span class="when ${late?"late":"m1"}">by ${fmt(dd)}</span>`; } else due=`<span class="when m3">${it.day===1?"Day 1":it.day<=14?`first ${it.day} days`:`by ${it.day<60?Math.round(it.day/7)+" weeks":Math.round(it.day/30)+" months"}`}</span>`;
-    lab.innerHTML=`<div class="name">${it.name}</div><div class="note">${it.note}</div>${due}<div class="tools"><button type="button" class="why">Why it matters</button></div><div class="desc">${it.why}</div>`;
+    lab.innerHTML=`<div class="name">${it.name}${byAvatar(it.id)}</div><div class="note">${it.note}</div>${due}<div class="tools"><button type="button" class="why">Why it matters</button></div><div class="desc">${it.why}</div>`;
     lab.querySelector(".why").onclick=e=>{ e.preventDefault(); e.stopPropagation(); const d=lab.querySelector(".desc"); const on=d.classList.toggle("show"); e.target.textContent=on?"Hide":"Why it matters"; };
     if(cb.checked) li.classList.add("done"); li.append(cb,lab);
     swipeable(li,"Doesn't apply",()=>{ S.hidden[it.id]=true; patch({hidden:{[it.id]:true}}); afterRender(); toast("Hidden",()=>{ delete S.hidden[it.id]; patch({hidden:{[it.id]:false}}); afterRender(); }); },`Hide "${it.name}"?`);
@@ -1106,7 +1309,7 @@ document.getElementById("partyBtn").onclick=()=>window.party&&window.party();
 // Extra celebration when a whole category gets completed
 const _upd=update; update=function(){ const before=[...document.querySelectorAll('section[data-done="1"]')].length; _upd(); const after=[...document.querySelectorAll('section[data-done="1"]')].length; if(after>before&&window.party) window.party("confetti"); };
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
-load().then(()=>{ render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); bumpList(); });
+load().then(()=>{ render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); });
 </script>
 </body>
 </html>

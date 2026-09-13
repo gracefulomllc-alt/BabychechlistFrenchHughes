@@ -41,6 +41,15 @@ real deadlines once the birth date is entered.
 
 **Photos** — `public/badge.png` is the completion badge (currently Leslie). Add `public/celebrate.jpg` later (a baby photo) and it appears in the "everything's done" banner.
 
+**Gifts** — log who gave what (gift, hand-me-down, borrowed, or bought), track thank-yous sent, copy a thank-you list.
+Ticking a checklist item as done asks who did it (Leslie / Anthony / Someone else) and shows a small avatar on the item;
+"Someone else" logs it straight into Gifts.
+
+**Packing view** — a "📋 Packing view" chip on the checklist groups every hospital-bag item into Mom / Partner / Baby / Paperwork.
+
+**Feeding & diapers** (After Baby tab) — quick-tap wet/dirty diaper log and nursing/bottle feed log, daily totals, and a
+copy-to-clipboard report for the pediatrician.
+
 **Installable** — Add to Home Screen on iPhone/Android; the shell opens offline, data syncs when online.
 
 ## Files

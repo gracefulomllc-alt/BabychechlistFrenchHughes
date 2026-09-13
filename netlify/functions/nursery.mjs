@@ -1,3 +1,4 @@
+import { clean, takeQuota } from "../shared/lib.mjs";
 // Nursery theme designer — works with either ANTHROPIC_API_KEY or GEMINI_API_KEY.
 // If both are set, Claude is used. If neither, returns a clear error.
 
@@ -75,8 +76,6 @@ async function askGemini(key, prompt) {
   return (data.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("\n");
 }
 
-import { clean, takeQuota } from "../shared/lib.mjs";
-
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   const h = clean(new URL(req.url).searchParams.get("h"));
@@ -108,13 +107,13 @@ export default async (req) => {
     }
   }
 
-  const clean = text.replace(/```json|```/g, "").trim();
+  const cleaned = text.replace(/```json|```/g, "").trim();
   try {
-    const parsed = JSON.parse(clean);
+    const parsed = JSON.parse(cleaned);
     parsed.provider = provider;
     return Response.json(parsed);
   } catch {
-    return Response.json({ error: `${provider} returned malformed JSON`, raw: clean }, { status: 502 });
+    return Response.json({ error: `${provider} returned malformed JSON`, raw: cleaned }, { status: 502 });
   }
 };
 
