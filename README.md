@@ -45,7 +45,8 @@ real deadlines once the birth date is entered.
 tagged Classic or Unique, with a meaning and origin), filterable by both. Pick a profile — Leslie, Terel, or Guest —
 any time; it's a persistent switcher, not a one-time setup, so the phone can be handed around. Leslie/Terel swipes
 that both land on the same name are a match: auto-added to the shared shortlist with both hearts, plus a celebration.
-Choosing Guest asks for a name (Grandma Sue, Aunt Jess, ...) — each named guest gets their own swipe progress, and
+Choosing Guest shows a dropdown of everyone who's swiped before (shared across the household) plus "➕ Someone new" —
+pick a returning name or type a fresh one. Each named guest gets their own swipe progress, and
 their likes go into a "Guest picks" list showing who liked what, for Leslie/Terel to add manually if they like the
 suggestion. Guest likes never auto-match. "Reset <name>'s swipes" clears just that guest's progress (their picks
 already suggested are kept) so the next visitor starts with a full deck. Undo puts the last card back.

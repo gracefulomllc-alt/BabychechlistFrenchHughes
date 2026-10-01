@@ -361,9 +361,10 @@
   .bumpempty{margin-top:8px;padding:16px;text-align:center;border:1px dashed #9AA89A;border-radius:8px;color:var(--muted);font-size:13.5px;background:#F5F7F4}
 
   .nmtab[aria-pressed=true]{background:linear-gradient(180deg,#5AA36F,#1E4D2B)!important;color:#fff!important;border-color:#143A1F!important}
-  .swipewrap{position:relative;height:250px;margin-top:10px;touch-action:pan-y}
+  .swipewrap{position:relative;height:250px;margin-top:10px;touch-action:pan-y;overflow:visible}
   .swcard{position:absolute;inset:0;background:var(--paper);border:1px solid #9AA89A;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.25);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;cursor:grab;user-select:none;touch-action:none;transition:transform .2s,box-shadow .2s}
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;cursor:grab;user-select:none;touch-action:none;transition:transform .2s,box-shadow .2s,opacity .2s}
+  .swcard.dragging{transition:none}
   .swcard:active{cursor:grabbing}
   .swcard.like{box-shadow:0 0 0 4px var(--gold),0 4px 14px rgba(0,0,0,.25)}
   .swcard.pass{box-shadow:0 0 0 4px #9AA89A,0 4px 14px rgba(0,0,0,.25)}
@@ -373,9 +374,17 @@
   .swmeta{margin-top:10px;color:var(--muted);font-size:14px;max-width:260px}
   .swend{padding:30px 10px;text-align:center;color:var(--muted)}
   .swend button{margin-top:10px}
-  .swbig{min-width:130px;font-size:16px;padding:14px 10px;font-weight:800}
+  .swbig{min-width:130px;font-size:16px;padding:14px 10px;font-weight:800;transition:transform .1s ease}
+  .swbig:active{transform:scale(.92)}
   .swbig.like[aria-pressed],.swbig.like{border-color:var(--gold)!important}
   .swbig.pass{color:#8A2B2B!important}
+  .swstamp{position:absolute;top:18px;left:18px;right:18px;text-align:center;font-family:Georgia,serif;font-weight:800;font-size:25px;letter-spacing:.04em;padding:5px 10px;border-radius:10px;pointer-events:none;opacity:0;transition:opacity .08s linear}
+  .swstamp.l{color:#1E4D2B;border:4px solid var(--gold);background:rgba(200,195,114,.18);transform:rotate(-7deg)}
+  .swstamp.p{color:#8A2B2B;border:4px solid #9AA89A;background:rgba(154,168,154,.18);transform:rotate(7deg)}
+  .swflair{margin-top:10px;font-family:Georgia,serif;font-weight:800;color:#C8A83A;font-size:15px;animation:swflairPop .4s ease}
+  @keyframes swflairPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  .swburst{position:absolute;bottom:14%;font-size:22px;pointer-events:none;animation:swburstUp .85s ease-out forwards;z-index:3}
+  @keyframes swburstUp{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(var(--dx),-170px) scale(1.15);opacity:0}}
   .swq{font-weight:800;color:var(--ink);font-size:14px;margin:4px 0 6px}
   .swprofile{display:inline-flex;align-items:center;gap:6px}
   .swprofile img{width:20px;height:20px;border-radius:50%}
@@ -454,7 +463,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v32 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v35 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -557,7 +566,7 @@
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
       <p class="sub" style="margin:0 0 6px">Add names yourselves, swipe through a curated deck, or see how it's going. Both of you liking the same name is a match — lands on the shortlist automatically.</p>
-      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="results" type="button" aria-pressed="false">📊 Results</button></div>
+      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="results" type="button" aria-pressed="false">📊 Results</button><button class="opt nmtab" data-v="leaderboard" type="button" aria-pressed="false">🏆 Leaderboard</button></div>
 
       <div id="namesShortlistView" style="margin-top:12px">
         <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
@@ -573,7 +582,8 @@
           <button class="opt swprofile" type="button" data-p="guest">🙂 Guest</button>
         </div>
         <div id="swGuestForm" class="whoother" style="display:none">
-          <input id="swGuestNameIn" placeholder="Guest's name" maxlength="40">
+          <select id="swGuestPick"><option value="">Pick your name…</option><option value="__new__">➕ Someone new</option></select>
+          <input id="swGuestNameIn" placeholder="Type your name" maxlength="40" style="display:none;margin-top:8px">
           <div class="row"><button class="save" type="button" id="swGuestNameGo">Start swiping</button></div>
         </div>
         <div id="swGuestWho" class="sub" style="display:none;margin-top:6px"></div>
@@ -600,7 +610,13 @@
       <div id="namesResultsView" style="display:none;margin-top:12px">
         <div class="wkq">Who's liked the most</div>
         <div class="stat" id="nrStats"></div>
-        <div class="wkq" style="margin-top:16px">🏆 Top-liked names</div>
+        <div id="nrPeople"></div>
+      </div>
+
+      <div id="namesLeaderboardView" style="display:none;margin-top:12px">
+        <div class="wkq">💕 Matches — Leslie &amp; Terel</div>
+        <div id="nrMatches"></div>
+        <div class="wkq" style="margin-top:18px">🏆 Top-liked names overall</div>
         <div id="nrBoard"></div>
       </div>
     </div>
@@ -1342,8 +1358,9 @@ document.querySelectorAll(".nmtab").forEach(b=>b.onclick=()=>{
   document.getElementById("namesShortlistView").style.display=v==="list"?"":"none";
   document.getElementById("namesSwipeView").style.display=v==="swipe"?"":"none";
   document.getElementById("namesResultsView").style.display=v==="results"?"":"none";
+  document.getElementById("namesLeaderboardView").style.display=v==="leaderboard"?"":"none";
   if(v==="swipe") swRenderCard();
-  if(v==="results") namesResultsRender();
+  if(v==="results"||v==="leaderboard") namesResultsRender();
 });
 
 /* ================= baby-name swiper (profiles: leslie / anthony / guest) ================= */
@@ -1358,9 +1375,21 @@ function updateSwGuestWho(){
   if(swProfile()==="guest"&&swGuestName()){ who.style.display=""; who.innerHTML=`Swiping as <b>${swGuestName()}</b> · <a href="#" id="swGuestChange">change</a>`; document.getElementById("swGuestChange").onclick=e=>{ e.preventDefault(); openGuestForm(swGuestName()); }; }
   else who.style.display="none";
 }
+function guestRegistry(){ return [...new Set(Object.values(S.meta.guestNames||{}))].sort((a,b)=>a.localeCompare(b)); }
 function openGuestForm(prefill){ document.getElementById("swGuestForm").style.display=""; document.getElementById("swGuestWho").style.display="none";
   document.getElementById("swControls").style.display="none"; document.getElementById("swPick").style.display="none";
-  const inp=document.getElementById("swGuestNameIn"); inp.value=prefill||""; inp.focus(); }
+  const names=guestRegistry(); const sel=document.getElementById("swGuestPick"), inp=document.getElementById("swGuestNameIn");
+  sel.innerHTML='<option value="">Pick your name…</option>'+names.map(n=>`<option value="${n.replace(/"/g,"&quot;")}">${n}</option>`).join("")+'<option value="__new__">➕ Someone new</option>';
+  if(prefill&&names.includes(prefill)){ sel.value=prefill; inp.style.display="none"; inp.value=""; }
+  else if(prefill){ sel.value="__new__"; inp.style.display=""; inp.value=prefill; }
+  else { sel.value=""; inp.style.display="none"; inp.value=""; }
+  if(!names.length){ sel.value="__new__"; inp.style.display=""; } 
+  (inp.style.display==="none"?sel:inp).focus();
+}
+document.getElementById("swGuestPick").onchange=e=>{
+  const v=e.target.value, inp=document.getElementById("swGuestNameIn");
+  if(v==="__new__"){ inp.style.display=""; inp.value=""; inp.focus(); } else { inp.style.display="none"; }
+};
 function setSwProfile(p){
   localStorage.setItem("bp-swprofile",p); document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===p));
   document.getElementById("swResetGuest").style.display=p==="guest"?"":"none"; document.getElementById("swResetGuest").textContent=p==="guest"&&swGuestName()?`Reset ${swGuestName()}'s swipes`:"Reset guest swipes";
@@ -1369,7 +1398,11 @@ function setSwProfile(p){
   swRefreshDeck();
 }
 document.querySelectorAll(".swprofile").forEach(b=>b.onclick=()=>setSwProfile(b.dataset.p));
-document.getElementById("swGuestNameGo").onclick=()=>{ const v=document.getElementById("swGuestNameIn").value.trim(); if(!v) return; setSwGuestName(v); setSwProfile("guest"); };
+document.getElementById("swGuestNameGo").onclick=()=>{
+  const sel=document.getElementById("swGuestPick").value;
+  const v=sel==="__new__"||!sel?document.getElementById("swGuestNameIn").value.trim():sel;
+  if(!v) return; setSwGuestName(v); setSwProfile("guest");
+};
 document.getElementById("swGuestNameIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("swGuestNameGo").click(); };
 function swOther(id){ return id==="leslie"?"anthony":"leslie"; }
 function swBucket(p){ const k=swBucketKey(p); S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
@@ -1414,7 +1447,7 @@ function swRecord(name,verdict){
   if(verdict!=="like") return;
   if(p==="guest"){ const who=swGuestName()||"Guest"; const rec=guestRec(name); if(!rec.by.includes(who)){ rec.by.push(who); rec.count=rec.by.length; } patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); toast(`Added to guest picks as ${who} — Leslie & Terel can add it from the shortlist.`); namesResultsRender(); return; }
   const other=swOther(p); const oth=S.meta.swipes&&S.meta.swipes[other];
-  if(oth&&oth[name.toLowerCase()]==="like"){ swRegisterMatch(name,p,other); toast(`🎉 It's a match: ${name}! Added to your shortlist.`); if(window.party) window.party("hearts"); }
+  if(oth&&oth[name.toLowerCase()]==="like"){ swRegisterMatch(name,p,other); toast(`🎉 It's a match: ${name}! Added to your shortlist.`); swTone(523,0.1); setTimeout(()=>swTone(659,0.1),90); setTimeout(()=>swTone(784,0.2),180); if(window.party) window.party("hearts"); }
   namesResultsRender();
 }
 function profileLabel(key){
@@ -1422,55 +1455,138 @@ function profileLabel(key){
   if(key.startsWith("guest:")){ const reg=S.meta.guestNames||{}; if(reg[key]) return reg[key]; const raw=key.slice(6); return raw?raw.charAt(0).toUpperCase()+raw.slice(1):"Guest"; }
   return key;
 }
+function nameDisplay(nameLower){ const full=(window.NAMEBANK||[]).find(x=>x.n.toLowerCase()===nameLower); return full?full.n:(nameLower.charAt(0).toUpperCase()+nameLower.slice(1)); }
+function onShortlist(nameLower){ return (S.meta.names||[]).some(x=>x.n.toLowerCase()===nameLower); }
+function addLikeToShortlist(display,nameLower,profileKey){
+  const list=S.meta.names||[]; let entry=list.find(x=>x.n.toLowerCase()===nameLower);
+  if(!entry){ entry={n:display,v:[]}; list.push(entry); }
+  entry.v=entry.v||[]; if(profileKey&&!entry.v.includes(profileKey)) entry.v.push(profileKey);
+  S.meta.names=list; patch({meta:{names:S.meta.names}}); namesRender(); namesResultsRender(); toast(`${display} added to your shortlist`);
+}
+function removeLike(profileKey,nameLower,display){
+  const bucket=S.meta.swipes&&S.meta.swipes[profileKey]; if(bucket) delete bucket[nameLower];
+  const list=S.meta.names||[]; const entry=list.find(x=>x.n.toLowerCase()===nameLower);
+  if(entry&&entry.v) entry.v=entry.v.filter(v=>v!==profileKey);
+  patch({meta:{swipes:S.meta.swipes,names:S.meta.names}}); namesResultsRender();
+  toast(`Removed ${display} from ${profileLabel(profileKey)}'s likes`,()=>{ const b2=swBucketFor(profileKey); b2[nameLower]="like"; if(entry&&entry.v&&!entry.v.includes(profileKey)) entry.v.push(profileKey); patch({meta:{swipes:S.meta.swipes,names:S.meta.names}}); namesResultsRender(); });
+}
+function swBucketFor(k){ S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
 function namesResultsRender(){
   const sw=S.meta.swipes||{}; const keys=Object.keys(sw);
-  const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard");
-  statsBox.innerHTML=""; board.innerHTML="";
-  if(!keys.length){ statsBox.innerHTML='<p class="sub">No one has swiped yet — tap Swipe &amp; Match to start.</p>'; board.innerHTML='<p class="sub">Nothing liked yet.</p>'; return; }
-  const likesByName={};
-  const likeCount={};
+  const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard"), peopleBox=document.getElementById("nrPeople"), matchBox=document.getElementById("nrMatches");
+  statsBox.innerHTML=""; board.innerHTML=""; peopleBox.innerHTML=""; matchBox.innerHTML="";
+  if(!keys.length){ statsBox.innerHTML='<p class="sub">No one has swiped yet — tap Swipe &amp; Match to start.</p>'; board.innerHTML='<p class="sub">Nothing liked yet.</p>'; matchBox.innerHTML='<p class="sub">No matches yet — keep swiping!</p>'; return; }
+  const likesByName={}; const likeCount={};
   keys.forEach(k=>{
     const entries=sw[k]||{}; let n=0;
     Object.entries(entries).forEach(([nameLower,verdict])=>{
       if(verdict!=="like") return; n++;
-      const rec=likesByName[nameLower]=likesByName[nameLower]||{display:nameLower,count:0,by:[]};
-      const full=(window.NAMEBANK||[]).find(x=>x.n.toLowerCase()===nameLower);
-      rec.display=full?full.n:(nameLower.charAt(0).toUpperCase()+nameLower.slice(1));
+      const rec=likesByName[nameLower]=likesByName[nameLower]||{display:nameDisplay(nameLower),count:0,by:[]};
       rec.count++; rec.by.push(profileLabel(k));
     });
     likeCount[k]=n;
   });
-  keys.sort((a,b)=>likeCount[b]-likeCount[a]).forEach(k=>{ const d=document.createElement("div"); d.innerHTML=`<b>${likeCount[k]}</b><span>${profileLabel(k)}</span>`; statsBox.appendChild(d); });
-  let matchCount=0;
-  if(sw.leslie&&sw.anthony){ const lSet=new Set(Object.entries(sw.leslie).filter(([,v])=>v==="like").map(([n])=>n)); matchCount=Object.entries(sw.anthony).filter(([n,v])=>v==="like"&&lSet.has(n)).length; }
+  const sortedKeys=keys.slice().sort((a,b)=>likeCount[b]-likeCount[a]);
+  sortedKeys.forEach(k=>{ const d=document.createElement("div"); d.innerHTML=`<b>${likeCount[k]}</b><span>${profileLabel(k)}</span>`; statsBox.appendChild(d); });
+  let matchCount=0, lSetAll=new Set(), matchedNames=[];
+  if(sw.leslie&&sw.anthony){ lSetAll=new Set(Object.entries(sw.leslie).filter(([,v])=>v==="like").map(([n])=>n)); matchedNames=Object.entries(sw.anthony).filter(([n,v])=>v==="like"&&lSetAll.has(n)).map(([n])=>n); matchCount=matchedNames.length; }
   const md=document.createElement("div"); md.innerHTML=`<b>${matchCount}</b><span>💕 Matches</span>`; statsBox.prepend(md);
+  if(!matchedNames.length){ matchBox.innerHTML='<p class="sub">No matches yet — keep swiping!</p>'; }
+  else { matchedNames.map(nameDisplay).sort((a,b)=>a.localeCompare(b)).forEach(display=>{ const row=document.createElement("div"); row.className="gp-row"; row.innerHTML=`<div class="swi"><span class="n">💕 ${display}</span></div>`; matchBox.appendChild(row); }); }
+
+  // Per-person liked-name lists — add to shortlist, or remove a like
+  const order=["leslie","anthony",...sortedKeys.filter(k=>k!=="leslie"&&k!=="anthony")];
+  order.filter(k=>keys.includes(k)&&likeCount[k]>0).forEach(k=>{
+    const sec=document.createElement("div"); sec.style.marginTop="16px";
+    sec.innerHTML=`<div class="wkq">${k==="leslie"?"👩":k==="anthony"?"🏀":"🙂"} ${profileLabel(k)} liked (${likeCount[k]})</div>`;
+    const names=Object.entries(sw[k]).filter(([,v])=>v==="like").map(([n])=>n).sort((a,b)=>nameDisplay(a).localeCompare(nameDisplay(b)));
+    names.forEach(nameLower=>{
+      const display=nameDisplay(nameLower);
+      const bothLiked=(sw.leslie&&sw.leslie[nameLower]==="like")&&(sw.anthony&&sw.anthony[nameLower]==="like");
+      const row=document.createElement("div"); row.className="gp-row";
+      const onList=onShortlist(nameLower);
+      row.innerHTML=`<div class="swi"><span class="n">${display}${bothLiked?' <span style="color:var(--gold)">💕 MATCH</span>':""}</span>${onList?'<span class="c">✓ On shortlist</span>':`<button type="button">+ Add</button>`}</div>`;
+      const btn=row.querySelector("button"); if(btn) btn.onclick=()=>addLikeToShortlist(display,nameLower,k);
+      swipeable(row,"Remove",()=>removeLike(k,nameLower,display),`Remove "${display}" from ${profileLabel(k)}'s likes? (They can swipe it again later.)`);
+      sec.appendChild(row);
+    });
+    peopleBox.appendChild(sec);
+  });
+
   const rows=Object.values(likesByName).sort((a,b)=>b.count-a.count).slice(0,25);
   if(!rows.length){ board.innerHTML='<p class="sub">Nothing liked yet — go swipe!</p>'; return; }
   rows.forEach(r=>{ const isMatch=r.by.includes("Leslie")&&r.by.includes("Terel"); const row=document.createElement("div"); row.className="gp-row";
     row.innerHTML=`<div class="swi"><span class="n">${r.display}${isMatch?' <span style="color:var(--gold)">💕 MATCH</span>':""}</span><span class="c">${r.count} like${r.count>1?"s":""} · ${r.by.join(", ")}</span></div>`;
     board.appendChild(row); });
 }
+/* ---- fun & celebratory swipe feedback: sound, haptics, bursts, streaks ---- */
+let swStreak=0, swAudioCtx=null, swBusy=false;
+function swTone(freq,dur,type){ try{
+  if(!swAudioCtx) swAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(swAudioCtx.state==="suspended") swAudioCtx.resume();
+  const o=swAudioCtx.createOscillator(), g=swAudioCtx.createGain();
+  o.type=type||"sine"; o.frequency.value=freq; o.connect(g); g.connect(swAudioCtx.destination);
+  g.gain.setValueAtTime(0.0001,swAudioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.16,swAudioCtx.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,swAudioCtx.currentTime+dur);
+  o.start(); o.stop(swAudioCtx.currentTime+dur+0.02);
+}catch{} }
+function swPlayLike(){ swTone(740,0.11); setTimeout(()=>swTone(988,0.14),65); }
+function swPlayPass(){ swTone(260,0.13,"triangle"); }
+function burstHearts(){ const wrap=document.querySelector(".swipewrap"); if(!wrap) return;
+  const emojis=["💚","✨","💛"];
+  for(let i=0;i<7;i++){ const s=document.createElement("span"); s.className="swburst"; s.textContent=emojis[i%emojis.length];
+    s.style.left=(42+Math.random()*16)+"%"; s.style.animationDelay=(Math.random()*0.15)+"s"; s.style.setProperty("--dx",(Math.random()*90-45)+"px");
+    wrap.appendChild(s); setTimeout(()=>s.remove(),900); }
+}
+function swStamp(cardBox,dir,opacity){ let st=cardBox.querySelector(".swstamp");
+  if(!st){ st=document.createElement("div"); st.className="swstamp"; cardBox.appendChild(st); }
+  st.textContent=dir==="like"?"LIKE 💚":"NOPE ✕"; st.classList.toggle("l",dir==="like"); st.classList.toggle("p",dir==="pass"); st.style.opacity=opacity;
+}
+function clearStamp(cardBox){ const st=cardBox.querySelector(".swstamp"); if(st) st.style.opacity=0; }
+
 function swRenderCard(){
   const cardBox=document.getElementById("swCard"), prog=document.getElementById("swProgress"), pick=document.getElementById("swPick"), controls=document.getElementById("swControls");
   const p=swProfile();
   if(!p){ pick.style.display=""; controls.style.display="none"; return; }
-  pick.style.display="none"; controls.style.display="";
-  if(swIdx>=swDeck.length){ cardBox.style.transform=""; cardBox.classList.remove("like","pass"); cardBox.innerHTML=`<div class="swend">You've been through everyone in this filter.<br><button class="opt" id="swRestart" type="button">Start over</button></div>`; document.getElementById("swRestart").onclick=swRefreshDeck; prog.textContent=swDeck.length?`${swDeck.length} of ${swDeck.length}`:"No names match these filters"; return; }
-  const item=swDeck[swIdx]; cardBox.style.transform=""; cardBox.classList.remove("like","pass");
-  cardBox.innerHTML=`<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>`;
+  pick.style.display="none"; controls.style.display=""; swBusy=false;
+  cardBox.classList.remove("dragging"); cardBox.style.transition=""; cardBox.style.opacity=""; cardBox.style.transform=""; cardBox.classList.remove("like","pass");
+  if(swIdx>=swDeck.length){ cardBox.innerHTML=`<div class="swend">You've been through everyone in this filter.<br><button class="opt" id="swRestart" type="button">Start over</button></div>`; document.getElementById("swRestart").onclick=swRefreshDeck; prog.textContent=swDeck.length?`${swDeck.length} of ${swDeck.length}`:"No names match these filters"; return; }
+  const item=swDeck[swIdx];
+  const flair=swStreak>=3?`<div class="swflair">🔥 ${swStreak} likes in a row!</div>`:"";
+  cardBox.innerHTML=`<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>${flair}`;
   prog.textContent=`${swIdx+1} of ${swDeck.length}`;
 }
-function swAct(verdict){ if(swIdx>=swDeck.length) return; buzz(15); const item=swDeck[swIdx]; swRecord(item.n,verdict); swIdx++; swRenderCard(); }
+function commitSwipe(verdict,startDx){
+  if(swIdx>=swDeck.length||swBusy) return; swBusy=true;
+  const cardBox=document.getElementById("swCard"), item=swDeck[swIdx], dir=verdict==="like"?1:-1;
+  buzz(verdict==="like"?22:14);
+  if(verdict==="like"){ swStreak++; swPlayLike(); burstHearts(); } else { swStreak=0; swPlayPass(); }
+  swStamp(cardBox,verdict,1);
+  cardBox.classList.remove("dragging");
+  cardBox.style.transition="transform .32s cubic-bezier(.2,.8,.4,1), opacity .32s ease";
+  cardBox.style.transform=`translateX(${(startDx||0)+dir*700}px) rotate(${dir*28}deg)`;
+  cardBox.style.opacity="0";
+  setTimeout(()=>{ swRecord(item.n,verdict); swIdx++; swRenderCard(); },300);
+}
+function swAct(verdict){ commitSwipe(verdict,0); }
 document.getElementById("swPass").onclick=()=>swAct("pass");
 document.getElementById("swLike").onclick=()=>swAct("like");
 document.getElementById("swUndo").onclick=()=>{ if(!swLast||swLast.bucketKey!==swBucketKey(swProfile())) return; const b=S.meta.swipes&&S.meta.swipes[swLast.bucketKey]; if(b) delete b[swLast.name.toLowerCase()]; patch({meta:{swipes:S.meta.swipes}});
-  const full=(window.NAMEBANK||[]).find(x=>x.n===swLast.name)||{n:swLast.name,g:"n",s:"classic"}; swDeck.splice(Math.max(0,swIdx-1),0,full); swIdx=Math.max(0,swIdx-1); swLast=null; swRenderCard(); toast("Undone"); };
-document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"this guest"; if(!confirm(`Clear ${who}'s swipe progress so they can start fresh? (Picks already suggested are kept.)`)) return; S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[swBucketKey("guest")]={}; patch({meta:{swipes:S.meta.swipes}}); swRefreshDeck(); toast("Swipes reset"); };
+  swStreak=0; const full=(window.NAMEBANK||[]).find(x=>x.n===swLast.name)||{n:swLast.name,g:"n",s:"classic"}; swDeck.splice(Math.max(0,swIdx-1),0,full); swIdx=Math.max(0,swIdx-1); swLast=null; swRenderCard(); toast("Undone"); };
+document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"this guest"; if(!confirm(`Clear ${who}'s swipe progress so they can start fresh? (Picks already suggested are kept.)`)) return; S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[swBucketKey("guest")]={}; patch({meta:{swipes:S.meta.swipes}}); swStreak=0; swRefreshDeck(); toast("Swipes reset"); };
 (function(){ const wrap=document.getElementById("swCard"); let sx=0,dx=0,active=false;
-  wrap.addEventListener("pointerdown",e=>{ if(swIdx>=swDeck.length) return; active=true; sx=e.clientX; try{wrap.setPointerCapture(e.pointerId);}catch{} });
-  wrap.addEventListener("pointermove",e=>{ if(!active) return; dx=e.clientX-sx; wrap.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`; wrap.classList.toggle("like",dx>40); wrap.classList.toggle("pass",dx<-40); });
-  const end=()=>{ if(!active) return; active=false; if(dx>110) swAct("like"); else if(dx<-110) swAct("pass"); else { wrap.style.transform=""; wrap.classList.remove("like","pass"); } dx=0; };
-  wrap.addEventListener("pointerup",end); wrap.addEventListener("pointercancel",end); wrap.addEventListener("pointerleave",()=>{ if(active&&Math.abs(dx)<20){ wrap.style.transform=""; wrap.classList.remove("like","pass"); } });
+  wrap.addEventListener("pointerdown",e=>{ if(swIdx>=swDeck.length||swBusy) return; active=true; sx=e.clientX; wrap.classList.add("dragging"); wrap.style.transition="none"; try{wrap.setPointerCapture(e.pointerId);}catch{} });
+  wrap.addEventListener("pointermove",e=>{ if(!active) return; dx=e.clientX-sx;
+    wrap.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`; wrap.classList.toggle("like",dx>40); wrap.classList.toggle("pass",dx<-40);
+    const op=Math.min(1,Math.abs(dx)/110); if(dx>12) swStamp(wrap,"like",op); else if(dx<-12) swStamp(wrap,"pass",op); else clearStamp(wrap);
+  });
+  const end=()=>{ if(!active) return; active=false; wrap.classList.remove("dragging");
+    if(dx>110) commitSwipe("like",dx); else if(dx<-110) commitSwipe("pass",dx);
+    else { wrap.style.transition="transform .25s ease"; wrap.style.transform=""; wrap.classList.remove("like","pass"); clearStamp(wrap); }
+    dx=0;
+  };
+  wrap.addEventListener("pointerup",end); wrap.addEventListener("pointercancel",end); wrap.addEventListener("pointerleave",()=>{ if(active&&Math.abs(dx)<20) end(); });
 })();
 if(["leslie","anthony","guest"].includes(swProfile())){ document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===swProfile())); if(swProfile()==="guest") updateSwGuestWho(); }
 document.getElementById("swResetGuest").style.display=swProfile()==="guest"?"":"none";
