@@ -359,6 +359,32 @@
   .bagcat li:first-child{border-top:0}
 
   .bumpempty{margin-top:8px;padding:16px;text-align:center;border:1px dashed #9AA89A;border-radius:8px;color:var(--muted);font-size:13.5px;background:#F5F7F4}
+
+  .nmtab[aria-pressed=true]{background:linear-gradient(180deg,#5AA36F,#1E4D2B)!important;color:#fff!important;border-color:#143A1F!important}
+  .swipewrap{position:relative;height:250px;margin-top:10px;touch-action:pan-y}
+  .swcard{position:absolute;inset:0;background:var(--paper);border:1px solid #9AA89A;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.25);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;cursor:grab;user-select:none;touch-action:none;transition:transform .2s,box-shadow .2s}
+  .swcard:active{cursor:grabbing}
+  .swcard.like{box-shadow:0 0 0 4px var(--gold),0 4px 14px rgba(0,0,0,.25)}
+  .swcard.pass{box-shadow:0 0 0 4px #9AA89A,0 4px 14px rgba(0,0,0,.25)}
+  .swname{font-family:Georgia,serif;font-size:34px;color:var(--ink);font-weight:700}
+  .swtag{margin-top:8px;display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .swtag.b{background:#CFE3F2;color:#2C5677}.swtag.g{background:#F6DCE8;color:#8A3A5C}.swtag.n{background:var(--sage-soft);color:#1E4D2B}
+  .swmeta{margin-top:10px;color:var(--muted);font-size:14px;max-width:260px}
+  .swend{padding:30px 10px;text-align:center;color:var(--muted)}
+  .swend button{margin-top:10px}
+  .swbig{min-width:130px;font-size:16px;padding:14px 10px;font-weight:800}
+  .swbig.like[aria-pressed],.swbig.like{border-color:var(--gold)!important}
+  .swbig.pass{color:#8A2B2B!important}
+  .swq{font-weight:800;color:var(--ink);font-size:14px;margin:4px 0 6px}
+  .swprofile{display:inline-flex;align-items:center;gap:6px}
+  .swprofile img{width:20px;height:20px;border-radius:50%}
+  .gp-row{display:block;padding:0;border-top:1px dotted #B9C4B8}
+  .gp-row:first-child{border-top:0}
+  .gp-row>.swi{display:flex;align-items:center;gap:10px;padding:9px 4px}
+  .gp-row .n{flex:1;font-family:Georgia,serif;font-size:16px}
+  .gp-row .c{font-size:12px;color:var(--muted)}
+  .gp-row button{border:1px solid #8E8A45;border-radius:6px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:6px 10px;font:700 12px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -381,7 +407,7 @@
   </div>
 </header>
 
-<div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button></div>
+<div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button><button id="exportBtn">Backup data</button></div>
 <div class="whobar">This phone is: <button class="who" data-who="leslie" type="button"><img src="/badge.png" alt="">Leslie</button><button class="who" data-who="anthony" type="button"><img src="/ball.svg" alt="">Terel</button><button class="who" data-who="" type="button">Ask each time</button></div>
 <div class="whopop" id="whopop"><div class="whocard"><div class="wq">Who took care of this?</div><div class="whoopts">
   <button type="button" data-who="leslie"><img src="/badge.png" alt="">Leslie</button>
@@ -427,7 +453,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v25 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v30 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -524,10 +550,46 @@
     </div>
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
-      <p class="sub" style="margin:0 0 6px">Shared shortlist. Add a name, tap it to edit, swipe left to remove, ♥ to vote. Two hearts means you both like it.</p>
-      <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
-      <div class="acts" style="margin-top:10px"><button class="opt" id="nmSort" type="button" data-mode="top">Sort: Top rated</button><button class="opt" id="nmBoth" type="button" aria-pressed="false">💚💛 Both hearts only</button></div>
-      <div class="names" id="names"></div>
+      <p class="sub" style="margin:0 0 6px">Add names yourselves, or swipe through a curated deck — when you both like the same one, it's a match and lands on the shortlist automatically.</p>
+      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button></div>
+
+      <div id="namesShortlistView" style="margin-top:12px">
+        <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
+        <div class="acts" style="margin-top:10px"><button class="opt" id="nmSort" type="button" data-mode="top">Sort: Top rated</button><button class="opt" id="nmBoth" type="button" aria-pressed="false">💚💛 Both hearts only</button></div>
+        <div class="names" id="names"></div>
+      </div>
+
+      <div id="namesSwipeView" style="display:none;margin-top:12px">
+        <div class="swq">Who's swiping?</div>
+        <div class="opts" id="swProfileChips">
+          <button class="opt swprofile" type="button" data-p="leslie"><img src="/badge.png" alt="">Leslie</button>
+          <button class="opt swprofile" type="button" data-p="anthony"><img src="/ball.svg" alt="">Terel</button>
+          <button class="opt swprofile" type="button" data-p="guest">🙂 Guest</button>
+        </div>
+        <div id="swGuestForm" class="whoother" style="display:none">
+          <input id="swGuestNameIn" placeholder="Guest's name" maxlength="40">
+          <div class="row"><button class="save" type="button" id="swGuestNameGo">Start swiping</button></div>
+        </div>
+        <div id="swGuestWho" class="sub" style="display:none;margin-top:6px"></div>
+        <div id="swPick" class="swend" style="display:none">Pick who's swiping above to start.</div>
+        <div id="swControls" style="display:none">
+          <div class="swq" style="margin-top:14px">Gender</div>
+          <div class="opts" id="swGenderChips"></div>
+          <div class="swq" style="margin-top:10px">Style</div>
+          <div class="opts" id="swStyleChips"></div>
+          <div class="sub" id="swProgress" style="margin:8px 0 4px"></div>
+          <div class="swipewrap"><div id="swCard" class="swcard"></div></div>
+          <div class="acts" style="justify-content:center;margin-top:12px">
+            <button class="opt swbig pass" id="swPass" type="button">✕ Pass</button>
+            <button class="opt swbig like" id="swLike" type="button">♥ Like</button>
+          </div>
+          <div class="acts" style="margin-top:8px"><button class="opt" id="swUndo" type="button">↺ Undo</button><button class="opt" id="swResetGuest" type="button" style="display:none">Reset guest swipes</button></div>
+        </div>
+      </div>
+      <div id="guestPicks" style="display:none;margin-top:14px">
+        <div class="wkq">👀 Guest picks — waiting on you two</div>
+        <div id="guestPicksList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -580,6 +642,7 @@
 <script src="/weeks.js"></script>
 <script src="/after.js"></script>
 <script src="/prices.js"></script>
+<script src="/namebank.js"></script>
 <script>
 const WHEN={now:"Order now",m3:"2–3 months out",m1:"Final month",bag:"Hospital bag"};
 const DATA=[
@@ -757,7 +820,9 @@ let H=(url.searchParams.get("h")||"").replace(/[^a-z0-9]/gi,"");
 if(!H){ H=Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join(""); url.searchParams.set("h",H); history.replaceState(null,"",url); }
 document.getElementById("hcode").textContent=H;
 let S={ticks:{},notes:{},hidden:{},custom:[],meta:{},favorites:[],updated:0};
-let filter="all", showHidden=false, pending={}, flushTimer=null;
+function loadPending(){ try{ return JSON.parse(localStorage.getItem("bp-pending-"+H))||{}; }catch{ return {}; } }
+function savePending(){ try{ if(Object.keys(pending).length) localStorage.setItem("bp-pending-"+H,JSON.stringify(pending)); else localStorage.removeItem("bp-pending-"+H); }catch{} }
+let filter="all", showHidden=false, pending=loadPending(), flushTimer=null;
 
 const toastEl=document.getElementById("toast"); let toastT;
 function toast(t,undo){ toastEl.textContent=t; if(undo){ const b=document.createElement("button"); b.textContent="Undo"; b.onclick=()=>{ undo(); toastEl.classList.remove("show"); }; toastEl.appendChild(b); } toastEl.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>toastEl.classList.remove("show"),undo?5000:1800); }
@@ -775,6 +840,7 @@ function swipeable(el,label,onDelete,confirmMsg){
 }
 function setSync(t){ document.getElementById("sync").textContent=t; }
 document.getElementById("copy").onclick=async()=>{ try{ await navigator.clipboard.writeText(location.href); toast("Link copied"); }catch{ prompt("Copy this link:",location.href); } };
+document.getElementById("exportBtn").onclick=()=>{ const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`baby-prep-backup-${H}-${new Date().toISOString().slice(0,10)}.json`; a.click(); toast("Backup downloaded — covers ticks, notes, gifts, names, and logs (not photos)"); };
 
 const isTicked=id=>!!(S.ticks[id]&&S.ticks[id].v);
 function cache(){ try{ localStorage.setItem("bp2-"+H,JSON.stringify({...S,favorites:S.favorites.map(({image,...r})=>r)})); }catch{} }
@@ -786,16 +852,25 @@ function patch(p){ // queue a patch; merged server-side
   for(const k of ["ticks","notes","hidden","meta"]) if(p[k]) pending[k]=Object.assign(pending[k]||{},p[k]);
   for(const k of ["customAdd","customRemove"]) if(p[k]) pending[k]=(pending[k]||[]).concat(p[k]);
   if(p.favorites) pending.favorites=p.favorites;
-  cache(); clearTimeout(flushTimer); flushTimer=setTimeout(flush,400);
+  cache(); savePending(); clearTimeout(flushTimer); flushTimer=setTimeout(flush,400);
+}
+function reapplyPending(){ const p=pending;
+  if(p.ticks) for(const [id,t] of Object.entries(p.ticks)){ const cur=S.ticks[id]; if(!cur||(t.t||0)>=(cur.t||0)) S.ticks[id]={v:!!t.v,t:t.t||Date.now(),by:t.by,byName:t.byName}; }
+  if(p.notes) for(const [id,n] of Object.entries(p.notes)){ if(n) S.notes[id]=n; else delete S.notes[id]; }
+  if(p.hidden) for(const [id,v] of Object.entries(p.hidden)){ if(v) S.hidden[id]=true; else delete S.hidden[id]; }
+  if(p.customAdd) for(const c of p.customAdd) if(!S.custom.some(x=>x.id===c.id)) S.custom.push(c);
+  if(p.customRemove) S.custom=S.custom.filter(c=>!p.customRemove.includes(c.id));
+  if(p.meta) Object.assign(S.meta,p.meta);
+  if(p.favorites) S.favorites=p.favorites;
 }
 async function flush(){
   const body={patch:pending}; pending={};
-  try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r.json(); if(!r.ok) throw 0; S.updated=d.updated; setSync("Synced"); }
-  catch{ setSync("Couldn't sync — will retry"); for(const k in body.patch) pending[k]=body.patch[k]; flushTimer=setTimeout(flush,5000); }
+  try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r.json(); if(!r.ok) throw 0; S.updated=d.updated; setSync("Synced"); savePending(); }
+  catch{ setSync("Offline — will sync once you're back online"); for(const k in body.patch) pending[k]=body.patch[k]; savePending(); flushTimer=setTimeout(flush,5000); }
 }
 setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
-    if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); setSync("Updated from another device"); }
+    if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); guestPicksRender(); setSync("Updated from another device"); }
   }catch{} },8000);
 
 /* ================= tabs ================= */
@@ -1248,6 +1323,107 @@ document.getElementById("nmAdd").onclick=()=>{ const i=document.getElementById("
 document.getElementById("nmIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("nmAdd").click(); };
 document.getElementById("nmSort").onclick=e=>{ nmSortMode=nmSortMode==="top"?"az":"top"; e.currentTarget.textContent="Sort: "+(nmSortMode==="top"?"Top rated":"A–Z"); namesRender(); };
 document.getElementById("nmBoth").onclick=e=>{ nmBothOnly=!nmBothOnly; e.currentTarget.setAttribute("aria-pressed",nmBothOnly); namesRender(); };
+document.querySelectorAll(".nmtab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".nmtab").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  const sw=b.dataset.v==="swipe"; document.getElementById("namesShortlistView").style.display=sw?"none":""; document.getElementById("namesSwipeView").style.display=sw?"":"none";
+  if(sw) swRenderCard();
+});
+
+/* ================= baby-name swiper (profiles: leslie / anthony / guest) ================= */
+const SW_LABEL={b:"Boy",g:"Girl",n:"Neutral"};
+let swGenders=new Set(["b","g","n"]), swStyles=new Set(["classic","unique"]), swDeck=[], swIdx=0, swLast=null;
+function swProfile(){ return localStorage.getItem("bp-swprofile")||""; }
+function swGuestName(){ return localStorage.getItem("bp-swguestname")||""; }
+function setSwGuestName(n){ localStorage.setItem("bp-swguestname",n); }
+function swBucketKey(p){ return p==="guest"?("guest:"+swGuestName().trim().toLowerCase()):p; }
+function updateSwGuestWho(){
+  const who=document.getElementById("swGuestWho");
+  if(swProfile()==="guest"&&swGuestName()){ who.style.display=""; who.innerHTML=`Swiping as <b>${swGuestName()}</b> · <a href="#" id="swGuestChange">change</a>`; document.getElementById("swGuestChange").onclick=e=>{ e.preventDefault(); openGuestForm(swGuestName()); }; }
+  else who.style.display="none";
+}
+function openGuestForm(prefill){ document.getElementById("swGuestForm").style.display=""; document.getElementById("swGuestWho").style.display="none";
+  document.getElementById("swControls").style.display="none"; document.getElementById("swPick").style.display="none";
+  const inp=document.getElementById("swGuestNameIn"); inp.value=prefill||""; inp.focus(); }
+function setSwProfile(p){
+  localStorage.setItem("bp-swprofile",p); document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===p));
+  document.getElementById("swResetGuest").style.display=p==="guest"?"":"none"; document.getElementById("swResetGuest").textContent=p==="guest"&&swGuestName()?`Reset ${swGuestName()}'s swipes`:"Reset guest swipes";
+  if(p==="guest"){ if(!swGuestName()){ openGuestForm(); return; } document.getElementById("swGuestForm").style.display="none"; updateSwGuestWho(); }
+  else document.getElementById("swGuestWho").style.display="none";
+  swRefreshDeck();
+}
+document.querySelectorAll(".swprofile").forEach(b=>b.onclick=()=>setSwProfile(b.dataset.p));
+document.getElementById("swGuestNameGo").onclick=()=>{ const v=document.getElementById("swGuestNameIn").value.trim(); if(!v) return; setSwGuestName(v); setSwProfile("guest"); };
+document.getElementById("swGuestNameIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("swGuestNameGo").click(); };
+function swOther(id){ return id==="leslie"?"anthony":"leslie"; }
+function swBucket(p){ const k=swBucketKey(p); S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
+function swBuildDeck(){
+  const p=swProfile(); if(!p) return [];
+  const mine=swBucket(p);
+  let pool=(window.NAMEBANK||[]).filter(x=>swGenders.has(x.g)&&swStyles.has(x.s)&&!(x.n.toLowerCase() in mine));
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool;
+}
+function swRefreshDeck(){ swDeck=swBuildDeck(); swIdx=0; swRenderCard(); }
+const swGenderBox=document.getElementById("swGenderChips");
+["b","g","n"].forEach(g=>{ const b=document.createElement("button"); b.className="opt"; b.type="button"; b.textContent=SW_LABEL[g]; b.setAttribute("aria-pressed","true");
+  b.onclick=()=>{ const on=b.getAttribute("aria-pressed")==="true"; if(on&&swGenders.size===1) return; if(on) swGenders.delete(g); else swGenders.add(g); b.setAttribute("aria-pressed",!on); swRefreshDeck(); };
+  swGenderBox.appendChild(b); });
+const swStyleBox=document.getElementById("swStyleChips");
+[["classic","Classic"],["unique","Unique"]].forEach(([v,label])=>{ const b=document.createElement("button"); b.className="opt"; b.type="button"; b.textContent=label; b.setAttribute("aria-pressed","true");
+  b.onclick=()=>{ const on=b.getAttribute("aria-pressed")==="true"; if(on&&swStyles.size===1) return; if(on) swStyles.delete(v); else swStyles.add(v); b.setAttribute("aria-pressed",!on); swRefreshDeck(); };
+  swStyleBox.appendChild(b); });
+function swRegisterMatch(name,me,other){
+  const list=S.meta.names||[]; let entry=list.find(x=>x.n.toLowerCase()===name.toLowerCase());
+  if(!entry){ entry={n:name,v:[]}; list.push(entry); }
+  entry.v=entry.v||[]; [me,other].forEach(id=>{ if(!entry.v.includes(id)) entry.v.push(id); });
+  S.meta.names=list; patch({meta:{names:S.meta.names}}); namesRender();
+}
+function guestRec(n){ const g=S.meta.guestLikes=S.meta.guestLikes||{}; let r=g[n]; if(typeof r==="number") r={count:r,by:["Guest"]}; if(!r) r={count:0,by:[]}; g[n]=r; return r; }
+function guestPicksRender(){
+  const likes=S.meta.guestLikes||{}; const names=Object.keys(likes);
+  const wrap=document.getElementById("guestPicks"), box=document.getElementById("guestPicksList");
+  wrap.style.display=names.length?"":"none"; if(!names.length) return;
+  box.innerHTML="";
+  names.map(n=>({n,r:guestRec(n)})).sort((a,b)=>b.r.count-a.r.count).forEach(({n,r})=>{ const row=document.createElement("div"); row.className="gp-row";
+    row.innerHTML=`<div class="swi"><span class="n">${n}</span><span class="c">${r.count} like${r.count===1?"":"s"}${r.by.length?" · "+r.by.join(", "):""}</span><button type="button">+ Add to shortlist</button></div>`;
+    row.querySelector("button").onclick=()=>{ const list=S.meta.names||[]; if(!list.some(x=>x.n.toLowerCase()===n.toLowerCase())) list.push({n,v:[]}); S.meta.names=list; delete S.meta.guestLikes[n]; patch({meta:{names:S.meta.names,guestLikes:S.meta.guestLikes}}); namesRender(); guestPicksRender(); toast(`${n} added to your shortlist`); };
+    swipeable(row,"Dismiss",()=>{ delete S.meta.guestLikes[n]; patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); },`Remove "${n}" from guest picks?`);
+    box.appendChild(row); });
+}
+function swRecord(name,verdict){
+  const p=swProfile(); if(!p) return;
+  swBucket(p)[name.toLowerCase()]=verdict; swLast={name,verdict,bucketKey:swBucketKey(p)};
+  patch({meta:{swipes:S.meta.swipes}});
+  if(verdict!=="like") return;
+  if(p==="guest"){ const who=swGuestName()||"Guest"; const rec=guestRec(name); if(!rec.by.includes(who)){ rec.by.push(who); rec.count=rec.by.length; } patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); toast(`Added to guest picks as ${who} — Leslie & Terel can add it from the shortlist.`); return; }
+  const other=swOther(p); const oth=S.meta.swipes&&S.meta.swipes[other];
+  if(oth&&oth[name.toLowerCase()]==="like"){ swRegisterMatch(name,p,other); toast(`🎉 It's a match: ${name}! Added to your shortlist.`); if(window.party) window.party("hearts"); }
+}
+function swRenderCard(){
+  const cardBox=document.getElementById("swCard"), prog=document.getElementById("swProgress"), pick=document.getElementById("swPick"), controls=document.getElementById("swControls");
+  const p=swProfile();
+  if(!p){ pick.style.display=""; controls.style.display="none"; return; }
+  pick.style.display="none"; controls.style.display="";
+  if(swIdx>=swDeck.length){ cardBox.style.transform=""; cardBox.classList.remove("like","pass"); cardBox.innerHTML=`<div class="swend">You've been through everyone in this filter.<br><button class="opt" id="swRestart" type="button">Start over</button></div>`; document.getElementById("swRestart").onclick=swRefreshDeck; prog.textContent=swDeck.length?`${swDeck.length} of ${swDeck.length}`:"No names match these filters"; return; }
+  const item=swDeck[swIdx]; cardBox.style.transform=""; cardBox.classList.remove("like","pass");
+  cardBox.innerHTML=`<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>`;
+  prog.textContent=`${swIdx+1} of ${swDeck.length}`;
+}
+function swAct(verdict){ if(swIdx>=swDeck.length) return; buzz(15); const item=swDeck[swIdx]; swRecord(item.n,verdict); swIdx++; swRenderCard(); }
+document.getElementById("swPass").onclick=()=>swAct("pass");
+document.getElementById("swLike").onclick=()=>swAct("like");
+document.getElementById("swUndo").onclick=()=>{ if(!swLast||swLast.bucketKey!==swBucketKey(swProfile())) return; const b=S.meta.swipes&&S.meta.swipes[swLast.bucketKey]; if(b) delete b[swLast.name.toLowerCase()]; patch({meta:{swipes:S.meta.swipes}});
+  const full=(window.NAMEBANK||[]).find(x=>x.n===swLast.name)||{n:swLast.name,g:"n",s:"classic"}; swDeck.splice(Math.max(0,swIdx-1),0,full); swIdx=Math.max(0,swIdx-1); swLast=null; swRenderCard(); toast("Undone"); };
+document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"this guest"; if(!confirm(`Clear ${who}'s swipe progress so they can start fresh? (Picks already suggested are kept.)`)) return; S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[swBucketKey("guest")]={}; patch({meta:{swipes:S.meta.swipes}}); swRefreshDeck(); toast("Swipes reset"); };
+(function(){ const wrap=document.getElementById("swCard"); let sx=0,dx=0,active=false;
+  wrap.addEventListener("pointerdown",e=>{ if(swIdx>=swDeck.length) return; active=true; sx=e.clientX; try{wrap.setPointerCapture(e.pointerId);}catch{} });
+  wrap.addEventListener("pointermove",e=>{ if(!active) return; dx=e.clientX-sx; wrap.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`; wrap.classList.toggle("like",dx>40); wrap.classList.toggle("pass",dx<-40); });
+  const end=()=>{ if(!active) return; active=false; if(dx>110) swAct("like"); else if(dx<-110) swAct("pass"); else { wrap.style.transform=""; wrap.classList.remove("like","pass"); } dx=0; };
+  wrap.addEventListener("pointerup",end); wrap.addEventListener("pointercancel",end); wrap.addEventListener("pointerleave",()=>{ if(active&&Math.abs(dx)<20){ wrap.style.transform=""; wrap.classList.remove("like","pass"); } });
+})();
+if(["leslie","anthony","guest"].includes(swProfile())){ document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===swProfile())); if(swProfile()==="guest") updateSwGuestWho(); }
+document.getElementById("swResetGuest").style.display=swProfile()==="guest"?"":"none";
+if(swProfile()==="guest"&&swGuestName()) document.getElementById("swResetGuest").textContent=`Reset ${swGuestName()}'s swipes`;
 
 
 /* ================= feeding & diapers ================= */
@@ -1323,7 +1499,7 @@ document.getElementById("partyBtn").onclick=()=>window.party&&window.party();
 // Extra celebration when a whole category gets completed
 const _upd=update; update=function(){ const before=[...document.querySelectorAll('section[data-done="1"]')].length; _upd(); const after=[...document.querySelectorAll('section[data-done="1"]')].length; if(after>before&&window.party) window.party("confetti"); };
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
-load().then(()=>{ render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); });
+load().then(()=>{ reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
 </script>
 </body>
 </html>

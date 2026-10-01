@@ -41,6 +41,15 @@ real deadlines once the birth date is entered.
 
 **Photos** — `public/badge.png` is the completion badge (currently Leslie). Add `public/celebrate.jpg` later (a baby photo) and it appears in the "everything's done" banner.
 
+**Swipe & Match** (inside Baby names, Tools tab) — a Kinder-style swipe deck of ~190 names (boy/girl/neutral, each
+tagged Classic or Unique, with a meaning and origin), filterable by both. Pick a profile — Leslie, Terel, or Guest —
+any time; it's a persistent switcher, not a one-time setup, so the phone can be handed around. Leslie/Terel swipes
+that both land on the same name are a match: auto-added to the shared shortlist with both hearts, plus a celebration.
+Choosing Guest asks for a name (Grandma Sue, Aunt Jess, ...) — each named guest gets their own swipe progress, and
+their likes go into a "Guest picks" list showing who liked what, for Leslie/Terel to add manually if they like the
+suggestion. Guest likes never auto-match. "Reset <name>'s swipes" clears just that guest's progress (their picks
+already suggested are kept) so the next visitor starts with a full deck. Undo puts the last card back.
+
 **Gifts** — log who gave what (gift, hand-me-down, borrowed, or bought), track thank-yous sent, copy a thank-you list.
 Ticking a checklist item as done asks who did it (Leslie / Anthony / Someone else) and shows a small avatar on the item;
 "Someone else" logs it straight into Gifts.
