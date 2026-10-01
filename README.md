@@ -41,7 +41,7 @@ real deadlines once the birth date is entered.
 
 **Photos** — `public/badge.png` is the completion badge (currently Leslie). Add `public/celebrate.jpg` later (a baby photo) and it appears in the "everything's done" banner.
 
-**Swipe & Match** (inside Baby names, Tools tab) — a Kinder-style swipe deck of ~190 names (boy/girl/neutral, each
+**Baby Names** now has its own tab, with three sub-views (Shortlist / Swipe & Match / Results) — a Kinder-style swipe deck of ~190 names (boy/girl/neutral, each
 tagged Classic or Unique, with a meaning and origin), filterable by both. Pick a profile — Leslie, Terel, or Guest —
 any time; it's a persistent switcher, not a one-time setup, so the phone can be handed around. Leslie/Terel swipes
 that both land on the same name are a match: auto-added to the shared shortlist with both hearts, plus a celebration.

@@ -395,12 +395,13 @@
   <div class="cd"><div><b id="cdD">–</b><span>days</span></div><div><b id="cdH">–</b><span>hours</span></div><div><b id="cdM">–</b><span>minutes</span></div><div><b id="cdS">–</b><span>seconds</span></div></div>
   <div class="cd-note" id="cdNote"></div>
   <div class="tabsel-wrap"><select id="tabsel" aria-label="Go to section">
-    <option value="list">☑ Checklist</option><option value="nursery">🎨 Nursery</option><option value="week">📅 This Week</option><option value="tools">⏱ Tools</option><option value="after">🍼 After Baby</option><option value="gifts">🎁 Gifts</option>
+    <option value="list">☑ Checklist</option><option value="nursery">🎨 Nursery</option><option value="week">📅 This Week</option><option value="names">💕 Baby Names</option><option value="tools">⏱ Tools</option><option value="after">🍼 After Baby</option><option value="gifts">🎁 Gifts</option>
   </select></div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="list" aria-selected="true">☑ Checklist</button>
     <button class="tab" role="tab" data-tab="nursery" aria-selected="false">🎨 Nursery</button>
     <button class="tab" role="tab" data-tab="week" aria-selected="false">📅 This Week</button>
+    <button class="tab" role="tab" data-tab="names" aria-selected="false">💕 Baby Names</button>
     <button class="tab" role="tab" data-tab="tools" aria-selected="false">⏱ Tools</button>
     <button class="tab" role="tab" data-tab="after" aria-selected="false">🍼 After Baby</button>
     <button class="tab" role="tab" data-tab="gifts" aria-selected="false">🎁 Gifts</button>
@@ -453,7 +454,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v30 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v31 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -548,10 +549,15 @@
       <div class="log" id="kkLog"></div>
       <div class="acts" style="margin-top:10px"><button id="kkExport" type="button">Copy report for provider</button><button id="kkClearToday" type="button">Clear today's sessions</button></div>
     </div>
+  </div>
+</div>
+
+<div id="pane-names" class="pane">
+  <div class="nur">
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
-      <p class="sub" style="margin:0 0 6px">Add names yourselves, or swipe through a curated deck — when you both like the same one, it's a match and lands on the shortlist automatically.</p>
-      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button></div>
+      <p class="sub" style="margin:0 0 6px">Add names yourselves, swipe through a curated deck, or see how it's going. Both of you liking the same name is a match — lands on the shortlist automatically.</p>
+      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="results" type="button" aria-pressed="false">📊 Results</button></div>
 
       <div id="namesShortlistView" style="margin-top:12px">
         <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
@@ -589,6 +595,13 @@
       <div id="guestPicks" style="display:none;margin-top:14px">
         <div class="wkq">👀 Guest picks — waiting on you two</div>
         <div id="guestPicksList"></div>
+      </div>
+
+      <div id="namesResultsView" style="display:none;margin-top:12px">
+        <div class="wkq">Who's liked the most</div>
+        <div class="stat" id="nrStats"></div>
+        <div class="wkq" style="margin-top:16px">🏆 Top-liked names</div>
+        <div id="nrBoard"></div>
       </div>
     </div>
   </div>
@@ -870,7 +883,7 @@ async function flush(){
 }
 setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
-    if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); guestPicksRender(); setSync("Updated from another device"); }
+    if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); guestPicksRender(); namesResultsRender(); setSync("Updated from another device"); }
   }catch{} },8000);
 
 /* ================= tabs ================= */
@@ -1325,8 +1338,12 @@ document.getElementById("nmSort").onclick=e=>{ nmSortMode=nmSortMode==="top"?"az
 document.getElementById("nmBoth").onclick=e=>{ nmBothOnly=!nmBothOnly; e.currentTarget.setAttribute("aria-pressed",nmBothOnly); namesRender(); };
 document.querySelectorAll(".nmtab").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".nmtab").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  const sw=b.dataset.v==="swipe"; document.getElementById("namesShortlistView").style.display=sw?"none":""; document.getElementById("namesSwipeView").style.display=sw?"":"none";
-  if(sw) swRenderCard();
+  const v=b.dataset.v;
+  document.getElementById("namesShortlistView").style.display=v==="list"?"":"none";
+  document.getElementById("namesSwipeView").style.display=v==="swipe"?"":"none";
+  document.getElementById("namesResultsView").style.display=v==="results"?"":"none";
+  if(v==="swipe") swRenderCard();
+  if(v==="results") namesResultsRender();
 });
 
 /* ================= baby-name swiper (profiles: leslie / anthony / guest) ================= */
@@ -1334,7 +1351,7 @@ const SW_LABEL={b:"Boy",g:"Girl",n:"Neutral"};
 let swGenders=new Set(["b","g","n"]), swStyles=new Set(["classic","unique"]), swDeck=[], swIdx=0, swLast=null;
 function swProfile(){ return localStorage.getItem("bp-swprofile")||""; }
 function swGuestName(){ return localStorage.getItem("bp-swguestname")||""; }
-function setSwGuestName(n){ localStorage.setItem("bp-swguestname",n); }
+function setSwGuestName(n){ localStorage.setItem("bp-swguestname",n); S.meta.guestNames=S.meta.guestNames||{}; S.meta.guestNames["guest:"+n.trim().toLowerCase()]=n; patch({meta:{guestNames:S.meta.guestNames}}); }
 function swBucketKey(p){ return p==="guest"?("guest:"+swGuestName().trim().toLowerCase()):p; }
 function updateSwGuestWho(){
   const who=document.getElementById("swGuestWho");
@@ -1395,9 +1412,43 @@ function swRecord(name,verdict){
   swBucket(p)[name.toLowerCase()]=verdict; swLast={name,verdict,bucketKey:swBucketKey(p)};
   patch({meta:{swipes:S.meta.swipes}});
   if(verdict!=="like") return;
-  if(p==="guest"){ const who=swGuestName()||"Guest"; const rec=guestRec(name); if(!rec.by.includes(who)){ rec.by.push(who); rec.count=rec.by.length; } patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); toast(`Added to guest picks as ${who} — Leslie & Terel can add it from the shortlist.`); return; }
+  if(p==="guest"){ const who=swGuestName()||"Guest"; const rec=guestRec(name); if(!rec.by.includes(who)){ rec.by.push(who); rec.count=rec.by.length; } patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); toast(`Added to guest picks as ${who} — Leslie & Terel can add it from the shortlist.`); namesResultsRender(); return; }
   const other=swOther(p); const oth=S.meta.swipes&&S.meta.swipes[other];
   if(oth&&oth[name.toLowerCase()]==="like"){ swRegisterMatch(name,p,other); toast(`🎉 It's a match: ${name}! Added to your shortlist.`); if(window.party) window.party("hearts"); }
+  namesResultsRender();
+}
+function profileLabel(key){
+  if(key==="leslie") return "Leslie"; if(key==="anthony") return "Terel";
+  if(key.startsWith("guest:")){ const reg=S.meta.guestNames||{}; if(reg[key]) return reg[key]; const raw=key.slice(6); return raw?raw.charAt(0).toUpperCase()+raw.slice(1):"Guest"; }
+  return key;
+}
+function namesResultsRender(){
+  const sw=S.meta.swipes||{}; const keys=Object.keys(sw);
+  const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard");
+  statsBox.innerHTML=""; board.innerHTML="";
+  if(!keys.length){ statsBox.innerHTML='<p class="sub">No one has swiped yet — tap Swipe &amp; Match to start.</p>'; board.innerHTML='<p class="sub">Nothing liked yet.</p>'; return; }
+  const likesByName={};
+  const likeCount={};
+  keys.forEach(k=>{
+    const entries=sw[k]||{}; let n=0;
+    Object.entries(entries).forEach(([nameLower,verdict])=>{
+      if(verdict!=="like") return; n++;
+      const rec=likesByName[nameLower]=likesByName[nameLower]||{display:nameLower,count:0,by:[]};
+      const full=(window.NAMEBANK||[]).find(x=>x.n.toLowerCase()===nameLower);
+      rec.display=full?full.n:(nameLower.charAt(0).toUpperCase()+nameLower.slice(1));
+      rec.count++; rec.by.push(profileLabel(k));
+    });
+    likeCount[k]=n;
+  });
+  keys.sort((a,b)=>likeCount[b]-likeCount[a]).forEach(k=>{ const d=document.createElement("div"); d.innerHTML=`<b>${likeCount[k]}</b><span>${profileLabel(k)}</span>`; statsBox.appendChild(d); });
+  let matchCount=0;
+  if(sw.leslie&&sw.anthony){ const lSet=new Set(Object.entries(sw.leslie).filter(([,v])=>v==="like").map(([n])=>n)); matchCount=Object.entries(sw.anthony).filter(([n,v])=>v==="like"&&lSet.has(n)).length; }
+  const md=document.createElement("div"); md.innerHTML=`<b>${matchCount}</b><span>💕 Matches</span>`; statsBox.prepend(md);
+  const rows=Object.values(likesByName).sort((a,b)=>b.count-a.count).slice(0,25);
+  if(!rows.length){ board.innerHTML='<p class="sub">Nothing liked yet — go swipe!</p>'; return; }
+  rows.forEach(r=>{ const isMatch=r.by.includes("Leslie")&&r.by.includes("Terel"); const row=document.createElement("div"); row.className="gp-row";
+    row.innerHTML=`<div class="swi"><span class="n">${r.display}${isMatch?' <span style="color:var(--gold)">💕 MATCH</span>':""}</span><span class="c">${r.count} like${r.count>1?"s":""} · ${r.by.join(", ")}</span></div>`;
+    board.appendChild(row); });
 }
 function swRenderCard(){
   const cardBox=document.getElementById("swCard"), prog=document.getElementById("swProgress"), pick=document.getElementById("swPick"), controls=document.getElementById("swControls");
@@ -1499,7 +1550,7 @@ document.getElementById("partyBtn").onclick=()=>window.party&&window.party();
 // Extra celebration when a whole category gets completed
 const _upd=update; update=function(){ const before=[...document.querySelectorAll('section[data-done="1"]')].length; _upd(); const after=[...document.querySelectorAll('section[data-done="1"]')].length; if(after>before&&window.party) window.party("confetti"); };
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
-load().then(()=>{ reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
+load().then(()=>{ reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); namesResultsRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
 </script>
 </body>
 </html>
