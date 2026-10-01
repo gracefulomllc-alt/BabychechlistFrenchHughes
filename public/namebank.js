@@ -102,6 +102,28 @@ window.NAMEBANK = [
  {n:"Vesper",g:"n",s:"unique",m:"evening star",o:"Latin"},{n:"Sterling",g:"n",s:"unique",m:"of high quality, genuine",o:"English"},
  {n:"Corvus",g:"n",s:"unique",m:"raven",o:"Latin"},{n:"Vale",g:"n",s:"unique",m:"valley",o:"English"},
  {n:"Journey",g:"n",s:"unique",m:"a trip, passage",o:"English"},
+
+ // ===== Blended-style picks — a popular, pretty aesthetic for mixed-heritage families =====
+ {n:"Harlow",g:"g",s:"unique",m:"rock hill, meadow army",o:"English"},{n:"Soleil",g:"g",s:"unique",m:"sun",o:"French"},
+ {n:"Journi",g:"g",s:"unique",m:"a journey",o:"African-American"},{n:"Amiyah",g:"g",s:"unique",m:"capable, worthy",o:"African-American"},
+ {n:"Kali",g:"g",s:"unique",m:"energy, dark one, Hindu goddess",o:"Sanskrit"},{n:"Nyla",g:"g",s:"unique",m:"champion, winner",o:"Arabic/African-American"},
+ {n:"Milani",g:"g",s:"unique",m:"gracious, dear",o:"African-American/Italian-rooted"},{n:"Amira",g:"g",s:"unique",m:"princess, leader",o:"Arabic"},
+ {n:"Capri",g:"g",s:"unique",m:"after the Italian island",o:"Italian/place name"},{n:"Khalani",g:"g",s:"unique",m:"of the sky, chieftess",o:"Hawaiian"},
+ {n:"Maliyah",g:"g",s:"unique",m:"beloved, queen",o:"African-American/Arabic-rooted"},{n:"Zendaya",g:"g",s:"unique",m:"to give thanks",o:"Shona"},
+ {n:"Journee",g:"g",s:"unique",m:"a journey, a path taken",o:"African-American"},
+ // ===== Blended-style picks, boys =====
+ {n:"Kairo",g:"b",s:"unique",m:"after Cairo, victorious",o:"African-American/place name"},{n:"Maceo",g:"b",s:"unique",m:"gift of God",o:"Spanish/Italian"},
+ {n:"Legend",g:"b",s:"unique",m:"a story handed down, extraordinary",o:"English"},{n:"Mekhi",g:"b",s:"unique",m:"who is like God",o:"African-American/Hebrew-rooted"},
+ {n:"Beau",g:"b",s:"unique",m:"handsome",o:"French"},{n:"Luca",g:"b",s:"unique",m:"bringer of light",o:"Italian"},
+ {n:"Rio",g:"b",s:"unique",m:"river",o:"Spanish/Portuguese"},{n:"Jace",g:"b",s:"unique",m:"healer",o:"English/Hebrew-rooted"},
+ {n:"Micah",g:"b",s:"unique",m:"who is like God",o:"Hebrew"},{n:"Kaiden",g:"b",s:"unique",m:"companion, fighter",o:"English"},
+ {n:"Messiah",g:"b",s:"unique",m:"the anointed one",o:"Hebrew"},{n:"Zyon",g:"b",s:"unique",m:"highest point, promised land",o:"African-American/Hebrew-rooted"},
+ // ===== Blended-style picks, neutral =====
+ {n:"Royal",g:"n",s:"unique",m:"of the crown, kingly",o:"English"},{n:"Legacy",g:"n",s:"unique",m:"that which is handed down",o:"English"},
+ {n:"Rain",g:"n",s:"unique",m:"the falling rain",o:"English"},{n:"Ocean",g:"n",s:"unique",m:"the vast sea",o:"English"},
+ {n:"Cairo",g:"n",s:"unique",m:"the victorious city",o:"Arabic/place name"},{n:"Kenzo",g:"n",s:"unique",m:"wise, strong, healthy third son",o:"Japanese"},
+ {n:"Blaze",g:"n",s:"unique",m:"flame, fire",o:"English"},{n:"Nile",g:"n",s:"unique",m:"after the river",o:"African/place name"},
+
  // ===== Girl — Black / African / African-American, classic =====
  {n:"Nia",g:"g",s:"classic",m:"purpose",o:"Swahili"},{n:"Ayanna",g:"g",s:"classic",m:"beautiful flower",o:"Ethiopian"},
  {n:"Imani",g:"g",s:"classic",m:"faith",o:"Swahili"},{n:"Zola",g:"g",s:"classic",m:"quiet, calm",o:"Xhosa"},
@@ -133,10 +155,10 @@ window.NAMEBANK = [
  {n:"Zuberi",g:"b",s:"unique",m:"strong",o:"Swahili"},{n:"Dashiell",g:"b",s:"unique",m:"page boy, usher",o:"French"},
  {n:"Khalil",g:"b",s:"unique",m:"friend, companion",o:"Arabic"},{n:"Ezekiel",g:"b",s:"unique",m:"God strengthens",o:"Hebrew"},
  // ===== Neutral — Black / African / African-American, mixed styles =====
- {n:"Journee",g:"n",s:"unique",m:"a journey, path taken",o:"African-American"},{n:"Nova",g:"n",s:"classic",m:"new, a bright new star",o:"Latin"},
+ {n:"Rumi",g:"n",s:"unique",m:"beautiful, flowing",o:"Japanese"},{n:"Nova",g:"n",s:"classic",m:"new, a bright new star",o:"Latin"},
  {n:"Suri",g:"n",s:"unique",m:"red rose, princess",o:"Persian/African-American"},{n:"Bex",g:"n",s:"unique",m:"blessed, bound",o:"African-American/Hebrew"},
  {n:"Amani",g:"n",s:"classic",m:"peace, wishes",o:"Swahili/Arabic"},{n:"Bekah",g:"n",s:"unique",m:"to bind, captivate",o:"African-American/Hebrew"},
- {n:"Zaire",g:"n",s:"unique",m:"the river, after the Congo region",o:"Central African"},{n:"Aaliyah",g:"n",s:"unique",m:"exalted, noble",o:"Arabic"},
+ {n:"Zaire",g:"n",s:"unique",m:"the river, after the Congo region",o:"Central African"},{n:"Soul",g:"n",s:"unique",m:"the spirit, inner self",o:"English"},
  {n:"Egypt",g:"n",s:"unique",m:"the nation on the Nile",o:"African-American/place name"},{n:"Justice",g:"n",s:"unique",m:"fairness, moral rightness",o:"English"}
 
 ];
