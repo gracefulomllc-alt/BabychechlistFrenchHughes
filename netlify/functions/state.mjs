@@ -38,12 +38,16 @@ export default async (req) => {
       return f;
     }));
     v.meta.swipes = await readSwipes(st, h, v.meta.swipes);
+    v.updated = Math.max(v.updated || 0, Number(await st.get(`${h}/ver`)) || 0);
     return Response.json(v);
   }
 
   if (req.method === "POST") {
     const body = await req.json();
-    const doc = normalize(await st.get(h, { type: "json" }));
+    const rawDoc = await st.get(h, { type: "json" });
+    const doc = normalize(rawDoc);
+    const touchesDoc = !!body.reset || Object.keys(body.patch || {}).some((k) => k !== "swipeSet" && k !== "swipeReset");
+    const hadLegacySwipes = !!(rawDoc && rawDoc.meta && rawDoc.meta.swipes);
 
     // Merge-safe patch: only the fields provided are touched; ticks merge by timestamp.
     const p = body.patch || {};
@@ -88,9 +92,10 @@ export default async (req) => {
       doc.favorites = favs;
     }
     if (body.reset) doc.ticks = {};
-    doc.updated = Date.now();
-    await st.setJSON(h, doc);
-    return Response.json({ ok: true, updated: doc.updated, swipes: await readSwipes(st, h) });
+    const now = Date.now();
+    if (touchesDoc || hadLegacySwipes) { doc.updated = now; await st.setJSON(h, doc); }
+    await st.set(`${h}/ver`, String(now));   // lets other phones know something changed
+    return Response.json({ ok: true, updated: now, swipes: await readSwipes(st, h) });
   }
   return new Response("Method not allowed", { status: 405 });
 };

@@ -398,6 +398,9 @@
   .swas{margin:12px 0 4px;padding:10px 14px;border-radius:10px;text-align:center;font-family:Georgia,serif;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(180deg,#5AA36F,#1E4D2B);border:1px solid #143A1F}
   .syncchk{margin-top:22px;padding:12px 14px;border:1px dashed #9AA89A;border-radius:10px;background:#F5F7F4;font-size:13px;color:var(--ink);line-height:1.6}
   .syncchk b{font-family:Georgia,serif}
+
+  .gp-row .swi .swi{display:flex;align-items:center;gap:10px;width:100%;padding:0}
+  #joinBtn{background:linear-gradient(180deg,#E0B34A 0%,#C8A83A 50%,#A88A22 51%,#8A6E12 100%)!important;border-color:#5B4A12!important}
 </style>
 </head>
 <body>
@@ -421,7 +424,7 @@
   </div>
 </header>
 
-<div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button><button id="exportBtn">Backup data</button></div>
+<div class="share">Household code <code id="hcode"></code><span class="sync" id="sync"></span><button id="copy">Copy share link</button><button id="exportBtn">Backup data</button><button id="joinBtn">Join household</button></div>
 <div class="whobar">This phone is: <button class="who" data-who="leslie" type="button"><img src="/badge.png" alt="">Leslie</button><button class="who" data-who="anthony" type="button"><img src="/ball.svg" alt="">Terel</button><button class="who" data-who="" type="button">Ask each time</button></div>
 <div class="whopop" id="whopop"><div class="whocard"><div class="wq">Who took care of this?</div><div class="whoopts">
   <button type="button" data-who="leslie"><img src="/badge.png" alt="">Leslie</button>
@@ -467,7 +470,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v37 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v39 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -878,6 +881,36 @@ function swipeable(el,label,onDelete,confirmMsg){
 }
 function setSync(t){ document.getElementById("sync").textContent=t; }
 document.getElementById("copy").onclick=async()=>{ try{ await navigator.clipboard.writeText(location.href); toast("Link copied"); }catch{ prompt("Copy this link:",location.href); } };
+/* ---- Join another household and bring this phone's list along (never deletes anything) ---- */
+function unionBy(target,mine,key,merge){ const map=new Map(); (target||[]).forEach(x=>map.set(key(x),x)); (mine||[]).forEach(x=>{ const k=key(x); map.set(k,map.has(k)&&merge?merge(map.get(k),x):(map.get(k)||x)); }); return [...map.values()]; }
+document.getElementById("joinBtn").onclick=async()=>{
+  const code=(prompt("Enter the household code you want to join (it's shown at the top of the other phone):")||"").replace(/[^a-z0-9]/gi,"").toUpperCase();
+  if(!code) return; if(code===H){ toast("You're already on that household"); return; }
+  let T; try{ const r=await fetch(`/api/state?h=${code}`); if(!r.ok) throw 0; T=await r.json(); }catch{ toast("Couldn't reach that household — check the code"); return; }
+  const tSw=(T.meta&&T.meta.swipes)||{}, mSw=S.meta.swipes||{};
+  const swipeSet={}; let nSw=0;
+  for(const [b,e] of Object.entries(mSw)){ if(b==="anthony"&&Object.keys(e||{}).length&&!confirm(`This phone's list has ${Object.keys(e).length} swipes saved as Terel. Bring those over as Terel's too? (Cancel to leave them behind.)`)) continue;
+    for(const [n,v] of Object.entries(e||{})) if(!(tSw[b]&&n in tSw[b])){ (swipeSet[b]=swipeSet[b]||{})[n]=v; nSw++; } }
+  const tm=T.meta||{}, mm=S.meta||{};
+  const meta={
+    names: unionBy(tm.names,mm.names,x=>String(x.n).toLowerCase(),(a,b)=>({...a,v:[...new Set([...(a.v||[]),...(b.v||[])])]})),
+    gifts: unionBy(tm.gifts,mm.gifts,x=>x.id),
+    kicks: unionBy(tm.kicks,mm.kicks,x=>x.at),
+    feed:  unionBy(tm.feed,mm.feed,x=>x.at),
+    diaper:unionBy(tm.diaper,mm.diaper,x=>x.at),
+    guestNames: Object.assign({},mm.guestNames||{},tm.guestNames||{})
+  };
+  const notes={}; for(const [id,n] of Object.entries(S.notes||{})) if(!(T.notes||{})[id]) notes[id]=n;
+  const hidden={}; for(const id of Object.keys(S.hidden||{})) hidden[id]=true;
+  const nTicks=Object.values(S.ticks||{}).filter(t=>t&&t.v).length;
+  if(!confirm(`Join household ${code}?\n\nBringing over: ${nSw} name swipes, ${nTicks} checked items, ${(mm.gifts||[]).length} gifts, ${(mm.names||[]).length} shortlist names, plus notes and logs.\n\nNothing is deleted from either list. (Room and bump photos stay on the old list.)`)) return;
+  try{
+    setSync("Joining…");
+    const r=await fetch(`/api/state?h=${code}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({patch:{ticks:S.ticks||{},notes,hidden,customAdd:S.custom||[],meta,swipeSet}})});
+    if(!r.ok) throw 0;
+  }catch{ setSync("Synced"); toast("Join failed — nothing was changed. Try again."); return; }
+  const u=new URL(location.href); u.searchParams.set("h",code); location.href=u.toString();
+};
 document.getElementById("exportBtn").onclick=()=>{ const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`baby-prep-backup-${H}-${new Date().toISOString().slice(0,10)}.json`; a.click(); toast("Backup downloaded — covers ticks, notes, gifts, names, and logs (not photos)"); };
 
 const isTicked=id=>!!(S.ticks[id]&&S.ticks[id].v);
@@ -1405,7 +1438,9 @@ function updateSwGuestWho(){
   if(swProfile()==="guest"&&swGuestName()){ who.style.display=""; who.innerHTML=`Swiping as <b>${swGuestName()}</b> · <a href="#" id="swGuestChange">change</a>`; document.getElementById("swGuestChange").onclick=e=>{ e.preventDefault(); openGuestForm(swGuestName()); }; }
   else who.style.display="none";
 }
-function guestRegistry(){ return [...new Set(Object.values(S.meta.guestNames||{}))].sort((a,b)=>a.localeCompare(b)); }
+function guestRegistry(){ const fromSwipes=Object.keys(S.meta.swipes||{}).filter(k=>k.startsWith("guest:")).map(profileLabel);
+  const seen=new Map(); [...Object.values(S.meta.guestNames||{}),...fromSwipes].forEach(n=>{ const k=String(n).trim().toLowerCase(); if(k&&!seen.has(k)) seen.set(k,n); });
+  return [...seen.values()].sort((a,b)=>a.localeCompare(b)); }
 function openGuestForm(prefill){ document.getElementById("swGuestForm").style.display=""; document.getElementById("swGuestWho").style.display="none";
   document.getElementById("swControls").style.display="none"; document.getElementById("swPick").style.display="none";
   const names=guestRegistry(); const sel=document.getElementById("swGuestPick"), inp=document.getElementById("swGuestNameIn");
@@ -1463,16 +1498,25 @@ function swRegisterMatch(name,me,other){
   entry.v=entry.v||[]; [me,other].forEach(id=>{ if(!entry.v.includes(id)) entry.v.push(id); });
   S.meta.names=list; patch({meta:{names:S.meta.names}}); namesRender();
 }
-function guestRec(n){ const g=S.meta.guestLikes=S.meta.guestLikes||{}; let r=g[n]; if(typeof r==="number") r={count:r,by:["Guest"]}; if(!r) r={count:0,by:[]}; g[n]=r; return r; }
+// Guest picks are built straight from the guests' swipe records (collision-proof), plus any picks saved by older versions.
+function guestPicksData(){
+  const sw=S.meta.swipes||{}, out={};
+  for(const [k,e] of Object.entries(sw)){ if(!k.startsWith("guest:")) continue;
+    for(const [n,v] of Object.entries(e||{})) if(v==="like"){ const r=out[n]=out[n]||{display:nameDisplay(n),by:[]}; const lbl=profileLabel(k); if(!r.by.includes(lbl)) r.by.push(lbl); } }
+  for(const [n,r0] of Object.entries(S.meta.guestLikes||{})){ const nl=n.toLowerCase(); const r=out[nl]=out[nl]||{display:n,by:[]};
+    (typeof r0==="number"?["Guest"]:(r0&&r0.by)||[]).forEach(x=>{ if(!r.by.includes(x)) r.by.push(x); }); }
+  const dismissed=sw._dismissed||{};
+  return Object.entries(out).filter(([n])=>!dismissed[n]&&!onShortlist(n)).map(([nl,r])=>({nl,...r})).sort((a,b)=>b.by.length-a.by.length||a.display.localeCompare(b.display));
+}
 function guestPicksRender(){
-  const likes=S.meta.guestLikes||{}; const names=Object.keys(likes);
+  const rows=guestPicksData();
   const wrap=document.getElementById("guestPicks"), box=document.getElementById("guestPicksList");
-  wrap.style.display=names.length?"":"none"; if(!names.length) return;
-  box.innerHTML="";
-  names.map(n=>({n,r:guestRec(n)})).sort((a,b)=>b.r.count-a.r.count).forEach(({n,r})=>{ const row=document.createElement("div"); row.className="gp-row";
-    row.innerHTML=`<div class="swi"><span class="n">${n}</span><span class="c">${r.count} like${r.count===1?"":"s"}${r.by.length?" · "+r.by.join(", "):""}</span><button type="button">+ Add to shortlist</button></div>`;
-    row.querySelector("button").onclick=()=>{ const list=S.meta.names||[]; if(!list.some(x=>x.n.toLowerCase()===n.toLowerCase())) list.push({n,v:[]}); S.meta.names=list; delete S.meta.guestLikes[n]; patch({meta:{names:S.meta.names,guestLikes:S.meta.guestLikes}}); namesRender(); guestPicksRender(); toast(`${n} added to your shortlist`); };
-    swipeable(row,"Dismiss",()=>{ delete S.meta.guestLikes[n]; patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); },`Remove "${n}" from guest picks?`);
+  wrap.style.display=rows.length?"":"none"; box.innerHTML=""; if(!rows.length) return;
+  rows.forEach(r=>{ const row=document.createElement("div"); row.className="gp-row";
+    row.innerHTML=`<div class="swi"><span class="n">${r.display}</span><span class="c">${r.by.length} like${r.by.length===1?"":"s"} · ${r.by.join(", ")}</span><button type="button">+ Add to shortlist</button></div>`;
+    row.querySelector("button").onclick=()=>{ const list=S.meta.names||[]; if(!list.some(x=>x.n.toLowerCase()===r.nl)) list.push({n:r.display,v:[]}); S.meta.names=list; patch({meta:{names:S.meta.names}}); namesRender(); guestPicksRender(); namesResultsRender(); toast(`${r.display} added to your shortlist`); };
+    swipeable(row,"Dismiss",()=>{ swBucketFor("_dismissed")[r.nl]="pass"; patch({swipeSet:{_dismissed:{[r.nl]:"pass"}}}); guestPicksRender();
+      toast(`${r.display} dismissed`,()=>{ delete swBucketFor("_dismissed")[r.nl]; patch({swipeSet:{_dismissed:{[r.nl]:null}}}); guestPicksRender(); }); },`Remove "${r.display}" from guest picks?`);
     box.appendChild(row); });
 }
 function swRecord(name,verdict){
@@ -1480,7 +1524,7 @@ function swRecord(name,verdict){
   swBucket(p)[name.toLowerCase()]=verdict; swLast={name,verdict,bucketKey:swBucketKey(p)};
   patch({swipeSet:{[swBucketKey(p)]:{[name.toLowerCase()]:verdict}}});
   if(verdict!=="like") return;
-  if(p==="guest"){ const who=swGuestName()||"Guest"; const rec=guestRec(name); if(!rec.by.includes(who)){ rec.by.push(who); rec.count=rec.by.length; } patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); toast(`Added to guest picks as ${who} — Leslie & Terel can add it from the shortlist.`); namesResultsRender(); return; }
+  if(p==="guest"){ const who=swGuestName()||"Guest"; guestPicksRender(); toast(`💚 ${who} liked ${name} — added to guest picks`); namesResultsRender(); return; }
   const other=swOther(p); const oth=S.meta.swipes&&S.meta.swipes[other];
   if(oth&&oth[name.toLowerCase()]==="like"){ swRegisterMatch(name,p,other); toast(`🎉 It's a match: ${name}! Added to your shortlist.`); swTone(523,0.1); setTimeout(()=>swTone(659,0.1),90); setTimeout(()=>swTone(784,0.2),180); if(window.party) window.party("hearts"); }
   namesResultsRender();
@@ -1507,14 +1551,14 @@ function removeLike(profileKey,nameLower,display){
 }
 function swBucketFor(k){ S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
 function syncCheckRender(){ const el=document.getElementById("syncChk"); if(!el) return;
-  const ver=(document.body.innerText.match(/Baby Prep v\d+/)||["?"])[0];
-  const sw=S.meta.swipes||{}; const counts=Object.keys(sw).map(k=>`${profileLabel(k)}: ${Object.keys(sw[k]).length}`).join(" · ")||"none yet";
+  const ver=((document.querySelector(".foot")||{}).textContent||"").match(/Baby Prep v\d+/)?.[0]||"?";
+  const sw=S.meta.swipes||{}; const counts=Object.keys(sw).filter(k=>!k.startsWith("_")).map(k=>`${profileLabel(k)}: ${Object.keys(sw[k]).length}`).join(" · ")||"none yet";
   const me=whoAmI(), sp=swProfile();
   el.innerHTML=`<b>🔧 Sync check</b><br>App: ${ver}<br>Household code: <b>${H}</b> — must be the same on both phones<br>This phone is: <b>${me==="leslie"?"Leslie":me==="anthony"?"Terel":"not set"}</b> · swiping as: <b>${sp==="leslie"?"Leslie":sp==="anthony"?"Terel":sp==="guest"?"Guest":"not set"}</b><br>Swipes saved on the server — ${counts}<br><button class="opt" type="button" id="syncRefresh" style="margin-top:8px">Refresh from server</button>`;
   document.getElementById("syncRefresh").onclick=async()=>{ try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) throw 0; S=await r.json(); reapplyPending(); cache(); namesRender(); namesResultsRender(); toast("Refreshed"); }catch{ toast("Couldn't reach the server"); } };
 }
 function namesResultsRender(){ syncCheckRender();
-  const sw=S.meta.swipes||{}; const keys=Object.keys(sw);
+  const sw=S.meta.swipes||{}; const keys=Object.keys(sw).filter(k=>!k.startsWith("_")&&Object.keys(sw[k]||{}).length);
   const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard"), peopleBox=document.getElementById("nrPeople"), matchBox=document.getElementById("nrMatches");
   statsBox.innerHTML=""; board.innerHTML=""; peopleBox.innerHTML=""; matchBox.innerHTML="";
   if(!keys.length){ statsBox.innerHTML='<p class="sub">No one has swiped yet — tap Swipe &amp; Match to start.</p>'; board.innerHTML='<p class="sub">Nothing liked yet.</p>'; matchBox.innerHTML='<p class="sub">No matches yet — keep swiping!</p>'; return; }
