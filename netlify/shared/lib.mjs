@@ -1,5 +1,5 @@
 import { getStore } from "@netlify/blobs";
-export const store = () => getStore("baby-prep");
+export const store = () => getStore({ name: "baby-prep", consistency: "strong" });
 export const clean = (s) => (s || "").replace(/[^a-z0-9]/gi, "").slice(0, 24);
 export const slug = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40);
 export const today = () => new Date().toISOString().slice(0, 10);

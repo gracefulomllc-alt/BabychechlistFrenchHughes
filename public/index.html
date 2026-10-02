@@ -394,6 +394,10 @@
   .gp-row .n{flex:1;font-family:Georgia,serif;font-size:16px}
   .gp-row .c{font-size:12px;color:var(--muted)}
   .gp-row button{border:1px solid #8E8A45;border-radius:6px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:6px 10px;font:700 12px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink);white-space:nowrap}
+
+  .swas{margin:12px 0 4px;padding:10px 14px;border-radius:10px;text-align:center;font-family:Georgia,serif;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(180deg,#5AA36F,#1E4D2B);border:1px solid #143A1F}
+  .syncchk{margin-top:22px;padding:12px 14px;border:1px dashed #9AA89A;border-radius:10px;background:#F5F7F4;font-size:13px;color:var(--ink);line-height:1.6}
+  .syncchk b{font-family:Georgia,serif}
 </style>
 </head>
 <body>
@@ -463,7 +467,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v36 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v37 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -588,6 +592,7 @@
         </div>
         <div id="swGuestWho" class="sub" style="display:none;margin-top:6px"></div>
         <div id="swPick" class="swend" style="display:none">Pick who's swiping above to start.</div>
+        <div id="swAs" class="swas" style="display:none"></div>
         <div id="swControls" style="display:none">
           <div class="swq" style="margin-top:14px">Gender</div>
           <div class="opts" id="swGenderChips"></div>
@@ -611,6 +616,7 @@
         <div class="wkq">Who's liked the most</div>
         <div class="stat" id="nrStats"></div>
         <div id="nrPeople"></div>
+        <div class="syncchk" id="syncChk"></div>
       </div>
 
       <div id="namesLeaderboardView" style="display:none;margin-top:12px">
@@ -980,7 +986,9 @@ document.getElementById("priceTog").onclick=()=>{ const on=!document.body.classL
 /* ================= who did it ================= */
 const AV={leslie:'<img src="/badge.png" alt="Leslie" title="Leslie">',anthony:'<img src="/ball.svg" alt="Terel" title="Terel">',both:'<img src="/badge.png" alt="Leslie" title="Leslie & Terel"><img src="/ball.svg" alt="Terel" title="Leslie & Terel">'};
 function whoAmI(){ return localStorage.getItem("bp-who")||""; }
-function setWho(w){ localStorage.setItem("bp-who",w); document.querySelectorAll(".whobar .who").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===w)); }
+function setWho(w){ localStorage.setItem("bp-who",w); document.querySelectorAll(".whobar .who").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===w));
+  if((w==="leslie"||w==="anthony")&&localStorage.getItem("bp-swprofile")!=="guest"){ localStorage.setItem("bp-swprofile",w); document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===w)); if(window.__swReady) swRefreshDeck(); }
+}
 document.querySelectorAll(".whobar .who").forEach(b=>b.onclick=()=>{ setWho(b.dataset.who); toast(b.dataset.who?`Ticks from this phone will be marked as ${b.textContent.trim()}`:"You'll be asked on each tick"); });
 setWho(whoAmI());
 let whoResolve=null;
@@ -1413,6 +1421,11 @@ document.getElementById("swGuestPick").onchange=e=>{
   if(v==="__new__"){ inp.style.display=""; inp.value=""; inp.focus(); } else { inp.style.display="none"; }
 };
 function setSwProfile(p){
+  const me=whoAmI();
+  if((p==="leslie"||p==="anthony")&&(me==="leslie"||me==="anthony")&&p!==me){
+    if(!confirm(`This phone is set to ${me==="leslie"?"Leslie":"Terel"}. Swipe as ${p==="leslie"?"Leslie":"Terel"} instead? Only do this if ${p==="leslie"?"Leslie":"Terel"} is holding this phone.`)) return;
+  }
+  if(p==="leslie"||p==="anthony") localStorage.setItem("bp-who",p), document.querySelectorAll(".whobar .who").forEach(b=>b.setAttribute("aria-pressed",b.dataset.who===p));
   localStorage.setItem("bp-swprofile",p); document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===p));
   document.getElementById("swResetGuest").style.display=p==="guest"?"":"none"; document.getElementById("swResetGuest").textContent=p==="guest"&&swGuestName()?`Reset ${swGuestName()}'s swipes`:"Reset guest swipes";
   if(p==="guest"){ if(!swGuestName()){ openGuestForm(); return; } document.getElementById("swGuestForm").style.display="none"; updateSwGuestWho(); }
@@ -1493,7 +1506,14 @@ function removeLike(profileKey,nameLower,display){
   toast(`Removed ${display} from ${profileLabel(profileKey)}'s likes`,()=>{ const b2=swBucketFor(profileKey); b2[nameLower]="like"; if(entry&&entry.v&&!entry.v.includes(profileKey)) entry.v.push(profileKey); patch({swipeSet:{[profileKey]:{[nameLower]:"like"}},meta:{names:S.meta.names}}); namesResultsRender(); });
 }
 function swBucketFor(k){ S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
-function namesResultsRender(){
+function syncCheckRender(){ const el=document.getElementById("syncChk"); if(!el) return;
+  const ver=(document.body.innerText.match(/Baby Prep v\d+/)||["?"])[0];
+  const sw=S.meta.swipes||{}; const counts=Object.keys(sw).map(k=>`${profileLabel(k)}: ${Object.keys(sw[k]).length}`).join(" · ")||"none yet";
+  const me=whoAmI(), sp=swProfile();
+  el.innerHTML=`<b>🔧 Sync check</b><br>App: ${ver}<br>Household code: <b>${H}</b> — must be the same on both phones<br>This phone is: <b>${me==="leslie"?"Leslie":me==="anthony"?"Terel":"not set"}</b> · swiping as: <b>${sp==="leslie"?"Leslie":sp==="anthony"?"Terel":sp==="guest"?"Guest":"not set"}</b><br>Swipes saved on the server — ${counts}<br><button class="opt" type="button" id="syncRefresh" style="margin-top:8px">Refresh from server</button>`;
+  document.getElementById("syncRefresh").onclick=async()=>{ try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) throw 0; S=await r.json(); reapplyPending(); cache(); namesRender(); namesResultsRender(); toast("Refreshed"); }catch{ toast("Couldn't reach the server"); } };
+}
+function namesResultsRender(){ syncCheckRender();
   const sw=S.meta.swipes||{}; const keys=Object.keys(sw);
   const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard"), peopleBox=document.getElementById("nrPeople"), matchBox=document.getElementById("nrMatches");
   statsBox.innerHTML=""; board.innerHTML=""; peopleBox.innerHTML=""; matchBox.innerHTML="";
@@ -1570,8 +1590,9 @@ function clearStamp(cardBox){ const st=cardBox.querySelector(".swstamp"); if(st)
 function swRenderCard(){
   const cardBox=document.getElementById("swCard"), prog=document.getElementById("swProgress"), pick=document.getElementById("swPick"), controls=document.getElementById("swControls");
   const p=swProfile();
-  if(!p){ pick.style.display=""; controls.style.display="none"; return; }
+  if(!p){ pick.style.display=""; controls.style.display="none"; document.getElementById("swAs").style.display="none"; return; }
   pick.style.display="none"; controls.style.display=""; swBusy=false;
+  const asEl=document.getElementById("swAs"); asEl.style.display=""; asEl.textContent=`You're swiping as ${p==="leslie"?"👩 Leslie":p==="anthony"?"🏀 Terel":"🙂 "+(swGuestName()||"Guest")}`;
   cardBox.classList.remove("dragging"); cardBox.style.transition=""; cardBox.style.opacity=""; cardBox.style.transform=""; cardBox.classList.remove("like","pass");
   if(swIdx>=swDeck.length){ cardBox.innerHTML=`<div class="swend">You've been through everyone in this filter.<br><button class="opt" id="swRestart" type="button">Start over</button></div>`; document.getElementById("swRestart").onclick=swRefreshDeck; prog.textContent=swDeck.length?`${swDeck.length} of ${swDeck.length}`:"No names match these filters"; return; }
   const item=swDeck[swIdx];
@@ -1610,6 +1631,8 @@ document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"
   };
   wrap.addEventListener("pointerup",end); wrap.addEventListener("pointercancel",end); wrap.addEventListener("pointerleave",()=>{ if(active&&Math.abs(dx)<20) end(); });
 })();
+if(!swProfile()&&(whoAmI()==="leslie"||whoAmI()==="anthony")) localStorage.setItem("bp-swprofile",whoAmI());
+window.__swReady=true;
 if(["leslie","anthony","guest"].includes(swProfile())){ document.querySelectorAll(".swprofile").forEach(b=>b.setAttribute("aria-pressed",b.dataset.p===swProfile())); if(swProfile()==="guest") updateSwGuestWho(); }
 document.getElementById("swResetGuest").style.display=swProfile()==="guest"?"":"none";
 if(swProfile()==="guest"&&swGuestName()) document.getElementById("swResetGuest").textContent=`Reset ${swGuestName()}'s swipes`;
