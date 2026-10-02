@@ -401,6 +401,10 @@
 
   .gp-row .swi .swi{display:flex;align-items:center;gap:10px;width:100%;padding:0}
   #joinBtn{background:linear-gradient(180deg,#E0B34A 0%,#C8A83A 50%,#A88A22 51%,#8A6E12 100%)!important;border-color:#5B4A12!important}
+
+  .swdaily{margin:12px 0 2px;padding:10px 14px;border-radius:10px;border:1px solid #B9AF63;background:linear-gradient(180deg,#FBF6DE,#EFE6B8);font-size:14px;color:var(--ink);text-align:center}
+  .swdaily b{font-family:Georgia,serif;font-size:16px}
+  .swnew{display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5B4A12;background:linear-gradient(180deg,#F6EFD3,#E8DCA0);border:1px solid #B9AF63}
 </style>
 </head>
 <body>
@@ -470,7 +474,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v39 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v41 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -598,6 +602,7 @@
         <div id="swAs" class="swas" style="display:none"></div>
         <div id="swControls" style="display:none">
           <div class="swq" style="margin-top:14px">Gender</div>
+          <div id="swDaily" class="swdaily" style="display:none"></div>
           <div class="opts" id="swGenderChips"></div>
           <div class="swq" style="margin-top:10px">Style</div>
           <div class="opts" id="swStyleChips"></div>
@@ -854,8 +859,12 @@ Object.assign(DESC,{"Pack 'n play / travel crib": "A fold-up crib with mesh side
 
 /* ================= shared state (merge-safe) ================= */
 const url=new URL(location.href);
+// Household: a code in the link wins; otherwise use the one this phone remembers; only make a new one the very first time.
 let H=(url.searchParams.get("h")||"").replace(/[^a-z0-9]/gi,"");
-if(!H){ H=Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join(""); url.searchParams.set("h",H); history.replaceState(null,"",url); }
+if(!H){ try{ H=(localStorage.getItem("bp-household")||"").replace(/[^a-z0-9]/gi,""); }catch{} }
+if(!H){ H=Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join(""); }
+try{ localStorage.setItem("bp-household",H); }catch{}
+if(url.searchParams.get("h")!==H){ url.searchParams.set("h",H); history.replaceState(null,"",url); }
 document.getElementById("hcode").textContent=H;
 let S={ticks:{},notes:{},hidden:{},custom:[],meta:{},favorites:[],updated:0};
 let LOCAL_BEFORE=null; try{ LOCAL_BEFORE=JSON.parse(localStorage.getItem("bp2-"+H)); }catch{}
@@ -909,6 +918,7 @@ document.getElementById("joinBtn").onclick=async()=>{
     const r=await fetch(`/api/state?h=${code}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({patch:{ticks:S.ticks||{},notes,hidden,customAdd:S.custom||[],meta,swipeSet}})});
     if(!r.ok) throw 0;
   }catch{ setSync("Synced"); toast("Join failed — nothing was changed. Try again."); return; }
+  try{ localStorage.setItem("bp-household",code); }catch{}
   const u=new URL(location.href); u.searchParams.set("h",code); location.href=u.toString();
 };
 document.getElementById("exportBtn").onclick=()=>{ const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`baby-prep-backup-${H}-${new Date().toISOString().slice(0,10)}.json`; a.click(); toast("Backup downloaded — covers ticks, notes, gifts, names, and logs (not photos)"); };
@@ -1476,12 +1486,34 @@ document.getElementById("swGuestNameGo").onclick=()=>{
 document.getElementById("swGuestNameIn").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("swGuestNameGo").click(); };
 function swOther(id){ return id==="leslie"?"anthony":"leslie"; }
 function swBucket(p){ const k=swBucketKey(p); S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
+/* ---- Daily Drop: 30 fresh AI names per day, shared by the household ---- */
+let DAILY=[], DAILY_TODAY="", DAILY_NOTE="";
+try{ const c=JSON.parse(localStorage.getItem("bp-daily-"+H)||"null"); if(c){ DAILY=c.batches||[]; DAILY_TODAY=c.today||""; } }catch{}
+const denverDay=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/Denver"});
+function allNames(){ const seen=new Set(), out=[];
+  for(const x of [...(window.NAMEBANK||[]),...DAILY.flatMap(b=>b.names||[])]){ const k=x.n.toLowerCase(); if(!seen.has(k)){ seen.add(k); out.push(x); } }
+  return out; }
+function todaysNames(){ return new Set((DAILY.filter(b=>b.date===denverDay()).flatMap(b=>b.names||[])).map(x=>x.n.toLowerCase())); }
+async function fetchDaily(){
+  try{
+    const r=await fetch(`/api/daily-names?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({exclude:(window.NAMEBANK||[]).map(x=>x.n)})});
+    const d=await r.json(); if(!r.ok) throw 0;
+    const before=allNames().length;
+    DAILY=d.batches||[]; DAILY_TODAY=d.today||""; DAILY_NOTE=d.note||"";
+    try{ localStorage.setItem("bp-daily-"+H,JSON.stringify({today:DAILY_TODAY,batches:DAILY})); }catch{}
+    if(allNames().length!==before&&window.__swReady){ swRefreshDeck(); if(todaysNames().size) toast(`🆕 ${todaysNames().size} fresh names just dropped!`); }
+    else if(window.__swReady) swRenderCard();
+  }catch{ DAILY_NOTE="Couldn't load today's names — check your connection."; if(window.__swReady) swRenderCard(); }
+}
+let lastDailyCheck=denverDay();
+setInterval(()=>{ const d=denverDay(); if(d!==lastDailyCheck){ lastDailyCheck=d; fetchDaily(); } },10*60*1000);
 function swBuildDeck(){
   const p=swProfile(); if(!p) return [];
   const mine=swBucket(p);
-  let pool=(window.NAMEBANK||[]).filter(x=>swGenders.has(x.g)&&swStyles.has(x.s)&&!(x.n.toLowerCase() in mine));
-  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
-  return pool;
+  const shuffle=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const pool=allNames().filter(x=>swGenders.has(x.g)&&swStyles.has(x.s)&&!(x.n.toLowerCase() in mine));
+  const fresh=todaysNames();
+  return [...shuffle(pool.filter(x=>fresh.has(x.n.toLowerCase()))),...shuffle(pool.filter(x=>!fresh.has(x.n.toLowerCase())))];
 }
 function swRefreshDeck(){ swDeck=swBuildDeck(); swIdx=0; swRenderCard(); }
 const swGenderBox=document.getElementById("swGenderChips");
@@ -1534,7 +1566,7 @@ function profileLabel(key){
   if(key.startsWith("guest:")){ const reg=S.meta.guestNames||{}; if(reg[key]) return reg[key]; const raw=key.slice(6); return raw?raw.charAt(0).toUpperCase()+raw.slice(1):"Guest"; }
   return key;
 }
-function nameDisplay(nameLower){ const full=(window.NAMEBANK||[]).find(x=>x.n.toLowerCase()===nameLower); return full?full.n:(nameLower.charAt(0).toUpperCase()+nameLower.slice(1)); }
+function nameDisplay(nameLower){ const full=allNames().find(x=>x.n.toLowerCase()===nameLower); return full?full.n:(nameLower.charAt(0).toUpperCase()+nameLower.slice(1)); }
 function onShortlist(nameLower){ return (S.meta.names||[]).some(x=>x.n.toLowerCase()===nameLower); }
 function addLikeToShortlist(display,nameLower,profileKey){
   const list=S.meta.names||[]; let entry=list.find(x=>x.n.toLowerCase()===nameLower);
@@ -1640,8 +1672,12 @@ function swRenderCard(){
   cardBox.classList.remove("dragging"); cardBox.style.transition=""; cardBox.style.opacity=""; cardBox.style.transform=""; cardBox.classList.remove("like","pass");
   if(swIdx>=swDeck.length){ cardBox.innerHTML=`<div class="swend">You've been through everyone in this filter.<br><button class="opt" id="swRestart" type="button">Start over</button></div>`; document.getElementById("swRestart").onclick=swRefreshDeck; prog.textContent=swDeck.length?`${swDeck.length} of ${swDeck.length}`:"No names match these filters"; return; }
   const item=swDeck[swIdx];
+  const fresh=todaysNames(), mineB=swBucket(p), dEl=document.getElementById("swDaily");
+  if(fresh.size){ const left=[...fresh].filter(n=>!(n in mineB)).length; dEl.style.display=""; dEl.innerHTML=left?`🆕 <b>Today's Daily Drop</b> — ${left} of ${fresh.size} fresh names left for you`:`✅ <b>You've swiped all of today's ${fresh.size} new names!</b> Fresh ones drop tomorrow morning.`; }
+  else if(DAILY_NOTE){ dEl.style.display=""; dEl.textContent=DAILY_NOTE; } else dEl.style.display="none";
+  const isNew=fresh.has(item.n.toLowerCase());
   const flair=swStreak>=3?`<div class="swflair">🔥 ${swStreak} likes in a row!</div>`:"";
-  cardBox.innerHTML=`<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>${flair}`;
+  cardBox.innerHTML=`${isNew?'<div class="swnew">🆕 Today\'s drop</div>':""}<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>${flair}`;
   prog.textContent=`${swIdx+1} of ${swDeck.length}`;
 }
 function commitSwipe(verdict,startDx){
@@ -1660,7 +1696,7 @@ function swAct(verdict){ commitSwipe(verdict,0); }
 document.getElementById("swPass").onclick=()=>swAct("pass");
 document.getElementById("swLike").onclick=()=>swAct("like");
 document.getElementById("swUndo").onclick=()=>{ if(!swLast||swLast.bucketKey!==swBucketKey(swProfile())) return; const b=S.meta.swipes&&S.meta.swipes[swLast.bucketKey]; if(b) delete b[swLast.name.toLowerCase()]; patch({swipeSet:{[swLast.bucketKey]:{[swLast.name.toLowerCase()]:null}}});
-  swStreak=0; const full=(window.NAMEBANK||[]).find(x=>x.n===swLast.name)||{n:swLast.name,g:"n",s:"classic"}; swDeck.splice(Math.max(0,swIdx-1),0,full); swIdx=Math.max(0,swIdx-1); swLast=null; swRenderCard(); toast("Undone"); };
+  swStreak=0; const full=allNames().find(x=>x.n===swLast.name)||{n:swLast.name,g:"n",s:"classic"}; swDeck.splice(Math.max(0,swIdx-1),0,full); swIdx=Math.max(0,swIdx-1); swLast=null; swRenderCard(); toast("Undone"); };
 document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"this guest"; if(!confirm(`Clear ${who}'s swipe progress so they can start fresh? (Picks already suggested are kept.)`)) return; S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[swBucketKey("guest")]={}; patch({swipeReset:[swBucketKey("guest")]}); swStreak=0; swRefreshDeck(); toast("Swipes reset"); };
 (function(){ const wrap=document.getElementById("swCard"); let sx=0,dx=0,active=false;
   wrap.addEventListener("pointerdown",e=>{ if(swIdx>=swDeck.length||swBusy) return; active=true; sx=e.clientX; wrap.classList.add("dragging"); wrap.style.transition="none"; try{wrap.setPointerCapture(e.pointerId);}catch{} });
@@ -1759,7 +1795,7 @@ function recoverLostSwipes(){ const flag="bp-swipefix-"+H; if(localStorage.getIt
   const loc=LOCAL_BEFORE&&LOCAL_BEFORE.meta&&LOCAL_BEFORE.meta.swipes; if(!loc) return; S.meta.swipes=S.meta.swipes||{}; const set={}; let n=0;
   for(const [b,e] of Object.entries(loc)) for(const [name,v] of Object.entries(e||{})){ if((v==="like"||v==="pass")&&!(S.meta.swipes[b]&&name in S.meta.swipes[b])){ (set[b]=set[b]||{})[name]=v; n++; } }
   if(n){ applySwipePending({swipeSet:set}); patch({swipeSet:set}); setTimeout(()=>toast(`Recovered ${n} swipe${n>1?"s":""} saved on this phone`),1200); } }
-load().then(()=>{ recoverLostSwipes(); reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); namesResultsRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
+load().then(()=>{ setTimeout(fetchDaily,800); recoverLostSwipes(); reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); namesResultsRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
 </script>
 </body>
 </html>
