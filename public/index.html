@@ -405,6 +405,11 @@
   .swdaily{margin:12px 0 2px;padding:10px 14px;border-radius:10px;border:1px solid #B9AF63;background:linear-gradient(180deg,#FBF6DE,#EFE6B8);font-size:14px;color:var(--ink);text-align:center}
   .swdaily b{font-family:Georgia,serif;font-size:16px}
   .swnew{display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5B4A12;background:linear-gradient(180deg,#F6EFD3,#E8DCA0);border:1px solid #B9AF63}
+
+  .edsearch{width:100%;margin-top:10px;border:1px solid #8E8A45;border-radius:8px;padding:10px 12px;font:15px/1.2 inherit;font-family:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+  .edv{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .edv.like{background:var(--sage-soft);color:#1E4D2B;border:1px solid #9AC0A4}.edv.pass{background:#F1F1EE;color:#7A6F6F;border:1px solid #CFCFC8}
+  .gp-row .edbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -474,7 +479,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v41 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v42 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -577,7 +582,7 @@
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
       <p class="sub" style="margin:0 0 6px">Add names yourselves, swipe through a curated deck, or see how it's going. Both of you liking the same name is a match — lands on the shortlist automatically.</p>
-      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="results" type="button" aria-pressed="false">📊 Results</button><button class="opt nmtab" data-v="leaderboard" type="button" aria-pressed="false">🏆 Leaderboard</button></div>
+      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="results" type="button" aria-pressed="false">📊 Results</button><button class="opt nmtab" data-v="leaderboard" type="button" aria-pressed="false">🏆 Leaderboard</button><button class="opt nmtab" data-v="edit" type="button" aria-pressed="false">✏️ Edit</button></div>
 
       <div id="namesShortlistView" style="margin-top:12px">
         <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
@@ -625,6 +630,15 @@
         <div class="stat" id="nrStats"></div>
         <div id="nrPeople"></div>
         <div class="syncchk" id="syncChk"></div>
+      </div>
+
+      <div id="namesEditView" style="display:none;margin-top:12px">
+        <div class="swq">Whose swipes?</div>
+        <div class="opts" id="edPeople"></div>
+        <div class="opts" id="edFilter" style="margin-top:10px"></div>
+        <input id="edSearch" class="edsearch" placeholder="Search names…" maxlength="30">
+        <div class="sub" id="edCount" style="margin:6px 0"></div>
+        <div id="edList"></div>
       </div>
 
       <div id="namesLeaderboardView" style="display:none;margin-top:12px">
@@ -1432,6 +1446,8 @@ document.querySelectorAll(".nmtab").forEach(b=>b.onclick=()=>{
   document.getElementById("namesSwipeView").style.display=v==="swipe"?"":"none";
   document.getElementById("namesResultsView").style.display=v==="results"?"":"none";
   document.getElementById("namesLeaderboardView").style.display=v==="leaderboard"?"":"none";
+  document.getElementById("namesEditView").style.display=v==="edit"?"":"none";
+  if(v==="edit") editRender();
   if(v==="swipe") swRenderCard();
   if(v==="results"||v==="leaderboard") namesResultsRender();
 });
@@ -1589,7 +1605,46 @@ function syncCheckRender(){ const el=document.getElementById("syncChk"); if(!el)
   el.innerHTML=`<b>🔧 Sync check</b><br>App: ${ver}<br>Household code: <b>${H}</b> — must be the same on both phones<br>This phone is: <b>${me==="leslie"?"Leslie":me==="anthony"?"Terel":"not set"}</b> · swiping as: <b>${sp==="leslie"?"Leslie":sp==="anthony"?"Terel":sp==="guest"?"Guest":"not set"}</b><br>Swipes saved on the server — ${counts}<br><button class="opt" type="button" id="syncRefresh" style="margin-top:8px">Refresh from server</button>`;
   document.getElementById("syncRefresh").onclick=async()=>{ try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) throw 0; S=await r.json(); reapplyPending(); cache(); namesRender(); namesResultsRender(); toast("Refreshed"); }catch{ toast("Couldn't reach the server"); } };
 }
-function namesResultsRender(){ syncCheckRender();
+/* ================= Edit swipes (anyone's, from any phone) ================= */
+let edPerson="", edFilter="all", edQuery="";
+function setVerdict(bucket,nameLower,v,silent){
+  const b=swBucketFor(bucket), prev=b[nameLower]; if(prev===v) return;
+  if(v) b[nameLower]=v; else delete b[nameLower];
+  patch({swipeSet:{[bucket]:{[nameLower]:v||null}}});
+  const display=nameDisplay(nameLower);
+  // keep shortlist hearts honest: a parent who no longer likes a name loses their heart on it
+  if((bucket==="leslie"||bucket==="anthony")&&v!=="like"){ const e=(S.meta.names||[]).find(x=>x.n.toLowerCase()===nameLower); if(e&&e.v&&e.v.includes(bucket)){ e.v=e.v.filter(x=>x!==bucket); patch({meta:{names:S.meta.names}}); } }
+  if((bucket==="leslie"||bucket==="anthony")&&v==="like"){ const other=swOther(bucket); if(S.meta.swipes[other]&&S.meta.swipes[other][nameLower]==="like"){ swRegisterMatch(display,bucket,other); swTone(523,0.1); setTimeout(()=>swTone(659,0.1),90); setTimeout(()=>swTone(784,0.2),180); if(window.party) window.party("hearts"); if(!silent) return afterEdit(`🎉 It's a match: ${display}!`,bucket,nameLower,prev); } }
+  if(!silent) afterEdit(v==="like"?`${display} → Liked`:v==="pass"?`${display} → Passed`:`${display} sent back to the deck`,bucket,nameLower,prev);
+}
+function afterEdit(msg,bucket,nameLower,prev){
+  namesRender(); guestPicksRender(); namesResultsRender();
+  if(bucket===swBucketKey(swProfile())&&window.__swReady) swRefreshDeck();
+  toast(msg,()=>{ setVerdict(bucket,nameLower,prev||null,true); namesRender(); guestPicksRender(); namesResultsRender(); if(bucket===swBucketKey(swProfile())) swRefreshDeck(); });
+}
+function editRender(){
+  const view=document.getElementById("namesEditView"); if(!view||view.style.display==="none") return;
+  const sw=S.meta.swipes||{};
+  const people=["leslie","anthony",...Object.keys(sw).filter(k=>k.startsWith("guest:")&&Object.keys(sw[k]||{}).length).sort()];
+  if(!edPerson||!people.includes(edPerson)){ const mine=swBucketKey(swProfile()); edPerson=people.includes(mine)?mine:"leslie"; }
+  const pBox=document.getElementById("edPeople"); pBox.innerHTML="";
+  people.forEach(k=>{ const b=document.createElement("button"); b.type="button"; b.className="opt"; b.textContent=`${k==="leslie"?"👩":k==="anthony"?"🏀":"🙂"} ${profileLabel(k)} (${Object.keys(sw[k]||{}).length})`; b.setAttribute("aria-pressed",k===edPerson); b.onclick=()=>{ edPerson=k; editRender(); }; pBox.appendChild(b); });
+  const fBox=document.getElementById("edFilter"); fBox.innerHTML="";
+  [["all","All"],["like","💚 Liked"],["pass","✕ Passed"]].forEach(([v,l])=>{ const b=document.createElement("button"); b.type="button"; b.className="opt"; b.textContent=l; b.setAttribute("aria-pressed",v===edFilter); b.onclick=()=>{ edFilter=v; editRender(); }; fBox.appendChild(b); });
+  const q=edQuery.trim().toLowerCase();
+  const rows=Object.entries(sw[edPerson]||{}).filter(([n,v])=>(edFilter==="all"||v===edFilter)&&(!q||n.includes(q))).map(([n,v])=>({n,v,d:nameDisplay(n)})).sort((a,b)=>a.d.localeCompare(b.d));
+  document.getElementById("edCount").textContent=`${rows.length} name${rows.length===1?"":"s"}${rows.length>150?" — showing the first 150, search to narrow":""}`;
+  const list=document.getElementById("edList"); list.innerHTML="";
+  if(!rows.length){ list.innerHTML=`<p class="sub">${Object.keys(sw[edPerson]||{}).length?"Nothing matches.":`${profileLabel(edPerson)} hasn't swiped yet.`}</p>`; return; }
+  rows.slice(0,150).forEach(r=>{ const row=document.createElement("div"); row.className="gp-row";
+    row.innerHTML=`<div class="swi"><span class="n">${r.d}</span><span class="edv ${r.v}">${r.v==="like"?"Liked":"Passed"}</span><span class="edbtns"><button type="button" class="edflip">${r.v==="like"?"Make Pass":"Make Like"}</button><button type="button" class="edback">↩ Deck</button></span></div>`;
+    row.querySelector(".edflip").onclick=()=>setVerdict(edPerson,r.n,r.v==="like"?"pass":"like");
+    row.querySelector(".edback").onclick=()=>setVerdict(edPerson,r.n,null);
+    swipeable(row,"Back to deck",()=>setVerdict(edPerson,r.n,null),`Send "${r.d}" back into ${profileLabel(edPerson)}'s deck?`);
+    list.appendChild(row); });
+}
+document.getElementById("edSearch").oninput=e=>{ edQuery=e.target.value; editRender(); };
+function namesResultsRender(){ syncCheckRender(); editRender();
   const sw=S.meta.swipes||{}; const keys=Object.keys(sw).filter(k=>!k.startsWith("_")&&Object.keys(sw[k]||{}).length);
   const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard"), peopleBox=document.getElementById("nrPeople"), matchBox=document.getElementById("nrMatches");
   statsBox.innerHTML=""; board.innerHTML=""; peopleBox.innerHTML=""; matchBox.innerHTML="";
