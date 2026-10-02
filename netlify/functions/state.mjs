@@ -1,5 +1,30 @@
 import { store, clean, slug, normalize } from "../shared/lib.mjs";
 
+const enc = (x) => encodeURIComponent(String(x).toLowerCase().slice(0, 60));
+async function readSwipes(st, h, legacy) {
+  const out = {};
+  const { blobs } = await st.list({ prefix: `${h}/sw/` });
+  for (const { key } of blobs) {
+    const rest = key.slice(`${h}/sw/`.length); const slash = rest.indexOf("/"); const eq = rest.lastIndexOf("=");
+    if (slash < 0 || eq < slash) continue;
+    const b = decodeURIComponent(rest.slice(0, slash)), n = decodeURIComponent(rest.slice(slash + 1, eq)), v = rest.slice(eq + 1);
+    if (v === "like" || v === "pass") (out[b] = out[b] || {})[n] = v;
+  }
+  // Fold in any swipes still in the old single-document format (only where no newer record exists)
+  for (const [b, e] of Object.entries(legacy || {})) for (const [n, v] of Object.entries(e || {}))
+    if ((v === "like" || v === "pass") && !(out[b] && n in out[b])) (out[b] = out[b] || {})[n] = v;
+  return out;
+}
+async function writeSwipe(st, h, b, n, v) {
+  const base = `${h}/sw/${enc(b)}/${enc(n)}`;
+  await Promise.all([st.delete(`${base}=like`), st.delete(`${base}=pass`)]);
+  if (v === "like" || v === "pass") await st.set(`${base}=${v}`, "1");
+}
+async function resetBucket(st, h, b) {
+  const { blobs } = await st.list({ prefix: `${h}/sw/${enc(b)}/` });
+  await Promise.all(blobs.map(({ key }) => st.delete(key)));
+}
+
 export default async (req) => {
   const url = new URL(req.url);
   const h = clean(url.searchParams.get("h"));
@@ -12,6 +37,7 @@ export default async (req) => {
       if (f.hasImage) { const img = await st.get(`${h}/img/${slug(f.name)}`); if (img) f.image = img; }
       return f;
     }));
+    v.meta.swipes = await readSwipes(st, h, v.meta.swipes);
     return Response.json(v);
   }
 
@@ -34,7 +60,23 @@ export default async (req) => {
       if (doc.custom.length > 200) doc.custom = doc.custom.slice(-200);
     }
     if (p.customRemove) doc.custom = doc.custom.filter((c) => !p.customRemove.includes(c.id));
-    if (p.meta) Object.assign(doc.meta, p.meta);
+    const { swipes: legacySwipes, guestNames, ...restMeta } = p.meta || {};
+    if (p.meta) {
+      Object.assign(doc.meta, restMeta);
+      // guestNames only ever grows — merge, never replace
+      if (guestNames && typeof guestNames === "object") doc.meta.guestNames = Object.assign(doc.meta.guestNames || {}, guestNames);
+    }
+    // Swipes live as one record per swipe, so two phones swiping at the same instant can never erase each other.
+    const legacyDoc = doc.meta.swipes; delete doc.meta.swipes;
+    const current = await readSwipes(st, h, legacyDoc);
+    if (legacyDoc) for (const [bk, e] of Object.entries(legacyDoc)) for (const [n, v] of Object.entries(e || {}))
+      if (v === "like" || v === "pass") await writeSwipe(st, h, bk, n, current[bk]?.[n] || v);   // one-time migration
+    if (legacySwipes && typeof legacySwipes === "object")                                            // older app versions: additive only
+      for (const [bk, e] of Object.entries(legacySwipes)) for (const [n, v] of Object.entries(e || {}))
+        if ((v === "like" || v === "pass") && !(current[bk] && n in current[bk])) await writeSwipe(st, h, bk, String(n).toLowerCase(), v);
+    if (Array.isArray(p.swipeReset)) for (const bk of p.swipeReset) await resetBucket(st, h, bk);
+    if (p.swipeSet && typeof p.swipeSet === "object")
+      for (const [bk, e] of Object.entries(p.swipeSet)) for (const [n, v] of Object.entries(e || {})) await writeSwipe(st, h, bk, String(n).toLowerCase(), v);
     if (p.favorites) {
       const favs = [];
       for (const f of p.favorites.slice(0, 12)) {
@@ -48,7 +90,7 @@ export default async (req) => {
     if (body.reset) doc.ticks = {};
     doc.updated = Date.now();
     await st.setJSON(h, doc);
-    return Response.json({ ok: true, updated: doc.updated });
+    return Response.json({ ok: true, updated: doc.updated, swipes: await readSwipes(st, h) });
   }
   return new Response("Method not allowed", { status: 405 });
 };

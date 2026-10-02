@@ -463,7 +463,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v35 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v36 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -849,7 +849,10 @@ let H=(url.searchParams.get("h")||"").replace(/[^a-z0-9]/gi,"");
 if(!H){ H=Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join(""); url.searchParams.set("h",H); history.replaceState(null,"",url); }
 document.getElementById("hcode").textContent=H;
 let S={ticks:{},notes:{},hidden:{},custom:[],meta:{},favorites:[],updated:0};
-function loadPending(){ try{ return JSON.parse(localStorage.getItem("bp-pending-"+H))||{}; }catch{ return {}; } }
+let LOCAL_BEFORE=null; try{ LOCAL_BEFORE=JSON.parse(localStorage.getItem("bp2-"+H)); }catch{}
+function loadPending(){ let q; try{ q=JSON.parse(localStorage.getItem("bp-pending-"+H))||{}; }catch{ q={}; }
+  if(q.meta&&q.meta.swipes){ q.swipeSet=q.swipeSet||{}; for(const [b,e] of Object.entries(q.meta.swipes)){ q.swipeSet[b]=q.swipeSet[b]||{}; for(const [n,v] of Object.entries(e||{})) if(v==="like"||v==="pass") q.swipeSet[b][n]=v; } delete q.meta.swipes; }
+  return q; }
 function savePending(){ try{ if(Object.keys(pending).length) localStorage.setItem("bp-pending-"+H,JSON.stringify(pending)); else localStorage.removeItem("bp-pending-"+H); }catch{} }
 let filter="all", showHidden=false, pending=loadPending(), flushTimer=null;
 
@@ -881,6 +884,8 @@ function patch(p){ // queue a patch; merged server-side
   for(const k of ["ticks","notes","hidden","meta"]) if(p[k]) pending[k]=Object.assign(pending[k]||{},p[k]);
   for(const k of ["customAdd","customRemove"]) if(p[k]) pending[k]=(pending[k]||[]).concat(p[k]);
   if(p.favorites) pending.favorites=p.favorites;
+  if(p.swipeReset){ pending.swipeReset=(pending.swipeReset||[]).concat(p.swipeReset); p.swipeReset.forEach(b=>{ if(pending.swipeSet) delete pending.swipeSet[b]; }); }
+  if(p.swipeSet){ pending.swipeSet=pending.swipeSet||{}; for(const [b,e] of Object.entries(p.swipeSet)) pending.swipeSet[b]=Object.assign(pending.swipeSet[b]||{},e); }
   cache(); savePending(); clearTimeout(flushTimer); flushTimer=setTimeout(flush,400);
 }
 function reapplyPending(){ const p=pending;
@@ -891,11 +896,28 @@ function reapplyPending(){ const p=pending;
   if(p.customRemove) S.custom=S.custom.filter(c=>!p.customRemove.includes(c.id));
   if(p.meta) Object.assign(S.meta,p.meta);
   if(p.favorites) S.favorites=p.favorites;
+  applySwipePending(p);
 }
+function applySwipePending(p){ if(!p) return; S.meta.swipes=S.meta.swipes||{};
+  (p.swipeReset||[]).forEach(b=>{ S.meta.swipes[b]={}; });
+  for(const [b,e] of Object.entries(p.swipeSet||{})){ const bk=S.meta.swipes[b]=S.meta.swipes[b]||{}; for(const [n,v] of Object.entries(e)){ if(v==="like"||v==="pass") bk[n]=v; else delete bk[n]; } }
+}
+let flushing=false;
 async function flush(){
+  if(flushing){ clearTimeout(flushTimer); flushTimer=setTimeout(flush,300); return; }
+  if(!Object.keys(pending).length) return;
+  flushing=true;
   const body={patch:pending}; pending={};
-  try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r.json(); if(!r.ok) throw 0; S.updated=d.updated; setSync("Synced"); savePending(); }
-  catch{ setSync("Offline — will sync once you're back online"); for(const k in body.patch) pending[k]=body.patch[k]; savePending(); flushTimer=setTimeout(flush,5000); }
+  try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r.json(); if(!r.ok) throw 0; S.updated=d.updated; setSync("Synced"); savePending();
+    if(d.swipes){ S.meta.swipes=d.swipes; applySwipePending(pending); cache(); if(typeof namesResultsRender==="function") namesResultsRender(); } }
+  catch{ setSync("Offline — will sync once you're back online"); const newer=pending; pending=body.patch; patchMergeInto(newer); savePending(); flushTimer=setTimeout(flush,5000); }
+  finally{ flushing=false; }
+}
+function patchMergeInto(p){ // re-queue anything added while a failed save was in flight, without losing it
+  for(const k of ["ticks","notes","hidden","meta"]) if(p[k]) pending[k]=Object.assign(pending[k]||{},p[k]);
+  for(const k of ["customAdd","customRemove","swipeReset"]) if(p[k]) pending[k]=(pending[k]||[]).concat(p[k]);
+  if(p.favorites) pending.favorites=p.favorites;
+  if(p.swipeSet){ pending.swipeSet=pending.swipeSet||{}; for(const [b,e] of Object.entries(p.swipeSet)) pending.swipeSet[b]=Object.assign(pending.swipeSet[b]||{},e); }
 }
 setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
@@ -1443,7 +1465,7 @@ function guestPicksRender(){
 function swRecord(name,verdict){
   const p=swProfile(); if(!p) return;
   swBucket(p)[name.toLowerCase()]=verdict; swLast={name,verdict,bucketKey:swBucketKey(p)};
-  patch({meta:{swipes:S.meta.swipes}});
+  patch({swipeSet:{[swBucketKey(p)]:{[name.toLowerCase()]:verdict}}});
   if(verdict!=="like") return;
   if(p==="guest"){ const who=swGuestName()||"Guest"; const rec=guestRec(name); if(!rec.by.includes(who)){ rec.by.push(who); rec.count=rec.by.length; } patch({meta:{guestLikes:S.meta.guestLikes}}); guestPicksRender(); toast(`Added to guest picks as ${who} — Leslie & Terel can add it from the shortlist.`); namesResultsRender(); return; }
   const other=swOther(p); const oth=S.meta.swipes&&S.meta.swipes[other];
@@ -1467,8 +1489,8 @@ function removeLike(profileKey,nameLower,display){
   const bucket=S.meta.swipes&&S.meta.swipes[profileKey]; if(bucket) delete bucket[nameLower];
   const list=S.meta.names||[]; const entry=list.find(x=>x.n.toLowerCase()===nameLower);
   if(entry&&entry.v) entry.v=entry.v.filter(v=>v!==profileKey);
-  patch({meta:{swipes:S.meta.swipes,names:S.meta.names}}); namesResultsRender();
-  toast(`Removed ${display} from ${profileLabel(profileKey)}'s likes`,()=>{ const b2=swBucketFor(profileKey); b2[nameLower]="like"; if(entry&&entry.v&&!entry.v.includes(profileKey)) entry.v.push(profileKey); patch({meta:{swipes:S.meta.swipes,names:S.meta.names}}); namesResultsRender(); });
+  patch({swipeSet:{[profileKey]:{[nameLower]:null}},meta:{names:S.meta.names}}); namesResultsRender();
+  toast(`Removed ${display} from ${profileLabel(profileKey)}'s likes`,()=>{ const b2=swBucketFor(profileKey); b2[nameLower]="like"; if(entry&&entry.v&&!entry.v.includes(profileKey)) entry.v.push(profileKey); patch({swipeSet:{[profileKey]:{[nameLower]:"like"}},meta:{names:S.meta.names}}); namesResultsRender(); });
 }
 function swBucketFor(k){ S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[k]=S.meta.swipes[k]||{}; return S.meta.swipes[k]; }
 function namesResultsRender(){
@@ -1572,9 +1594,9 @@ function commitSwipe(verdict,startDx){
 function swAct(verdict){ commitSwipe(verdict,0); }
 document.getElementById("swPass").onclick=()=>swAct("pass");
 document.getElementById("swLike").onclick=()=>swAct("like");
-document.getElementById("swUndo").onclick=()=>{ if(!swLast||swLast.bucketKey!==swBucketKey(swProfile())) return; const b=S.meta.swipes&&S.meta.swipes[swLast.bucketKey]; if(b) delete b[swLast.name.toLowerCase()]; patch({meta:{swipes:S.meta.swipes}});
+document.getElementById("swUndo").onclick=()=>{ if(!swLast||swLast.bucketKey!==swBucketKey(swProfile())) return; const b=S.meta.swipes&&S.meta.swipes[swLast.bucketKey]; if(b) delete b[swLast.name.toLowerCase()]; patch({swipeSet:{[swLast.bucketKey]:{[swLast.name.toLowerCase()]:null}}});
   swStreak=0; const full=(window.NAMEBANK||[]).find(x=>x.n===swLast.name)||{n:swLast.name,g:"n",s:"classic"}; swDeck.splice(Math.max(0,swIdx-1),0,full); swIdx=Math.max(0,swIdx-1); swLast=null; swRenderCard(); toast("Undone"); };
-document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"this guest"; if(!confirm(`Clear ${who}'s swipe progress so they can start fresh? (Picks already suggested are kept.)`)) return; S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[swBucketKey("guest")]={}; patch({meta:{swipes:S.meta.swipes}}); swStreak=0; swRefreshDeck(); toast("Swipes reset"); };
+document.getElementById("swResetGuest").onclick=()=>{ const who=swGuestName()||"this guest"; if(!confirm(`Clear ${who}'s swipe progress so they can start fresh? (Picks already suggested are kept.)`)) return; S.meta.swipes=S.meta.swipes||{}; S.meta.swipes[swBucketKey("guest")]={}; patch({swipeReset:[swBucketKey("guest")]}); swStreak=0; swRefreshDeck(); toast("Swipes reset"); };
 (function(){ const wrap=document.getElementById("swCard"); let sx=0,dx=0,active=false;
   wrap.addEventListener("pointerdown",e=>{ if(swIdx>=swDeck.length||swBusy) return; active=true; sx=e.clientX; wrap.classList.add("dragging"); wrap.style.transition="none"; try{wrap.setPointerCapture(e.pointerId);}catch{} });
   wrap.addEventListener("pointermove",e=>{ if(!active) return; dx=e.clientX-sx;
@@ -1666,7 +1688,11 @@ document.getElementById("partyBtn").onclick=()=>window.party&&window.party();
 // Extra celebration when a whole category gets completed
 const _upd=update; update=function(){ const before=[...document.querySelectorAll('section[data-done="1"]')].length; _upd(); const after=[...document.querySelectorAll('section[data-done="1"]')].length; if(after>before&&window.party) window.party("confetti"); };
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
-load().then(()=>{ reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); namesResultsRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
+function recoverLostSwipes(){ const flag="bp-swipefix-"+H; if(localStorage.getItem(flag)) return; localStorage.setItem(flag,"1");
+  const loc=LOCAL_BEFORE&&LOCAL_BEFORE.meta&&LOCAL_BEFORE.meta.swipes; if(!loc) return; S.meta.swipes=S.meta.swipes||{}; const set={}; let n=0;
+  for(const [b,e] of Object.entries(loc)) for(const [name,v] of Object.entries(e||{})){ if((v==="like"||v==="pass")&&!(S.meta.swipes[b]&&name in S.meta.swipes[b])){ (set[b]=set[b]||{})[name]=v; n++; } }
+  if(n){ applySwipePending({swipeSet:set}); patch({swipeSet:set}); setTimeout(()=>toast(`Recovered ${n} swipe${n>1?"s":""} saved on this phone`),1200); } }
+load().then(()=>{ recoverLostSwipes(); reapplyPending(); render(); renderFavs(); applyDue(); tick(); loadRoom(); showWeek(currentWeek()); syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bumpList(); bagRender(); swRefreshDeck(); guestPicksRender(); namesResultsRender(); if(Object.keys(pending).length){ setSync("Finishing a sync from last time…"); flush(); } });
 </script>
 </body>
 </html>
