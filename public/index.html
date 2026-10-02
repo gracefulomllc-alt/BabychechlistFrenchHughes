@@ -410,6 +410,10 @@
   .edv{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;white-space:nowrap}
   .edv.like{background:var(--sage-soft);color:#1E4D2B;border:1px solid #9AC0A4}.edv.pass{background:#F1F1EE;color:#7A6F6F;border:1px solid #CFCFC8}
   .gp-row .edbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+  .invite{border-color:#B9AF63!important;background:linear-gradient(180deg,#FFFDF3,#F6EFD3)!important}
+  .invlink{margin:4px 0 10px;padding:10px 12px;border:1px dashed #8E8A45;border-radius:8px;background:#fff;font:600 13px/1.4 Verdana,sans-serif;word-break:break-all;color:var(--ink)}
+  .swsug{display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;color:#2C5677;background:#E3EEF7;border:1px solid #A9C6DE}
 </style>
 </head>
 <body>
@@ -479,7 +483,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v42 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v46 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -579,6 +583,18 @@
 
 <div id="pane-names" class="pane">
   <div class="nur">
+    <div class="tool invite">
+      <h3 style="margin:0 0 4px">🎉 Invite family &amp; friends</h3>
+      <p class="sub" style="margin:0 0 10px">Send a link so family &amp; friends can swipe names, suggest their own, and see a Family &amp; Friends leaderboard. They only see the name game: the same deck you swipe, plus a live leaderboard with your and Leslie's likes and matches (never your passes). They never see your checklist, gifts, notes, or household code.</p>
+      <div id="invLink" class="invlink" style="display:none"></div>
+      <div class="acts">
+        <button class="opt" id="invGet" type="button">Get invite link</button>
+        <button class="opt" id="invShare" type="button" style="display:none">📤 Share</button>
+        <button class="opt" id="invCopy" type="button" style="display:none">Copy</button>
+        <button class="opt" id="invNew" type="button" style="display:none">New link</button>
+        <button class="opt" id="invOff" type="button" style="display:none">Turn off</button>
+      </div>
+    </div>
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
       <p class="sub" style="margin:0 0 6px">Add names yourselves, swipe through a curated deck, or see how it's going. Both of you liking the same name is a match — lands on the shortlist automatically.</p>
@@ -1506,8 +1522,9 @@ function swBucket(p){ const k=swBucketKey(p); S.meta.swipes=S.meta.swipes||{}; S
 let DAILY=[], DAILY_TODAY="", DAILY_NOTE="";
 try{ const c=JSON.parse(localStorage.getItem("bp-daily-"+H)||"null"); if(c){ DAILY=c.batches||[]; DAILY_TODAY=c.today||""; } }catch{}
 const denverDay=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/Denver"});
+function esc(x){ return String(x==null?"":x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
 function allNames(){ const seen=new Set(), out=[];
-  for(const x of [...(window.NAMEBANK||[]),...DAILY.flatMap(b=>b.names||[])]){ const k=x.n.toLowerCase(); if(!seen.has(k)){ seen.add(k); out.push(x); } }
+  for(const x of [...(window.NAMEBANK||[]),...DAILY.flatMap(b=>b.names||[]),...((S.meta&&S.meta.customNames)||[])]){ const k=x.n.toLowerCase(); if(!seen.has(k)){ seen.add(k); out.push(x); } }
   return out; }
 function todaysNames(){ return new Set((DAILY.filter(b=>b.date===denverDay()).flatMap(b=>b.names||[])).map(x=>x.n.toLowerCase())); }
 async function fetchDaily(){
@@ -1644,6 +1661,21 @@ function editRender(){
     list.appendChild(row); });
 }
 document.getElementById("edSearch").oninput=e=>{ edQuery=e.target.value; editRender(); };
+/* ================= Family & friends invite link ================= */
+let INV_CODE=null;
+function invUrl(){ return `${location.origin}/party.html?p=${INV_CODE}`; }
+function invShow(){ const on=!!INV_CODE, el=document.getElementById("invLink");
+  el.style.display=on?"":"none"; if(on) el.textContent=invUrl();
+  document.getElementById("invGet").style.display=on?"none":"";
+  ["invCopy","invNew","invOff"].forEach(id=>document.getElementById(id).style.display=on?"":"none");
+  document.getElementById("invShare").style.display=on&&navigator.share?"":"none"; }
+async function invCall(action){ try{ const r=await fetch(`/api/party?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action})}); const d=await r.json(); if(!r.ok) throw 0; INV_CODE=d.code; invShow(); return true; }catch{ toast("Couldn't reach the server"); return false; } }
+document.getElementById("invGet").onclick=async()=>{ if(await invCall("get")) toast("Invite link ready — share it with family & friends"); };
+document.getElementById("invCopy").onclick=async()=>{ try{ await navigator.clipboard.writeText(invUrl()); toast("Invite link copied"); }catch{ prompt("Copy this link:",invUrl()); } };
+document.getElementById("invShare").onclick=async()=>{ try{ await navigator.share({title:"Help us pick a baby name! 💕",text:"Swipe through baby names with us and suggest your own:",url:invUrl()}); }catch{} };
+document.getElementById("invNew").onclick=async()=>{ if(!confirm("Make a new invite link? The old link will stop working for anyone who has it.")) return; if(await invCall("new")) toast("New link ready — the old one is turned off"); };
+document.getElementById("invOff").onclick=async()=>{ if(!confirm("Turn off the invite link? Guests won't be able to swipe until you make a new one. Their swipes so far are kept.")) return; if(await invCall("off")) toast("Invite link turned off"); };
+
 function namesResultsRender(){ syncCheckRender(); editRender();
   const sw=S.meta.swipes||{}; const keys=Object.keys(sw).filter(k=>!k.startsWith("_")&&Object.keys(sw[k]||{}).length);
   const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard"), peopleBox=document.getElementById("nrPeople"), matchBox=document.getElementById("nrMatches");
@@ -1732,7 +1764,7 @@ function swRenderCard(){
   else if(DAILY_NOTE){ dEl.style.display=""; dEl.textContent=DAILY_NOTE; } else dEl.style.display="none";
   const isNew=fresh.has(item.n.toLowerCase());
   const flair=swStreak>=3?`<div class="swflair">🔥 ${swStreak} likes in a row!</div>`:"";
-  cardBox.innerHTML=`${isNew?'<div class="swnew">🆕 Today\'s drop</div>':""}<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>${flair}`;
+  cardBox.innerHTML=`${item.o==="Family pick"?`<div class="swsug">💡 ${esc(item.m)}</div>`:""}${isNew?'<div class="swnew">🆕 Today\'s drop</div>':""}<div class="swname">${item.n}</div><div class="swtag ${item.g}">${SW_LABEL[item.g]}${item.s==="unique"?" · Unique":""}</div><div class="swmeta">${item.m?item.m.charAt(0).toUpperCase()+item.m.slice(1):""}${item.o?" · "+item.o:""}</div>${flair}`;
   prog.textContent=`${swIdx+1} of ${swDeck.length}`;
 }
 function commitSwipe(verdict,startDx){

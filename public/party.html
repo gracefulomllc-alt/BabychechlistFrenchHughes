@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E4D2B">
+<title>Help pick the baby's name! 💕</title>
+<style>
+  :root{--ink:#1E4D2B;--muted:#5F6F63;--gold:#C8C372;--paper:#fff;--line:#DDE5DE}
+  *{box-sizing:border-box}
+  body{margin:0;background:#EDF1EA;color:var(--ink);font-family:'Trebuchet MS','Lucida Grande',Verdana,sans-serif;line-height:1.45;overflow-x:hidden}
+  header{text-align:center;padding:22px 18px 18px;color:#fff;border-top:3px solid var(--gold);
+    background:linear-gradient(180deg,#4E9A62 0%,#2E7A44 45%,#1E4D2B 50%,#1E4D2B 100%);box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  header::after{content:"";display:block;height:6px;margin:16px -18px -18px;background:repeating-linear-gradient(90deg,var(--gold) 0 14px,#1E4D2B 14px 18px)}
+  .cele{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  h1{margin:4px 0;font-family:Georgia,serif;font-style:italic;font-size:28px;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+  header p{margin:0;color:#E9F2EA;font-size:14px}
+  main{max-width:560px;margin:0 auto;padding:14px 14px 60px}
+  .card{background:var(--paper);border:1px solid #9AA89A;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 2px 5px rgba(0,0,0,.18)}
+  h2,h3{font-family:Georgia,serif;margin:0 0 8px}
+  .sub{color:var(--muted);font-size:14px}
+  .opt,button.big{border:1px solid #8E8A45;border-radius:8px;background:linear-gradient(180deg,#fff,#E9ECE3);color:var(--ink);padding:9px 13px;font:700 14px/1 inherit;font-family:inherit;cursor:pointer;box-shadow:inset 0 1px 0 #fff,0 1px 2px rgba(0,0,0,.2)}
+  .opt[aria-pressed=true],.go{background:linear-gradient(180deg,#5AA36F 0%,#3E8A52 50%,#2B6B3C 51%,#1E4D2B 100%)!important;color:#fff!important;border-color:#143A1F!important;text-shadow:0 -1px 0 rgba(0,0,0,.4)}
+  .go{width:100%;padding:14px;font-size:16px;border-radius:10px;margin-top:10px;border:1px solid #143A1F;cursor:pointer;font-weight:800;font-family:inherit}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  input,select{width:100%;margin-top:8px;border:1px solid #8E8A45;border-radius:8px;padding:11px 12px;font:16px/1.2 inherit;font-family:inherit;background:#fff}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:4px 0 2px}
+  .tabs .opt{padding:10px 4px;font-size:13px}
+  .hello{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;margin-bottom:8px}
+  .hello a{color:var(--muted)}
+  /* swipe card */
+  .swipewrap{position:relative;height:260px;margin-top:12px;touch-action:pan-y}
+  .swcard{position:absolute;inset:0;background:#fff;border:1px solid #9AA89A;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;user-select:none;touch-action:none;transition:transform .2s,box-shadow .2s,opacity .2s;cursor:grab}
+  .swcard.dragging{transition:none}
+  .swcard.like{box-shadow:0 0 0 4px var(--gold),0 4px 14px rgba(0,0,0,.25)}
+  .swcard.pass{box-shadow:0 0 0 4px #9AA89A,0 4px 14px rgba(0,0,0,.25)}
+  .swname{font-family:Georgia,serif;font-size:36px;font-weight:700}
+  .tag{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+  .tag.b{background:#CFE3F2;color:#2C5677}.tag.g{background:#F6DCE8;color:#8A3A5C}.tag.n{background:#E3EDE5;color:#1E4D2B}
+  .meta{margin-top:10px;color:var(--muted);font-size:14px;max-width:270px}
+  .pill{display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em}
+  .pill.sug{color:#2C5677;background:#E3EEF7;border:1px solid #A9C6DE}.pill.new{color:#5B4A12;background:#F6EFD3;border:1px solid #B9AF63}
+  .social{margin-top:10px;font-size:13px;font-weight:700;color:#C8A83A}
+  .stamp{position:absolute;top:16px;left:16px;right:16px;text-align:center;font-family:Georgia,serif;font-weight:800;font-size:25px;padding:5px;border-radius:10px;opacity:0;pointer-events:none}
+  .stamp.l{color:#1E4D2B;border:4px solid var(--gold);transform:rotate(-7deg);background:rgba(200,195,114,.18)}
+  .stamp.p{color:#8A2B2B;border:4px solid #9AA89A;transform:rotate(7deg);background:rgba(154,168,154,.18)}
+  .burst{position:absolute;bottom:14%;font-size:22px;pointer-events:none;animation:up .85s ease-out forwards;z-index:3}
+  @keyframes up{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(var(--dx),-170px) scale(1.15);opacity:0}}
+  .btnrow{display:flex;justify-content:center;gap:14px;margin-top:14px}
+  .big{min-width:130px;font-size:17px!important;padding:14px!important;transition:transform .1s}
+  .big:active{transform:scale(.92)}
+  .big.pass{color:#8A2B2B}.big.like{border-color:var(--gold)}
+  .row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-top:1px dotted #B9C4B8}
+  .row:first-child{border-top:0}
+  .row .n{flex:1;font-family:Georgia,serif;font-size:17px}
+  .row .c{font-size:12px;color:var(--muted);text-align:right}
+  .row button{border:1px solid #8E8A45;border-radius:6px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:6px 9px;font:700 12px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink)}
+  .rank{width:26px;font-family:Georgia,serif;font-weight:800;color:#C8A83A;text-align:center}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .stats div{flex:1;min-width:90px;background:#F5F7F4;border:1px solid #C9D3C8;border-radius:8px;padding:10px;text-align:center}
+  .stats b{display:block;font-family:Georgia,serif;font-size:22px}
+  .stats span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .err{background:#FDECEC;color:#8A2B2B;padding:12px;border-radius:8px;text-align:center}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:90%;background:linear-gradient(180deg,#2E7A44,#1E4D2B);color:#fff;border:1px solid var(--gold);padding:10px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;transition:opacity .2s;z-index:60;pointer-events:none;text-align:center}
+  .toast.show{opacity:1}
+  details{margin-top:14px;border:1px solid #C9D3C8;border-radius:10px;padding:8px 12px;background:#FAFBF9}
+  summary{cursor:pointer;font-family:Georgia,serif;font-weight:800;font-size:16px}
+  .who{font-size:11px;font-weight:800;padding:1px 6px;border-radius:999px;margin-left:4px}
+  .who.les{background:#F6DCE8;color:#8A3A5C}.who.ter{background:#FCE3CF;color:#8A4A12}
+  .cd{display:flex;gap:8px;justify-content:center;margin:14px auto 4px;max-width:420px}
+  .cd div{flex:1;background:linear-gradient(180deg,#FFFFFF 0%,#EDE9CC 48%,#D9D08A 52%,#C8C372 100%);border:1px solid #8E8A45;border-radius:10px;padding:8px 4px;box-shadow:inset 0 1px 0 #fff,0 2px 4px rgba(0,0,0,.4)}
+  .cd b{display:block;font-family:Georgia,serif;font-size:24px;line-height:1;color:#1E4D2B;font-variant-numeric:tabular-nums}
+  .cd span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#5B4A12;font-weight:800}
+  .cdnote{font-size:13px;color:#E9F2EA}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="cele">🎉 You're invited!</div>
+  <h1>Help Leslie &amp; Terel pick a name</h1>
+  <p>Swipe names you love, suggest your own, and see what Leslie, Terel and everyone else is picking — live.</p>
+  <div id="cdWrap" class="hidden">
+    <div class="cd"><div><b id="cdD">–</b><span>days</span></div><div><b id="cdH">–</b><span>hours</span></div><div><b id="cdM">–</b><span>min</span></div><div><b id="cdS">–</b><span>sec</span></div></div>
+    <div class="cdnote" id="cdNote"></div>
+  </div>
+</header>
+<main>
+  <div id="err" class="card err hidden"></div>
+
+  <div id="join" class="card hidden">
+    <h2>First, who are you?</h2>
+    <p class="sub" style="margin:0">So everyone can see who picked what.</p>
+    <select id="joinPick"></select>
+    <input id="joinName" placeholder="Type your name" maxlength="30" class="hidden">
+    <button class="go" id="joinGo" type="button">Let's go! 💕</button>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="hello"><span>Hi <b id="meName"></b>! 👋</span><a href="#" id="notMe">Not you?</a></div>
+    <div class="tabs">
+      <button class="opt" data-t="swipe" aria-pressed="true">🔥 Swipe</button>
+      <button class="opt" data-t="suggest" aria-pressed="false">💡 Suggest</button>
+      <button class="opt" data-t="board" aria-pressed="false">🏆 Board</button>
+      <button class="opt" data-t="mine" aria-pressed="false">💚 Mine</button>
+    </div>
+
+    <section id="t-swipe" class="card">
+      <div class="opts" id="genders"></div>
+      <div class="sub" id="prog" style="margin-top:8px"></div>
+      <div class="swipewrap" id="wrap"><div class="swcard" id="card"></div></div>
+      <div class="btnrow"><button class="big pass" id="passBtn" type="button">✕ Pass</button><button class="big like" id="likeBtn" type="button">♥ Like</button></div>
+      <div class="sub" style="text-align:center;margin-top:10px">Drag the card right to like, left to pass.</div>
+    </section>
+
+    <section id="t-suggest" class="card hidden">
+      <h3>💡 Suggest a name</h3>
+      <p class="sub" style="margin:0">It goes into everyone's deck — including Leslie &amp; Terel's.</p>
+      <input id="sugName" placeholder="Name" maxlength="30">
+      <div class="opts" id="sugG" style="margin-top:10px"></div>
+      <button class="go" id="sugGo" type="button">Add to the deck</button>
+      <h3 style="margin-top:20px">Suggested by family &amp; friends</h3>
+      <div id="sugList"></div>
+    </section>
+
+    <section id="t-board" class="card hidden">
+      <div id="bOpen">
+        <h3>💕 Leslie &amp; Terel's matches</h3>
+        <p class="sub" style="margin:0 0 4px">Names they both love.</p>
+        <div id="bMatches"></div>
+        <h3 style="margin-top:20px">🏆 Everyone's favorites</h3>
+        <div class="stats" id="bStats"></div>
+        <div id="bList"></div>
+        <details><summary>👩 Leslie's likes (<span id="lCount">0</span>)</summary><div id="lList"></div></details>
+        <details><summary>🏀 Terel's likes (<span id="tCount">0</span>)</summary><div id="tList"></div></details>
+        <h3 style="margin-top:20px">🔥 Top swipers</h3>
+        <div id="bPeople"></div>
+      </div>
+    </section>
+
+    <section id="t-mine" class="card hidden">
+      <h3>💚 Names you liked</h3>
+      <div id="mList"></div>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="/namebank.js"></script>
+<script src="/party.js"></script>
+<script>
+const P=(new URL(location.href).searchParams.get("p")||"").replace(/[^a-z0-9]/gi,"");
+const GKEY="bp-party-guest-"+P;
+const $=id=>document.getElementById(id);
+const esc=x=>String(x==null?"":x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const GLABEL={b:"Boy",g:"Girl",n:"Neutral"};
+let D={guests:{},guestNames:{},custom:[],daily:[],today:"",parents:null}, ME=localStorage.getItem(GKEY)||"", deck=[], idx=0, busy=false, genders=new Set(["b","g","n"]), queue={}, qTimer=null;
+
+let tT; function toast(t){ const e=$("toast"); e.textContent=t; e.classList.add("show"); clearTimeout(tT); tT=setTimeout(()=>e.classList.remove("show"),2400); }
+let ac; function tone(f,d,type){ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); const o=ac.createOscillator(),g=ac.createGain(); o.type=type||"sine"; o.frequency.value=f; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.0001,ac.currentTime); g.gain.exponentialRampToValueAtTime(.16,ac.currentTime+.01); g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d); o.start(); o.stop(ac.currentTime+d+.02); }catch{} }
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch{} };
+
+const myKey=()=>"guest:"+ME.trim().toLowerCase();
+const mine=()=>{ const b=Object.assign({},D.guests[myKey()]||{}); for(const [n,v] of Object.entries(queue)){ if(v) b[n]=v; else delete b[n]; } return b; };
+const label=k=>D.guestNames[k]||(k.slice(6).replace(/\b\w/g,c=>c.toUpperCase()));
+function allNames(){ const seen=new Set(), out=[];
+  for(const x of [...(D.custom||[]),...(D.daily||[]).flatMap(b=>b.names||[]),...(window.NAMEBANK||[])]){ const k=x.n.toLowerCase(); if(!seen.has(k)){ seen.add(k); out.push(x); } }
+  return out; }
+const display=nl=>{ const f=allNames().find(x=>x.n.toLowerCase()===nl); return f?f.n:nl.replace(/\b\w/g,c=>c.toUpperCase()); };
+const todays=()=>new Set((D.daily||[]).filter(b=>b.date===D.today).flatMap(b=>b.names||[]).map(x=>x.n.toLowerCase()));
+function likersOf(nl){ if(!isOpen()) return [];
+  const out=[]; if(D.parents.leslie.includes(nl)) out.push("Leslie"); if(D.parents.terel.includes(nl)) out.push("Terel");
+  return out.concat(Object.entries(D.guests).filter(([k,e])=>k!==myKey()&&e[nl]==="like").map(([k])=>label(k))); }
+
+async function api(method,body){ const r=await fetch(`/api/party-state?p=${P}${ME?`&g=${encodeURIComponent(ME)}`:""}`,{method,headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined}); const d=await r.json(); if(!r.ok) throw new Error(d.error||"Something went wrong"); return d; }
+function absorb(d){ DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null}; }
+const myCount=()=>Object.keys(mine()).length;
+const isOpen=()=>!!D.parents;
+
+/* ---------- countdown to the due date ---------- */
+let DUE=null;
+function tickCd(){ const w=$("cdWrap"); if(!DUE){ w.classList.add("hidden"); return; } w.classList.remove("hidden");
+  const d=new Date(DUE+"T12:00:00"); let ms=d-new Date(); const past=ms<0; ms=Math.abs(ms);
+  $("cdD").textContent=Math.floor(ms/86400000); $("cdH").textContent=String(Math.floor(ms%86400000/3600000)).padStart(2,"0");
+  $("cdM").textContent=String(Math.floor(ms%3600000/60000)).padStart(2,"0"); $("cdS").textContent=String(Math.floor(ms%60000/1000)).padStart(2,"0");
+  const weeks=Math.max(0,Math.min(42,40-Math.floor((d-new Date())/(7*86400000))));
+  $("cdNote").textContent=past?"Baby's here! 🎉 (or running fashionably late)":`until baby's due — ${d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"})} · about ${weeks} weeks along`; }
+setInterval(tickCd,1000);
+
+/* ---------- joining ---------- */
+function showJoin(){ $("app").classList.add("hidden"); $("join").classList.remove("hidden");
+  const names=[...new Set(Object.values(D.guestNames))].sort((a,b)=>a.localeCompare(b));
+  $("joinPick").innerHTML=`<option value="">Pick your name…</option>${names.map(n=>`<option>${esc(n)}</option>`).join("")}<option value="__new__">➕ I'm new here</option>`;
+  if(!names.length){ $("joinPick").value="__new__"; $("joinPick").classList.add("hidden"); $("joinName").classList.remove("hidden"); }
+  else { $("joinPick").classList.remove("hidden"); $("joinName").classList.add("hidden"); } }
+$("joinPick").onchange=e=>{ $("joinName").classList.toggle("hidden",e.target.value!=="__new__"); if(e.target.value==="__new__") $("joinName").focus(); };
+$("joinGo").onclick=async()=>{ const pick=$("joinPick").value; const n=(pick&&pick!=="__new__"?pick:$("joinName").value).trim();
+  if(!/^[A-Za-z0-9][A-Za-z0-9' .-]{0,29}$/.test(n)){ toast("Please enter your name (letters and numbers only)"); return; }
+  try{ absorb(await api("POST",{guest:n,join:true})); }catch(e){ toast(e.message); return; }
+  ME=n; localStorage.setItem(GKEY,n); try{ absorb(await api("GET")); }catch{} startApp(); if(window.party) window.party("confetti"); };
+$("joinName").onkeydown=e=>{ if(e.key==="Enter") $("joinGo").click(); };
+$("notMe").onclick=e=>{ e.preventDefault(); ME=""; localStorage.removeItem(GKEY); showJoin(); };
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tabs .opt").forEach(b=>b.onclick=()=>{ document.querySelectorAll(".tabs .opt").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  ["swipe","suggest","board","mine"].forEach(t=>$("t-"+t).classList.toggle("hidden",t!==b.dataset.t)); renderAll(); });
+
+/* ---------- swiping ---------- */
+["b","g","n"].forEach(g=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=GLABEL[g]; b.setAttribute("aria-pressed","true");
+  b.onclick=()=>{ const on=b.getAttribute("aria-pressed")==="true"; if(on&&genders.size===1) return; on?genders.delete(g):genders.add(g); b.setAttribute("aria-pressed",!on); buildDeck(); }; $("genders").appendChild(b); });
+function buildDeck(){ const m=mine(), fresh=todays(), sug=new Set((D.custom||[]).map(x=>x.n.toLowerCase()));
+  const sh=a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const pool=allNames().filter(x=>genders.has(x.g)&&!(x.n.toLowerCase() in m));
+  const isS=x=>sug.has(x.n.toLowerCase()), isF=x=>fresh.has(x.n.toLowerCase());
+  deck=[...sh(pool.filter(isS)),...sh(pool.filter(x=>!isS(x)&&isF(x))),...sh(pool.filter(x=>!isS(x)&&!isF(x)))]; idx=0; renderCard(); }
+function renderCard(){ const c=$("card"); busy=false; c.classList.remove("dragging","like","pass"); c.style.transition=""; c.style.transform=""; c.style.opacity="";
+  if(idx>=deck.length){ c.innerHTML=`<div class="sub">You've swiped every name! 🎉<br>Check the 🏆 Board, or suggest a name.</div>`; $("prog").textContent=""; return; }
+  const x=deck[idx], nl=x.n.toLowerCase(), others=likersOf(nl);
+  const sug=x.o==="Family pick"?`<div class="pill sug">💡 ${esc(x.m)}</div>`:"", isNew=todays().has(nl)?`<div class="pill new">🆕 Today's drop</div>`:"";
+  c.innerHTML=`${sug}${isNew}<div class="swname">${esc(x.n)}</div><div class="tag ${x.g}">${GLABEL[x.g]||""}</div>${x.o!=="Family pick"?`<div class="meta">${esc((x.m||"").charAt(0).toUpperCase()+(x.m||"").slice(1))}${x.o?" · "+esc(x.o):""}</div>`:""}${others.length?`<div class="social">💚 Liked by ${esc(others.slice(0,2).join(", "))}${others.length>2?` +${others.length-2}`:""}</div>`:""}`;
+  $("prog").textContent=`${idx+1} of ${deck.length}`; }
+function stamp(dir,op){ const c=$("card"); let s=c.querySelector(".stamp"); if(!s){ s=document.createElement("div"); s.className="stamp"; c.appendChild(s); }
+  s.textContent=dir==="like"?"LIKE 💚":"NOPE ✕"; s.className="stamp "+(dir==="like"?"l":"p"); s.style.opacity=op; }
+function hearts(){ for(let i=0;i<7;i++){ const s=document.createElement("span"); s.className="burst"; s.textContent=["💚","✨","💛"][i%3]; s.style.left=(42+Math.random()*16)+"%"; s.style.animationDelay=(Math.random()*.15)+"s"; s.style.setProperty("--dx",(Math.random()*90-45)+"px"); $("wrap").appendChild(s); setTimeout(()=>s.remove(),900); } }
+function save(nl,v){ queue[nl]=v; clearTimeout(qTimer); qTimer=setTimeout(flush,500); }
+async function flush(){ if(!Object.keys(queue).length) return; const batch=queue; queue={};
+  try{ absorb(await api("POST",{guest:ME,swipeSet:Object.fromEntries(Object.entries(batch).map(([k,v])=>[display(k),v]))})); }
+  catch(e){ for(const [k,v] of Object.entries(batch)) if(!(k in queue)) queue[k]=v; qTimer=setTimeout(flush,4000); } }
+function commit(v,startDx){ if(idx>=deck.length||busy) return; busy=true; const c=$("card"), x=deck[idx], nl=x.n.toLowerCase(), dir=v==="like"?1:-1;
+  buzz(v==="like"?22:14);
+  if(v==="like"){ tone(740,.11); setTimeout(()=>tone(988,.14),65); hearts(); const o=likersOf(nl); if(o.length) setTimeout(()=>toast(`💚 ${o.slice(0,2).join(" & ")}${o.length>2?` + ${o.length-2} more`:""} liked ${x.n} too!`),150); }
+  else tone(260,.13,"triangle");
+  stamp(v,1); c.classList.remove("dragging"); c.style.transition="transform .32s cubic-bezier(.2,.8,.4,1), opacity .32s ease";
+  c.style.transform=`translateX(${(startDx||0)+dir*700}px) rotate(${dir*28}deg)`; c.style.opacity="0";
+  setTimeout(()=>{ save(nl,v); idx++; renderCard(); },300); }
+function setTab(){}
+$("likeBtn").onclick=()=>commit("like"); $("passBtn").onclick=()=>commit("pass");
+(function(){ const c=$("card"); let sx=0,dx=0,on=false;
+  c.addEventListener("pointerdown",e=>{ if(idx>=deck.length||busy) return; on=true; sx=e.clientX; c.classList.add("dragging"); c.style.transition="none"; try{c.setPointerCapture(e.pointerId);}catch{} });
+  c.addEventListener("pointermove",e=>{ if(!on) return; dx=e.clientX-sx; c.style.transform=`translateX(${dx}px) rotate(${dx/18}deg)`; c.classList.toggle("like",dx>40); c.classList.toggle("pass",dx<-40);
+    const op=Math.min(1,Math.abs(dx)/110); if(dx>12) stamp("like",op); else if(dx<-12) stamp("pass",op); else stamp("like",0); });
+  const end=()=>{ if(!on) return; on=false; c.classList.remove("dragging"); if(dx>110) commit("like",dx); else if(dx<-110) commit("pass",dx); else { c.style.transition="transform .25s ease"; c.style.transform=""; c.classList.remove("like","pass"); stamp("like",0); } dx=0; };
+  c.addEventListener("pointerup",end); c.addEventListener("pointercancel",end);
+})();
+
+/* ---------- suggesting ---------- */
+let sugG="n";
+[["g","Girl"],["b","Boy"],["n","Neutral"]].forEach(([g,l])=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=l; b.setAttribute("aria-pressed",g===sugG); b.onclick=()=>{ sugG=g; document.querySelectorAll("#sugG .opt").forEach(x=>x.setAttribute("aria-pressed",x===b)); }; $("sugG").appendChild(b); });
+$("sugGo").onclick=async()=>{ const n=$("sugName").value.trim();
+  if(!/^[A-Za-z][A-Za-z' -]{0,29}$/.test(n)){ toast("Letters, spaces, hyphens and apostrophes only"); return; }
+  try{ const d=await api("POST",{guest:ME,suggest:{n,g:sugG}}); absorb(d);
+    if(d.suggested&&d.suggested.exists) toast(`${n} is already in the deck — we counted your like! 💚`);
+    else { toast(`💡 ${n} added to everyone's deck!`); if(window.party) window.party("hearts"); tone(523,.1); setTimeout(()=>tone(659,.1),90); setTimeout(()=>tone(784,.2),180); }
+    $("sugName").value=""; renderAll(); }catch(e){ toast(e.message); } };
+$("sugName").onkeydown=e=>{ if(e.key==="Enter") $("sugGo").click(); };
+
+/* ---------- leaderboard / mine ---------- */
+function renderAll(){
+  if(!ME) return; setTab();
+  const sl=$("sugList"); const cs=(D.custom||[]).slice().reverse();
+  sl.innerHTML=cs.length?cs.map(x=>`<div class="row"><span class="n">${esc(x.n)}</span><span class="c">${esc(GLABEL[x.g]||"")} · ${esc(x.by||"family")}</span></div>`).join(""):`<p class="sub">No suggestions yet — be the first!</p>`;
+  const tag=w=>w==="Leslie"?`<span class="who les">Leslie</span>`:w==="Terel"?`<span class="who ter">Terel</span>`:"";
+  const tally={};
+  if(isOpen()){ D.parents.leslie.forEach(n=>(tally[n]=tally[n]||[]).push("Leslie")); D.parents.terel.forEach(n=>(tally[n]=tally[n]||[]).push("Terel")); }
+  for(const [k,e] of Object.entries(D.guests)) for(const [n,v] of Object.entries(e)) if(v==="like"){ (tally[n]=tally[n]||[]).push(label(k)); }
+  const top=Object.entries(tally).sort((a,b)=>b[1].length-a[1].length||display(a[0]).localeCompare(display(b[0]))).slice(0,25);
+  const people=Object.keys(D.guests).filter(k=>Object.keys(D.guests[k]).length);
+  $("bStats").innerHTML=`<div><b>${people.length+(isOpen()?2:0)}</b><span>Players</span></div><div><b>${Object.keys(tally).length}</b><span>Names liked</span></div><div><b>${(D.custom||[]).length}</b><span>Suggested</span></div>`;
+  $("bList").innerHTML=top.length?top.map(([n,who],i)=>{ const parents=who.filter(w=>w==="Leslie"||w==="Terel"), rest=who.filter(w=>w!=="Leslie"&&w!=="Terel");
+    return `<div class="row"><span class="rank">${i<3?["🥇","🥈","🥉"][i]:i+1}</span><span class="n">${esc(display(n))}${parents.map(tag).join("")}</span><span class="c">${who.length} like${who.length>1?"s":""}<br>${esc(rest.slice(0,3).join(", "))}${rest.length>3?` +${rest.length-3}`:""}</span></div>`; }).join(""):`<p class="sub">No likes yet — go swipe!</p>`;
+  if(isOpen()){
+    const P2=D.parents, list=a=>a.length?a.map(n=>`<div class="row"><span class="n">${esc(display(n))}</span>${mine()[n]==="like"?`<span class="c">💚 you too</span>`:""}</div>`).join(""):`<p class="sub">Nothing yet.</p>`;
+    $("bMatches").innerHTML=P2.matches.length?P2.matches.map(n=>`<div class="row"><span class="n">💕 ${esc(display(n))}</span>${mine()[n]==="like"?`<span class="c">💚 you liked it too!</span>`:""}</div>`).join(""):`<p class="sub">No matches yet — they're still swiping!</p>`;
+    $("lCount").textContent=P2.leslie.length; $("lList").innerHTML=list(P2.leslie);
+    $("tCount").textContent=P2.terel.length; $("tList").innerHTML=list(P2.terel); }
+  const ranked=people.map(k=>({k,likes:Object.values(D.guests[k]).filter(v=>v==="like").length,total:Object.keys(D.guests[k]).length})).sort((a,b)=>b.total-a.total);
+  $("bPeople").innerHTML=ranked.map((p,i)=>`<div class="row"><span class="rank">${i+1}</span><span class="n">${esc(label(p.k))}${p.k===myKey()?" (you)":""}</span><span class="c">${p.total} swiped · ${p.likes} liked</span></div>`).join("")||`<p class="sub">Nobody yet.</p>`;
+  const ml=$("mList"); const likes=Object.entries(mine()).filter(([,v])=>v==="like").map(([n])=>n).sort((a,b)=>display(a).localeCompare(display(b)));
+  ml.innerHTML=""; if(!likes.length){ ml.innerHTML=`<p class="sub">You haven't liked any names yet.</p>`; return; }
+  likes.forEach(n=>{ const r=document.createElement("div"); r.className="row"; r.innerHTML=`<span class="n">${esc(display(n))}</span><button type="button">Change my mind</button>`;
+    r.querySelector("button").onclick=()=>{ if(!confirm(`Remove ${display(n)} from your likes? It'll come back into your deck.`)) return; if(D.guests[myKey()]) delete D.guests[myKey()][n]; save(n,null); renderAll(); buildDeck(); toast("Removed — it's back in your deck"); };
+    ml.appendChild(r); });
+}
+
+/* ---------- start ---------- */
+function startApp(){ $("join").classList.add("hidden"); $("app").classList.remove("hidden"); $("meName").textContent=ME; buildDeck(); renderAll(); setTab(); }
+async function boot(){
+  if(!P){ $("err").textContent="This invite link is missing its code — ask Leslie or Terel to send it again."; $("err").classList.remove("hidden"); return; }
+  try{ absorb(await api("GET")); }catch(e){ $("err").textContent=e.message; $("err").classList.remove("hidden"); return; }
+  if(ME){ try{ absorb(await api("GET")); }catch{} startApp(); } else showJoin();
+}
+setInterval(async()=>{ if(!ME||document.hidden||Object.keys(queue).length) return; try{ absorb(await api("GET")); renderAll(); }catch{} },15000);
+addEventListener("pagehide",()=>{ if(Object.keys(queue).length) navigator.sendBeacon&&navigator.sendBeacon(`/api/party-state?p=${P}`,new Blob([JSON.stringify({guest:ME,swipeSet:Object.fromEntries(Object.entries(queue).map(([k,v])=>[display(k),v]))})],{type:"application/json"})); });
+boot();
+</script>
+</body>
+</html>

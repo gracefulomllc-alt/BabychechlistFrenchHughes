@@ -77,3 +77,13 @@ copy-to-clipboard report for the pediatrician.
 
 Designs: ~2¢ each on Claude, free-tier on Gemini. Renders: a few cents each on Gemini (4 per design click).
 If Gemini's free tier refuses image generation, enable billing on the key in AI Studio.
+
+
+## Family & friends invite (party link)
+
+Baby Names → **🎉 Invite family & friends → Get invite link** creates a separate link (`/party.html?p=CODE`).
+Guests pick or type their name (remembered on their phone), swipe the same deck (including the Daily Drop),
+**suggest names** that go into everyone's deck, and see a **Family & Friends leaderboard** and top swipers.
+The board shows Leslie's and Terel's likes, their matches, and an "Everyone's favorites" board combining parents and
+guests, live. Parents' passes are never shared. Guests never see the household code, the checklist, gifts, or notes. **New link** replaces the code (old link stops working);
+**Turn off** disables it. Guests' swipes and suggestions show up in the parents' Results, Leaderboard, Edit, and deck.

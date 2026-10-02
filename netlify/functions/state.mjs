@@ -1,29 +1,5 @@
 import { store, clean, slug, normalize } from "../shared/lib.mjs";
-
-const enc = (x) => encodeURIComponent(String(x).toLowerCase().slice(0, 60));
-async function readSwipes(st, h, legacy) {
-  const out = {};
-  const { blobs } = await st.list({ prefix: `${h}/sw/` });
-  for (const { key } of blobs) {
-    const rest = key.slice(`${h}/sw/`.length); const slash = rest.indexOf("/"); const eq = rest.lastIndexOf("=");
-    if (slash < 0 || eq < slash) continue;
-    const b = decodeURIComponent(rest.slice(0, slash)), n = decodeURIComponent(rest.slice(slash + 1, eq)), v = rest.slice(eq + 1);
-    if (v === "like" || v === "pass") (out[b] = out[b] || {})[n] = v;
-  }
-  // Fold in any swipes still in the old single-document format (only where no newer record exists)
-  for (const [b, e] of Object.entries(legacy || {})) for (const [n, v] of Object.entries(e || {}))
-    if ((v === "like" || v === "pass") && !(out[b] && n in out[b])) (out[b] = out[b] || {})[n] = v;
-  return out;
-}
-async function writeSwipe(st, h, b, n, v) {
-  const base = `${h}/sw/${enc(b)}/${enc(n)}`;
-  await Promise.all([st.delete(`${base}=like`), st.delete(`${base}=pass`)]);
-  if (v === "like" || v === "pass") await st.set(`${base}=${v}`, "1");
-}
-async function resetBucket(st, h, b) {
-  const { blobs } = await st.list({ prefix: `${h}/sw/${enc(b)}/` });
-  await Promise.all(blobs.map(({ key }) => st.delete(key)));
-}
+import { readSwipes, writeSwipe, resetBucket, readGuestNames, readCustomNames } from "../shared/swipes.mjs";
 
 export default async (req) => {
   const url = new URL(req.url);
@@ -38,6 +14,8 @@ export default async (req) => {
       return f;
     }));
     v.meta.swipes = await readSwipes(st, h, v.meta.swipes);
+    v.meta.guestNames = Object.assign({}, v.meta.guestNames || {}, await readGuestNames(st, h));
+    v.meta.customNames = await readCustomNames(st, h);
     v.updated = Math.max(v.updated || 0, Number(await st.get(`${h}/ver`)) || 0);
     return Response.json(v);
   }
