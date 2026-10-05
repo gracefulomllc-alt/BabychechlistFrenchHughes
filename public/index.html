@@ -433,6 +433,21 @@
   .sugbox{border-color:#A9C6DE!important;background:linear-gradient(180deg,#FBFDFF,#EEF4FA)!important}
   .sgg{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
   .sgg.b{background:#CFE3F2;color:#2C5677}.sgg.g{background:#F6DCE8;color:#8A3A5C}.sgg.n{background:#E3EDE5;color:#1E4D2B}
+
+  .cksearch{margin:14px 16px 0}
+  #ckSearch{width:100%;font:16px/1.2 inherit;font-family:inherit;padding:12px 14px;border:1px solid #8E8A45;border-radius:10px;background:#fff;box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
+  #ckResults{margin-top:8px;background:var(--paper);border:1px solid #9AA89A;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.18);padding:6px 12px 12px}
+  .ckh{font-family:Georgia,serif;font-weight:800;font-size:15px;margin:10px 0 4px;color:var(--ink)}
+  .ckrow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-top:1px dotted #C9D3C8}
+  .ckrow input[type=checkbox]{width:24px;height:24px;flex:0 0 24px}
+  .ckrow .ckn{flex:1;cursor:pointer}
+  .ckrow .ckn b{font-weight:700}
+  .ckrow .ckc{display:block;font-size:12px;color:var(--muted)}
+  .ckcats{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .ckadd select{width:100%;margin-top:6px;border:1px solid #8E8A45;border-radius:8px;padding:9px 10px;font:15px/1.2 inherit;font-family:inherit;background:#fff}
+  .ckadd .go{margin-top:10px}
+  li.flash{animation:ckflash 1.6s ease}
+  @keyframes ckflash{0%,40%{background:#F6EFD3}100%{background:transparent}}
 </style>
 </head>
 <body>
@@ -469,6 +484,10 @@
 <div class="toast" id="toast"></div>
 
 <div id="pane-list" class="pane active">
+  <div class="cksearch">
+    <input id="ckSearch" type="search" placeholder="🔍 Search the list, or add something new…" autocomplete="off" maxlength="80">
+    <div id="ckResults" style="display:none"></div>
+  </div>
   <div class="bar-row">
     <div class="due"><label for="due">Due date</label><input type="date" id="due"><span class="countdown" id="countdown"></span></div>
   </div>
@@ -502,7 +521,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v51 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v52 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -1140,6 +1159,80 @@ function giftsRender(){
 document.getElementById("gfAdd").onclick=()=>{ const item=document.getElementById("gfItem").value.trim(); if(!item){ document.getElementById("gfItem").focus(); return; } addGift({item,from:document.getElementById("gfFrom").value.trim(),rel:document.getElementById("gfRel").value,kind:document.getElementById("gfKind").value,note:document.getElementById("gfNote").value.trim()}); ["gfItem","gfFrom","gfNote"].forEach(i=>document.getElementById(i).value=""); toast("Logged"); };
 document.getElementById("gfFilter").onclick=e=>{ gfOnly=!gfOnly; e.currentTarget.setAttribute("aria-pressed",gfOnly); giftsRender(); };
 document.getElementById("gfCopy").onclick=async()=>{ const g=gifts().filter(x=>!x.thanked&&x.kind!=="bought"); const txt="Thank-you notes to send:\n"+g.map(x=>`• ${x.from||"?"}${x.rel?` (${x.rel})`:""} — ${x.item}`).join("\n"); try{ await navigator.clipboard.writeText(txt); toast("Copied"); }catch{ prompt("Copy:",txt); } };
+/* ================= Checklist search: find items, or add something new to the right category ================= */
+const CK_KEYWORDS={
+  sleep:"sleep crib bassinet mattress sheet swaddle sack monitor noise night nap blackout curtain mobile bedding pack play travel crib",
+  feed:"feed feeding bottle formula pump breast nursing nurse milk bib burp pacifier warmer sterilizer nipple cream storage high chair",
+  diaper:"diaper wipe wipes pail rash changing pad caddy cloth liner",
+  clothes:"clothes clothing onesie bodysuit sleeper outfit sock socks hat mitten mittens pajama romper jacket shoes hanger dresser laundry detergent",
+  bath:"bath tub towel washcloth soap shampoo lotion thermometer nail clipper aspirator medicine humidifier health brush comb grooming first aid sunscreen teether teething gas drops vitamin tylenol saline",
+  travel:"car seat stroller carrier wrap diaper bag base travel sunshade mirror wagon",
+  home:"bouncer swing play mat gym toy toys book books gate outlet cover lamp nightlight shelf decor rug blanket nursery chair glider rocker lovey rattle walker jumper playpen bin bins storage",
+  parents:"mom dad postpartum recovery pad pads meal meals freezer snack class insurance pediatrician will doula help",
+  bag:"hospital bag charger insurance card going home outfit toiletries robe slippers pillow birth plan"
+};
+const ckTok=t=>String(t||"").toLowerCase().replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>=3);
+function ckSuggest(q){
+  const qt=ckTok(q); if(!qt.length) return [];
+  return allSections().map(sec=>{
+    const kw=new Set(ckTok(CK_KEYWORDS[sec.id]||"")), words=new Set(ckTok(sec.title+" "+sec.rows.map(r=>r.name+" "+(r.note||"")).join(" ")));
+    let score=0; qt.forEach(w=>{ const stem=w.replace(/s$/,""); if(kw.has(w)||kw.has(stem)) score+=3; if(words.has(w)||words.has(stem)) score+=1; [...kw].forEach(k=>{ if(k.length>3&&(k.startsWith(stem)||stem.startsWith(k))) score+=1; }); });
+    return {sec,score}; }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+}
+let ckPick="", ckTimer=null;
+function ckRender(){
+  const q=document.getElementById("ckSearch").value.trim(), box=document.getElementById("ckResults");
+  if(q.length<2){ box.style.display="none"; box.innerHTML=""; return; }
+  box.style.display=""; box.innerHTML="";
+  const qt=ckTok(q).length?ckTok(q):[q.toLowerCase()];
+  const hits=[]; allSections().forEach(sec=>sec.rows.forEach(r=>{ const hay=(r.name+" "+(r.note||"")+" "+(r.brand||"")).toLowerCase(); const n=qt.filter(w=>hay.includes(w.replace(/s$/,""))).length; if(n) hits.push({r,sec,n,inName:qt.some(w=>r.name.toLowerCase().includes(w.replace(/s$/,"")))}); }));
+  hits.sort((a,b)=>(b.inName-a.inName)||(b.n-a.n));
+  if(hits.length){
+    const h=document.createElement("div"); h.className="ckh"; h.textContent=`Already on your list (${hits.length})`; box.appendChild(h);
+    hits.slice(0,8).forEach(({r,sec})=>{ const row=document.createElement("div"); row.className="ckrow";
+      const cb=document.createElement("input"); cb.type="checkbox"; cb.checked=isTicked(r.id);
+      cb.onchange=()=>{ buzz(12); tickWithWho(r.id,cb.checked,()=>{ update(); render(); }); };
+      const t=document.createElement("span"); t.className="ckn";
+      t.innerHTML=`<b>${esc(r.name)}</b><span class="ckc">${sec.em} ${esc(sec.title)}${S.hidden[r.id]?" · hidden":""}${isTicked(r.id)?" · ✓ done":""}</span>`;
+      t.onclick=()=>ckJump(r.id,sec.id);
+      row.append(cb,t);
+      if(S.hidden[r.id]){ const b=document.createElement("button"); b.type="button"; b.className="opt"; b.textContent="Restore"; b.onclick=()=>{ delete S.hidden[r.id]; patch({hidden:{[r.id]:false}}); render(); ckRender(); toast(`${r.name} restored`); }; row.appendChild(b); }
+      box.appendChild(row); });
+  }
+  const sugg=ckSuggest(q), secs=allSections();
+  if(!ckPick||!secs.some(s2=>s2.id===ckPick)) ckPick=(sugg[0]&&sugg[0].sec.id)||"home";
+  const exact=hits.some(x=>x.r.name.toLowerCase()===q.toLowerCase());
+  const add=document.createElement("div"); add.className="ckadd";
+  add.innerHTML=`<div class="ckh">${exact?"Add another":"Add"} “${esc(q)}”</div>
+    <div class="sub" style="font-size:13px">${sugg.length?"Best fit:":"Pick a category:"}</div>
+    <div class="ckcats"></div>
+    <select id="ckSec">${secs.map(s2=>`<option value="${s2.id}"${s2.id===ckPick?" selected":""}>${s2.em} ${esc(s2.title)}</option>`).join("")}</select>
+    <select id="ckWhen"><option value="now">Order now</option><option value="m3">2–3 months out</option><option value="m1">Final month</option><option value="bag">Hospital bag</option></select>
+    <button class="go" type="button" id="ckAddBtn">➕ Add to list</button>`;
+  const cats=add.querySelector(".ckcats");
+  sugg.slice(0,3).forEach(({sec})=>{ const b=document.createElement("button"); b.type="button"; b.className="opt"; b.textContent=`${sec.em} ${sec.title}`; b.setAttribute("aria-pressed",sec.id===ckPick);
+    b.onclick=()=>{ ckPick=sec.id; ckRender(); }; cats.appendChild(b); });
+  box.appendChild(add);
+  const secEl=add.querySelector("#ckSec"), whenEl=add.querySelector("#ckWhen");
+  whenEl.value=ckPick==="bag"?"bag":"m3";
+  secEl.onchange=()=>{ ckPick=secEl.value; ckRender(); };
+  add.querySelector("#ckAddBtn").onclick=()=>{
+    const name=q.charAt(0).toUpperCase()+q.slice(1), sec=secEl.value;
+    const c={id:"c"+Date.now().toString(36),name,note:"",when:whenEl.value,sec}; S.custom.push(c); patch({customAdd:[c]});
+    document.getElementById("ckSearch").value=""; ckPick=""; ckRender(); render();
+    const s2=allSections().find(x=>x.id===sec); toast(`Added “${name}” to ${s2?s2.title:"the list"}`); ckJump(c.id,sec);
+  };
+}
+function ckJump(id,secId){
+  if(filter!=="all"){ filter="all"; document.querySelectorAll(".chip[data-f]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f==="all")); update(); }
+  const sec=document.getElementById(secId); if(sec){ sec.setAttribute("open",""); if(typeof openSecs!=="undefined") openSecs.add(secId); }
+  const li=document.querySelector(`li[data-id="${id}"]`);
+  if(li){ li.classList.add("open","flash"); setTimeout(()=>li.classList.remove("flash"),1700); li.scrollIntoView({behavior:"smooth",block:"center"}); }
+  else if(sec) sec.scrollIntoView({behavior:"smooth",block:"start"});
+}
+document.getElementById("ckSearch").addEventListener("input",()=>{ clearTimeout(ckTimer); ckPick=""; ckTimer=setTimeout(ckRender,150); });
+document.getElementById("ckSearch").addEventListener("keydown",e=>{ if(e.key==="Escape"){ e.target.value=""; ckRender(); } });
+
 /* ================= compact mode ================= */
 document.addEventListener("click",e=>{ const n=e.target.closest(".name"); if(!n) return; if(e.target.closest(".price")||e.target.closest(".byav")) return; const li=n.closest("li"); if(!li||li.closest("#hiddenBox")) return; li.classList.toggle("open"); });
 const openSecs=new Set();
