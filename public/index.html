@@ -429,6 +429,10 @@
   .gp-row .rk{width:28px;text-align:center;font-family:Georgia,serif;font-weight:800;color:#C8A83A}
   .gp-row .cnt{font-family:Georgia,serif;font-weight:800;font-size:15px;color:var(--ink);white-space:nowrap}
   .gp-row .whol{font-size:12.5px;color:var(--muted);padding:0 4px 8px 38px}
+
+  .sugbox{border-color:#A9C6DE!important;background:linear-gradient(180deg,#FBFDFF,#EEF4FA)!important}
+  .sgg{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+  .sgg.b{background:#CFE3F2;color:#2C5677}.sgg.g{background:#F6DCE8;color:#8A3A5C}.sgg.n{background:#E3EDE5;color:#1E4D2B}
 </style>
 </head>
 <body>
@@ -498,7 +502,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v50 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v51 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -609,6 +613,11 @@
         <button class="opt" id="invNew" type="button" style="display:none">New link</button>
         <button class="opt" id="invOff" type="button" style="display:none">Turn off</button>
       </div>
+    <div class="tool sugbox">
+      <h3 style="margin:0 0 4px">💡 Suggested names <span class="sub" id="sgCount" style="font-size:14px;font-weight:400"></span></h3>
+      <p class="sub" style="margin:0 0 8px">Names family &amp; friends added to the deck, and who suggested them.</p>
+      <div id="sgList"></div>
+    </div>
     </div>
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
@@ -1699,7 +1708,32 @@ function boardRender(){
     r.onclick=()=>{ const w=r.querySelector(".whol"); w.style.display=w.style.display==="none"?"":"none"; };
     box.appendChild(r); });
 }
-function namesResultsRender(){ syncCheckRender(); editRender(); boardRender(); }
+function suggestionsRender(){
+  const box=document.getElementById("sgList"); if(!box) return;
+  const sug=(S.meta.customNames||[]).slice().sort((a,b)=>(b.at||0)-(a.at||0)), sw=S.meta.swipes||{};
+  document.getElementById("sgCount").textContent=sug.length?`(${sug.length})`:"";
+  box.innerHTML="";
+  if(!sug.length){ box.innerHTML='<p class="sub">No suggestions yet. Family &amp; friends can suggest names from the invite link above.</p>'; return; }
+  sug.forEach(x=>{ const nl=x.n.toLowerCase();
+    const likers=Object.entries(sw).filter(([k,e])=>!k.startsWith("_")&&e&&e[nl]==="like").map(([k])=>profileLabel(k));
+    const r=document.createElement("div"); r.className="gp-row"; r.style.cursor="pointer";
+    r.innerHTML=`<div class="swi"><span class="n">${esc(x.n)}<span class="sgg ${x.g}">${{b:"Boy",g:"Girl",n:"Neutral"}[x.g]||""}</span></span><span class="c">by <b>${esc(x.by||"family")}</b><br>${likers.length} like${likers.length===1?"":"s"}</span>${onShortlist(nl)?'<span class="c">✓ On shortlist</span>':'<button type="button">+ Shortlist</button>'}</div><div class="whol" style="display:none">${likers.length?"Liked by "+esc(likers.join(", ")):"No likes yet"}</div>`;
+    r.onclick=e=>{ if(e.target.closest("button")) return; const w=r.querySelector(".whol"); w.style.display=w.style.display==="none"?"":"none"; };
+    const b=r.querySelector("button"); if(b) b.onclick=()=>{ const list=S.meta.names||[]; if(!list.some(y=>y.n.toLowerCase()===nl)) list.push({n:x.n,v:[]}); S.meta.names=list; patch({meta:{names:list}}); namesRender(); suggestionsRender(); toast(`${x.n} added to your shortlist`); };
+    box.appendChild(r); });
+}
+// Any name you both like goes on the shortlist once — even if you swiped it at the same moment on two phones.
+// Remembered in meta.matchAdded, so a match you remove on purpose doesn't come back.
+function ensureMatchesOnShortlist(){
+  const sw=S.meta.swipes||{}; if(!sw.leslie||!sw.anthony) return;
+  const added=S.meta.matchAdded=S.meta.matchAdded||{}; const list=S.meta.names=S.meta.names||[]; let changed=false;
+  for(const [n,v] of Object.entries(sw.leslie)){ if(v!=="like"||sw.anthony[n]!=="like"||added[n]) continue;
+    added[n]=true; changed=true;
+    let e=list.find(x=>x.n.toLowerCase()===n); if(!e){ e={n:nameDisplay(n),v:[]}; list.push(e); }
+    e.v=e.v||[]; ["leslie","anthony"].forEach(k=>{ if(!e.v.includes(k)) e.v.push(k); }); }
+  if(changed){ patch({meta:{names:list,matchAdded:added}}); namesRender(); }
+}
+function namesResultsRender(){ ensureMatchesOnShortlist(); syncCheckRender(); editRender(); boardRender(); suggestionsRender(); }
 /* ---- fun & celebratory swipe feedback: sound, haptics, bursts, streaks ---- */
 let swStreak=0, swAudioCtx=null, swBusy=false;
 function swTone(freq,dur,type){ try{
