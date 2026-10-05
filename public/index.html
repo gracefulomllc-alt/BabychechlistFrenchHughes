@@ -498,7 +498,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v49 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v50 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -1700,6 +1700,32 @@ function boardRender(){
     box.appendChild(r); });
 }
 function namesResultsRender(){ syncCheckRender(); editRender(); boardRender(); }
+/* ---- fun & celebratory swipe feedback: sound, haptics, bursts, streaks ---- */
+let swStreak=0, swAudioCtx=null, swBusy=false;
+function swTone(freq,dur,type){ try{
+  if(!swAudioCtx) swAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(swAudioCtx.state==="suspended") swAudioCtx.resume();
+  const o=swAudioCtx.createOscillator(), g=swAudioCtx.createGain();
+  o.type=type||"sine"; o.frequency.value=freq; o.connect(g); g.connect(swAudioCtx.destination);
+  g.gain.setValueAtTime(0.0001,swAudioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.16,swAudioCtx.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,swAudioCtx.currentTime+dur);
+  o.start(); o.stop(swAudioCtx.currentTime+dur+0.02);
+}catch{} }
+function swPlayLike(){ swTone(740,0.11); setTimeout(()=>swTone(988,0.14),65); }
+function swPlayPass(){ swTone(260,0.13,"triangle"); }
+function burstHearts(){ const wrap=document.querySelector(".swipewrap"); if(!wrap) return;
+  const emojis=["💚","✨","💛"];
+  for(let i=0;i<7;i++){ const s=document.createElement("span"); s.className="swburst"; s.textContent=emojis[i%emojis.length];
+    s.style.left=(42+Math.random()*16)+"%"; s.style.animationDelay=(Math.random()*0.15)+"s"; s.style.setProperty("--dx",(Math.random()*90-45)+"px");
+    wrap.appendChild(s); setTimeout(()=>s.remove(),900); }
+}
+function swStamp(cardBox,dir,opacity){ let st=cardBox.querySelector(".swstamp");
+  if(!st){ st=document.createElement("div"); st.className="swstamp"; cardBox.appendChild(st); }
+  st.textContent=dir==="like"?"LIKE 💚":"NOPE ✕"; st.classList.toggle("l",dir==="like"); st.classList.toggle("p",dir==="pass"); st.style.opacity=opacity;
+}
+function clearStamp(cardBox){ const st=cardBox.querySelector(".swstamp"); if(st) st.style.opacity=0; }
+
 function swRenderCard(){
   const cardBox=document.getElementById("swCard"), prog=document.getElementById("swProgress"), pick=document.getElementById("swPick"), controls=document.getElementById("swControls");
   const p=swProfile();
