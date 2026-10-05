@@ -72,6 +72,13 @@
   .cd b{display:block;font-family:Georgia,serif;font-size:24px;line-height:1;color:#1E4D2B;font-variant-numeric:tabular-nums}
   .cd span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#5B4A12;font-weight:800}
   .cdnote{font-size:13px;color:#E9F2EA}
+  .ptags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .ptag{font-size:13px;padding:3px 9px;border-radius:999px;background:#fff;border:1px solid #C9D3C8}
+  .ptag.me{border-color:var(--gold);background:#F6EFD3}
+  .psum{display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}
+  .psum::-webkit-details-marker{display:none}
+  .row .cnt{font-family:Georgia,serif;font-weight:800;font-size:16px;white-space:nowrap}
+  .row .whol{flex-basis:100%;font-size:12.5px;color:var(--muted);padding:2px 0 0 36px}
   .hidden{display:none!important}
 </style>
 </head>
@@ -124,18 +131,9 @@
     </section>
 
     <section id="t-board" class="card hidden">
-      <div id="bOpen">
-        <h3>💕 Leslie &amp; Terel's matches</h3>
-        <p class="sub" style="margin:0 0 4px">Names they both love.</p>
-        <div id="bMatches"></div>
-        <h3 style="margin-top:20px">🏆 Everyone's favorites</h3>
-        <div class="stats" id="bStats"></div>
-        <div id="bList"></div>
-        <details><summary>👩 Leslie's likes (<span id="lCount">0</span>)</summary><div id="lList"></div></details>
-        <details><summary>🏀 Terel's likes (<span id="tCount">0</span>)</summary><div id="tList"></div></details>
-        <h3 style="margin-top:20px">🔥 Top swipers</h3>
-        <div id="bPeople"></div>
-      </div>
+      <h3>🏆 Most popular names</h3>
+      <div class="sub" id="bStat" style="margin-bottom:6px"></div>
+      <div id="bList"></div>
     </section>
 
     <section id="t-mine" class="card hidden">
@@ -260,21 +258,19 @@ function renderAll(){
   const sl=$("sugList"); const cs=(D.custom||[]).slice().reverse();
   sl.innerHTML=cs.length?cs.map(x=>`<div class="row"><span class="n">${esc(x.n)}</span><span class="c">${esc(GLABEL[x.g]||"")} · ${esc(x.by||"family")}</span></div>`).join(""):`<p class="sub">No suggestions yet — be the first!</p>`;
   const tag=w=>w==="Leslie"?`<span class="who les">Leslie</span>`:w==="Terel"?`<span class="who ter">Terel</span>`:"";
-  const tally={};
-  if(isOpen()){ D.parents.leslie.forEach(n=>(tally[n]=tally[n]||[]).push("Leslie")); D.parents.terel.forEach(n=>(tally[n]=tally[n]||[]).push("Terel")); }
-  for(const [k,e] of Object.entries(D.guests)) for(const [n,v] of Object.entries(e)) if(v==="like"){ (tally[n]=tally[n]||[]).push(label(k)); }
-  const top=Object.entries(tally).sort((a,b)=>b[1].length-a[1].length||display(a[0]).localeCompare(display(b[0]))).slice(0,25);
-  const people=Object.keys(D.guests).filter(k=>Object.keys(D.guests[k]).length);
-  $("bStats").innerHTML=`<div><b>${people.length+(isOpen()?2:0)}</b><span>Players</span></div><div><b>${Object.keys(tally).length}</b><span>Names liked</span></div><div><b>${(D.custom||[]).length}</b><span>Suggested</span></div>`;
-  $("bList").innerHTML=top.length?top.map(([n,who],i)=>{ const parents=who.filter(w=>w==="Leslie"||w==="Terel"), rest=who.filter(w=>w!=="Leslie"&&w!=="Terel");
-    return `<div class="row"><span class="rank">${i<3?["🥇","🥈","🥉"][i]:i+1}</span><span class="n">${esc(display(n))}${parents.map(tag).join("")}</span><span class="c">${who.length} like${who.length>1?"s":""}<br>${esc(rest.slice(0,3).join(", "))}${rest.length>3?` +${rest.length-3}`:""}</span></div>`; }).join(""):`<p class="sub">No likes yet — go swipe!</p>`;
-  if(isOpen()){
-    const P2=D.parents, list=a=>a.length?a.map(n=>`<div class="row"><span class="n">${esc(display(n))}</span>${mine()[n]==="like"?`<span class="c">💚 you too</span>`:""}</div>`).join(""):`<p class="sub">Nothing yet.</p>`;
-    $("bMatches").innerHTML=P2.matches.length?P2.matches.map(n=>`<div class="row"><span class="n">💕 ${esc(display(n))}</span>${mine()[n]==="like"?`<span class="c">💚 you liked it too!</span>`:""}</div>`).join(""):`<p class="sub">No matches yet — they're still swiping!</p>`;
-    $("lCount").textContent=P2.leslie.length; $("lList").innerHTML=list(P2.leslie);
-    $("tCount").textContent=P2.terel.length; $("tList").innerHTML=list(P2.terel); }
-  const ranked=people.map(k=>({k,likes:Object.values(D.guests[k]).filter(v=>v==="like").length,total:Object.keys(D.guests[k]).length})).sort((a,b)=>b.total-a.total);
-  $("bPeople").innerHTML=ranked.map((p,i)=>`<div class="row"><span class="rank">${i+1}</span><span class="n">${esc(label(p.k))}${p.k===myKey()?" (you)":""}</span><span class="c">${p.total} swiped · ${p.likes} liked</span></div>`).join("")||`<p class="sub">Nobody yet.</p>`;
+  const tally={}, add=(n,who)=>(tally[n]=tally[n]||[]).push(who);
+  if(isOpen()){ D.parents.leslie.forEach(n=>add(n,"Leslie")); D.parents.terel.forEach(n=>add(n,"Terel")); }
+  for(const [k,e] of Object.entries(D.guests)){ const src=k===myKey()?mine():e; for(const [n,v] of Object.entries(src)) if(v==="like") add(n,k===myKey()?"You":label(k)); }
+  if(!D.guests[myKey()]) for(const [n,v] of Object.entries(mine())) if(v==="like") add(n,"You");
+  const played=new Set(Object.keys(D.guests).filter(k=>Object.keys(D.guests[k]).length)); if(Object.keys(mine()).length) played.add(myKey());
+  const players=played.size+(isOpen()&&(D.parents.leslie.length||D.parents.terel.length)?2:0);
+  const rows=Object.entries(tally).sort((a,b)=>b[1].length-a[1].length||display(a[0]).localeCompare(display(b[0]))).slice(0,50);
+  $("bStat").textContent=rows.length?`${players} ${players===1?"person has":"people have"} played · tap a name to see who liked it`:"";
+  const bl=$("bList"); bl.innerHTML="";
+  if(!rows.length) bl.innerHTML=`<p class="sub">No likes yet — go swipe!</p>`;
+  rows.forEach(([n,who],i)=>{ const r=document.createElement("div"); r.className="row"; r.style.cursor="pointer"; r.style.flexWrap="wrap";
+    r.innerHTML=`<span class="rank">${i<3?["🥇","🥈","🥉"][i]:i+1}</span><span class="n">${esc(display(n))}${who.includes("You")?" 💚":""}</span><span class="cnt">${who.length} ${who.length===1?"like":"likes"}</span><div class="whol hidden">${esc(who.join(", "))}</div>`;
+    r.onclick=()=>r.querySelector(".whol").classList.toggle("hidden"); bl.appendChild(r); });
   const ml=$("mList"); const likes=Object.entries(mine()).filter(([,v])=>v==="like").map(([n])=>n).sort((a,b)=>display(a).localeCompare(display(b)));
   ml.innerHTML=""; if(!likes.length){ ml.innerHTML=`<p class="sub">You haven't liked any names yet.</p>`; return; }
   likes.forEach(n=>{ const r=document.createElement("div"); r.className="row"; r.innerHTML=`<span class="n">${esc(display(n))}</span><button type="button">Change my mind</button>`;

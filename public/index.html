@@ -414,6 +414,21 @@
   .invite{border-color:#B9AF63!important;background:linear-gradient(180deg,#FFFDF3,#F6EFD3)!important}
   .invlink{margin:4px 0 10px;padding:10px 12px;border:1px dashed #8E8A45;border-radius:8px;background:#fff;font:600 13px/1.4 Verdana,sans-serif;word-break:break-all;color:var(--ink)}
   .swsug{display:inline-block;margin-bottom:8px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;color:#2C5677;background:#E3EEF7;border:1px solid #A9C6DE}
+
+  .fmcard{margin-top:10px;border:1px solid #C9D3C8;border-radius:10px;padding:10px 12px;background:#FAFBF9}
+  .fmcard summary{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none}
+  .fmcard summary::-webkit-details-marker{display:none}
+  .fmcard .fmn{font-family:Georgia,serif;font-weight:800;font-size:17px}
+  .fmcard .fmc{font-size:12px;color:var(--muted);text-align:right}
+  .fmtags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+  .fmtag{font-size:13px;padding:3px 9px;border-radius:999px;background:#fff;border:1px solid #C9D3C8}
+  .fmtag.both{border-color:var(--gold);background:var(--apricot-soft)}
+  .fmwho{font-size:10px;font-weight:800;padding:1px 6px;border-radius:999px;margin-left:4px;vertical-align:middle}
+  .fmwho.les{background:#F6DCE8;color:#8A3A5C}.fmwho.ter{background:#FCE3CF;color:#8A4A12}
+
+  .gp-row .rk{width:28px;text-align:center;font-family:Georgia,serif;font-weight:800;color:#C8A83A}
+  .gp-row .cnt{font-family:Georgia,serif;font-weight:800;font-size:15px;color:var(--ink);white-space:nowrap}
+  .gp-row .whol{font-size:12.5px;color:var(--muted);padding:0 4px 8px 38px}
 </style>
 </head>
 <body>
@@ -483,7 +498,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v46 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v49 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -598,7 +613,7 @@
     <div class="tool">
       <h3 style="margin:0 0 4px">Baby names</h3>
       <p class="sub" style="margin:0 0 6px">Add names yourselves, swipe through a curated deck, or see how it's going. Both of you liking the same name is a match — lands on the shortlist automatically.</p>
-      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="results" type="button" aria-pressed="false">📊 Results</button><button class="opt nmtab" data-v="leaderboard" type="button" aria-pressed="false">🏆 Leaderboard</button><button class="opt nmtab" data-v="edit" type="button" aria-pressed="false">✏️ Edit</button></div>
+      <div class="acts"><button class="opt nmtab" data-v="list" type="button" aria-pressed="true">📋 Shortlist</button><button class="opt nmtab" data-v="swipe" type="button" aria-pressed="false">🔥 Swipe &amp; Match</button><button class="opt nmtab" data-v="leaderboard" type="button" aria-pressed="false">🏆 Leaderboard</button><button class="opt nmtab" data-v="edit" type="button" aria-pressed="false">✏️ Edit</button></div>
 
       <div id="namesShortlistView" style="margin-top:12px">
         <div class="nameadd"><input id="nmIn" placeholder="Add a name" maxlength="40"><button class="opt" id="nmAdd" type="button">Add</button></div>
@@ -641,13 +656,6 @@
         <div id="guestPicksList"></div>
       </div>
 
-      <div id="namesResultsView" style="display:none;margin-top:12px">
-        <div class="wkq">Who's liked the most</div>
-        <div class="stat" id="nrStats"></div>
-        <div id="nrPeople"></div>
-        <div class="syncchk" id="syncChk"></div>
-      </div>
-
       <div id="namesEditView" style="display:none;margin-top:12px">
         <div class="swq">Whose swipes?</div>
         <div class="opts" id="edPeople"></div>
@@ -655,13 +663,12 @@
         <input id="edSearch" class="edsearch" placeholder="Search names…" maxlength="30">
         <div class="sub" id="edCount" style="margin:6px 0"></div>
         <div id="edList"></div>
+        <div class="syncchk" id="syncChk"></div>
       </div>
 
       <div id="namesLeaderboardView" style="display:none;margin-top:12px">
-        <div class="wkq">💕 Matches — Leslie &amp; Terel</div>
-        <div id="nrMatches"></div>
-        <div class="wkq" style="margin-top:18px">🏆 Top-liked names overall</div>
-        <div id="nrBoard"></div>
+        <div class="sub" id="nbStat" style="margin-bottom:6px"></div>
+        <div id="nbList"></div>
       </div>
     </div>
   </div>
@@ -1460,12 +1467,12 @@ document.querySelectorAll(".nmtab").forEach(b=>b.onclick=()=>{
   const v=b.dataset.v;
   document.getElementById("namesShortlistView").style.display=v==="list"?"":"none";
   document.getElementById("namesSwipeView").style.display=v==="swipe"?"":"none";
-  document.getElementById("namesResultsView").style.display=v==="results"?"":"none";
   document.getElementById("namesLeaderboardView").style.display=v==="leaderboard"?"":"none";
   document.getElementById("namesEditView").style.display=v==="edit"?"":"none";
+
   if(v==="edit") editRender();
   if(v==="swipe") swRenderCard();
-  if(v==="results"||v==="leaderboard") namesResultsRender();
+  if(v==="leaderboard"||v==="edit") namesResultsRender();
 });
 
 /* ================= baby-name swiper (profiles: leslie / anthony / guest) ================= */
@@ -1676,80 +1683,23 @@ document.getElementById("invShare").onclick=async()=>{ try{ await navigator.shar
 document.getElementById("invNew").onclick=async()=>{ if(!confirm("Make a new invite link? The old link will stop working for anyone who has it.")) return; if(await invCall("new")) toast("New link ready — the old one is turned off"); };
 document.getElementById("invOff").onclick=async()=>{ if(!confirm("Turn off the invite link? Guests won't be able to swipe until you make a new one. Their swipes so far are kept.")) return; if(await invCall("off")) toast("Invite link turned off"); };
 
-function namesResultsRender(){ syncCheckRender(); editRender();
-  const sw=S.meta.swipes||{}; const keys=Object.keys(sw).filter(k=>!k.startsWith("_")&&Object.keys(sw[k]||{}).length);
-  const statsBox=document.getElementById("nrStats"), board=document.getElementById("nrBoard"), peopleBox=document.getElementById("nrPeople"), matchBox=document.getElementById("nrMatches");
-  statsBox.innerHTML=""; board.innerHTML=""; peopleBox.innerHTML=""; matchBox.innerHTML="";
-  if(!keys.length){ statsBox.innerHTML='<p class="sub">No one has swiped yet — tap Swipe &amp; Match to start.</p>'; board.innerHTML='<p class="sub">Nothing liked yet.</p>'; matchBox.innerHTML='<p class="sub">No matches yet — keep swiping!</p>'; return; }
-  const likesByName={}; const likeCount={};
-  keys.forEach(k=>{
-    const entries=sw[k]||{}; let n=0;
-    Object.entries(entries).forEach(([nameLower,verdict])=>{
-      if(verdict!=="like") return; n++;
-      const rec=likesByName[nameLower]=likesByName[nameLower]||{display:nameDisplay(nameLower),count:0,by:[]};
-      rec.count++; rec.by.push(profileLabel(k));
-    });
-    likeCount[k]=n;
-  });
-  const sortedKeys=keys.slice().sort((a,b)=>likeCount[b]-likeCount[a]);
-  sortedKeys.forEach(k=>{ const d=document.createElement("div"); d.innerHTML=`<b>${likeCount[k]}</b><span>${profileLabel(k)}</span>`; statsBox.appendChild(d); });
-  let matchCount=0, lSetAll=new Set(), matchedNames=[];
-  if(sw.leslie&&sw.anthony){ lSetAll=new Set(Object.entries(sw.leslie).filter(([,v])=>v==="like").map(([n])=>n)); matchedNames=Object.entries(sw.anthony).filter(([n,v])=>v==="like"&&lSetAll.has(n)).map(([n])=>n); matchCount=matchedNames.length; }
-  const md=document.createElement("div"); md.innerHTML=`<b>${matchCount}</b><span>💕 Matches</span>`; statsBox.prepend(md);
-  if(!matchedNames.length){ matchBox.innerHTML='<p class="sub">No matches yet — keep swiping!</p>'; }
-  else { matchedNames.map(nameDisplay).sort((a,b)=>a.localeCompare(b)).forEach(display=>{ const row=document.createElement("div"); row.className="gp-row"; row.innerHTML=`<div class="swi"><span class="n">💕 ${display}</span></div>`; matchBox.appendChild(row); }); }
-
-  // Per-person liked-name lists — add to shortlist, or remove a like
-  const order=["leslie","anthony",...sortedKeys.filter(k=>k!=="leslie"&&k!=="anthony")];
-  order.filter(k=>keys.includes(k)&&likeCount[k]>0).forEach(k=>{
-    const sec=document.createElement("div"); sec.style.marginTop="16px";
-    sec.innerHTML=`<div class="wkq">${k==="leslie"?"👩":k==="anthony"?"🏀":"🙂"} ${profileLabel(k)} liked (${likeCount[k]})</div>`;
-    const names=Object.entries(sw[k]).filter(([,v])=>v==="like").map(([n])=>n).sort((a,b)=>nameDisplay(a).localeCompare(nameDisplay(b)));
-    names.forEach(nameLower=>{
-      const display=nameDisplay(nameLower);
-      const bothLiked=(sw.leslie&&sw.leslie[nameLower]==="like")&&(sw.anthony&&sw.anthony[nameLower]==="like");
-      const row=document.createElement("div"); row.className="gp-row";
-      const onList=onShortlist(nameLower);
-      row.innerHTML=`<div class="swi"><span class="n">${display}${bothLiked?' <span style="color:var(--gold)">💕 MATCH</span>':""}</span>${onList?'<span class="c">✓ On shortlist</span>':`<button type="button">+ Add</button>`}</div>`;
-      const btn=row.querySelector("button"); if(btn) btn.onclick=()=>addLikeToShortlist(display,nameLower,k);
-      swipeable(row,"Remove",()=>removeLike(k,nameLower,display),`Remove "${display}" from ${profileLabel(k)}'s likes? (They can swipe it again later.)`);
-      sec.appendChild(row);
-    });
-    peopleBox.appendChild(sec);
-  });
-
-  const rows=Object.values(likesByName).sort((a,b)=>b.count-a.count).slice(0,25);
-  if(!rows.length){ board.innerHTML='<p class="sub">Nothing liked yet — go swipe!</p>'; return; }
-  rows.forEach(r=>{ const isMatch=r.by.includes("Leslie")&&r.by.includes("Terel"); const row=document.createElement("div"); row.className="gp-row";
-    row.innerHTML=`<div class="swi"><span class="n">${r.display}${isMatch?' <span style="color:var(--gold)">💕 MATCH</span>':""}</span><span class="c">${r.count} like${r.count>1?"s":""} · ${r.by.join(", ")}</span></div>`;
-    board.appendChild(row); });
+/* ================= Leaderboard: popular names + how many people like them ================= */
+function boardRender(){
+  const sw=S.meta.swipes||{}, tally={};
+  for(const [k,e] of Object.entries(sw)){ if(k.startsWith("_")) continue;
+    for(const [n,v] of Object.entries(e||{})) if(v==="like") (tally[n]=tally[n]||[]).push(profileLabel(k)); }
+  const people=Object.keys(sw).filter(k=>!k.startsWith("_")&&Object.keys(sw[k]||{}).length).length;
+  const rows=Object.entries(tally).sort((a,b)=>b[1].length-a[1].length||nameDisplay(a[0]).localeCompare(nameDisplay(b[0]))).slice(0,50);
+  document.getElementById("nbStat").textContent=rows.length?`${people} ${people===1?"person has":"people have"} played · tap a name to see who liked it`:"";
+  const box=document.getElementById("nbList"); box.innerHTML="";
+  if(!rows.length){ box.innerHTML='<p class="sub">No likes yet — start swiping, and send the invite link to family &amp; friends!</p>'; return; }
+  rows.forEach(([n,who],i)=>{ const both=sw.leslie&&sw.anthony&&sw.leslie[n]==="like"&&sw.anthony[n]==="like";
+    const r=document.createElement("div"); r.className="gp-row"; r.style.cursor="pointer";
+    r.innerHTML=`<div class="swi"><span class="rk">${i<3?["🥇","🥈","🥉"][i]:i+1}</span><span class="n">${esc(nameDisplay(n))}${both?' <span title="You both like it">💕</span>':""}</span><span class="cnt">${who.length} ${who.length===1?"like":"likes"}</span></div><div class="whol" style="display:none">${esc(who.join(", "))}</div>`;
+    r.onclick=()=>{ const w=r.querySelector(".whol"); w.style.display=w.style.display==="none"?"":"none"; };
+    box.appendChild(r); });
 }
-/* ---- fun & celebratory swipe feedback: sound, haptics, bursts, streaks ---- */
-let swStreak=0, swAudioCtx=null, swBusy=false;
-function swTone(freq,dur,type){ try{
-  if(!swAudioCtx) swAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  if(swAudioCtx.state==="suspended") swAudioCtx.resume();
-  const o=swAudioCtx.createOscillator(), g=swAudioCtx.createGain();
-  o.type=type||"sine"; o.frequency.value=freq; o.connect(g); g.connect(swAudioCtx.destination);
-  g.gain.setValueAtTime(0.0001,swAudioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.16,swAudioCtx.currentTime+0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001,swAudioCtx.currentTime+dur);
-  o.start(); o.stop(swAudioCtx.currentTime+dur+0.02);
-}catch{} }
-function swPlayLike(){ swTone(740,0.11); setTimeout(()=>swTone(988,0.14),65); }
-function swPlayPass(){ swTone(260,0.13,"triangle"); }
-function burstHearts(){ const wrap=document.querySelector(".swipewrap"); if(!wrap) return;
-  const emojis=["💚","✨","💛"];
-  for(let i=0;i<7;i++){ const s=document.createElement("span"); s.className="swburst"; s.textContent=emojis[i%emojis.length];
-    s.style.left=(42+Math.random()*16)+"%"; s.style.animationDelay=(Math.random()*0.15)+"s"; s.style.setProperty("--dx",(Math.random()*90-45)+"px");
-    wrap.appendChild(s); setTimeout(()=>s.remove(),900); }
-}
-function swStamp(cardBox,dir,opacity){ let st=cardBox.querySelector(".swstamp");
-  if(!st){ st=document.createElement("div"); st.className="swstamp"; cardBox.appendChild(st); }
-  st.textContent=dir==="like"?"LIKE 💚":"NOPE ✕"; st.classList.toggle("l",dir==="like"); st.classList.toggle("p",dir==="pass"); st.style.opacity=opacity;
-}
-function clearStamp(cardBox){ const st=cardBox.querySelector(".swstamp"); if(st) st.style.opacity=0; }
-
+function namesResultsRender(){ syncCheckRender(); editRender(); boardRender(); }
 function swRenderCard(){
   const cardBox=document.getElementById("swCard"), prog=document.getElementById("swProgress"), pick=document.getElementById("swPick"), controls=document.getElementById("swControls");
   const p=swProfile();
