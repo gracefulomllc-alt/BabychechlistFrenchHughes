@@ -59,3 +59,21 @@ export async function addCustomName(st, h, n, g, by) {
   await st.setJSON(key, rec);
   return { added: rec };
 }
+
+// Boy-or-girl guesses: `${h}/gg/<voter>=boy|girl` — one record per person, so guesses never overwrite each other.
+export async function readGuesses(st, h) {
+  const out = {};
+  const { blobs } = await st.list({ prefix: `${h}/gg/` });
+  for (const { key } of blobs) {
+    const rest = key.slice(`${h}/gg/`.length); const eq = rest.lastIndexOf("=");
+    if (eq < 0) continue;
+    const v = rest.slice(eq + 1);
+    if (v === "boy" || v === "girl") out[decodeURIComponent(rest.slice(0, eq))] = v;
+  }
+  return out;
+}
+export async function writeGuess(st, h, voter, v) {
+  const base = `${h}/gg/${enc(voter)}`;
+  await Promise.all([st.delete(`${base}=boy`), st.delete(`${base}=girl`)]);
+  if (v === "boy" || v === "girl") await st.set(`${base}=${v}`, "1");
+}

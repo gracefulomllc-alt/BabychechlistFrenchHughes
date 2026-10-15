@@ -1,5 +1,5 @@
 import { store, clean, slug, normalize } from "../shared/lib.mjs";
-import { readSwipes, writeSwipe, resetBucket, readGuestNames, readCustomNames } from "../shared/swipes.mjs";
+import { readSwipes, writeSwipe, resetBucket, readGuestNames, readCustomNames, readGuesses, writeGuess } from "../shared/swipes.mjs";
 
 export default async (req) => {
   const url = new URL(req.url);
@@ -16,6 +16,7 @@ export default async (req) => {
     v.meta.swipes = await readSwipes(st, h, v.meta.swipes);
     v.meta.guestNames = Object.assign({}, v.meta.guestNames || {}, await readGuestNames(st, h));
     v.meta.customNames = await readCustomNames(st, h);
+    v.meta.guesses = await readGuesses(st, h);
     v.updated = Math.max(v.updated || 0, Number(await st.get(`${h}/ver`)) || 0);
     return Response.json(v);
   }
@@ -24,7 +25,7 @@ export default async (req) => {
     const body = await req.json();
     const rawDoc = await st.get(h, { type: "json" });
     const doc = normalize(rawDoc);
-    const touchesDoc = !!body.reset || Object.keys(body.patch || {}).some((k) => k !== "swipeSet" && k !== "swipeReset");
+    const touchesDoc = !!body.reset || Object.keys(body.patch || {}).some((k) => k !== "swipeSet" && k !== "swipeReset" && k !== "guess");
     const hadLegacySwipes = !!(rawDoc && rawDoc.meta && rawDoc.meta.swipes);
 
     // Merge-safe patch: only the fields provided are touched; ticks merge by timestamp.
@@ -59,6 +60,8 @@ export default async (req) => {
     if (Array.isArray(p.swipeReset)) for (const bk of p.swipeReset) await resetBucket(st, h, bk);
     if (p.swipeSet && typeof p.swipeSet === "object")
       for (const [bk, e] of Object.entries(p.swipeSet)) for (const [n, v] of Object.entries(e || {})) await writeSwipe(st, h, bk, String(n).toLowerCase(), v);
+    if (p.guess && typeof p.guess === "object")   // {leslie:"boy"|"girl"|null, anthony:...}
+      for (const who of ["leslie", "anthony"]) if (who in p.guess) await writeGuess(st, h, who, p.guess[who]);
     if (p.favorites) {
       const favs = [];
       for (const f of p.favorites.slice(0, 12)) {
@@ -73,7 +76,7 @@ export default async (req) => {
     const now = Date.now();
     if (touchesDoc || hadLegacySwipes) { doc.updated = now; await st.setJSON(h, doc); }
     await st.set(`${h}/ver`, String(now));   // lets other phones know something changed
-    return Response.json({ ok: true, updated: now, swipes: await readSwipes(st, h) });
+    return Response.json({ ok: true, updated: now, swipes: await readSwipes(st, h), guesses: await readGuesses(st, h) });
   }
   return new Response("Method not allowed", { status: 405 });
 };

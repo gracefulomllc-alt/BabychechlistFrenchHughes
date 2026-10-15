@@ -80,6 +80,22 @@
   .row .cnt{font-family:Georgia,serif;font-weight:800;font-size:16px;white-space:nowrap}
   .row .whol{flex-basis:100%;font-size:12.5px;color:var(--muted);padding:2px 0 0 36px}
   .hidden{display:none!important}
+  /* boy or girl guess */
+  .gx{background:linear-gradient(180deg,#FFFFFF 0%,#F7F4E6 100%)}
+  .gx h3{text-align:center;font-size:21px}
+  .gbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .gbtn{border:2px solid transparent;border-radius:12px;padding:14px 6px;font:800 17px/1.1 inherit;font-family:inherit;cursor:pointer;transition:transform .1s;box-shadow:0 2px 4px rgba(0,0,0,.18)}
+  .gbtn:active{transform:scale(.94)}
+  .gbtn.boy{background:#E3EEF7;color:#2C5677;border-color:#A9C6DE}.gbtn.girl{background:#FBE7EF;color:#8A3A5C;border-color:#E5B3C8}
+  .gbtn[aria-pressed=true].boy{background:#2C5677;color:#fff;border-color:#1D3C54}.gbtn[aria-pressed=true].girl{background:#B04D78;color:#fff;border-color:#7E2F52}
+  .gbar{display:flex;height:30px;border-radius:999px;overflow:hidden;margin-top:14px;border:1px solid #C9D3C8;background:#F1F1EE;font:800 13px/30px inherit;font-family:inherit}
+  .gbar div{color:#fff;text-align:center;white-space:nowrap;overflow:hidden;transition:width .4s}
+  .gbar .b{background:#3F78A6}.gbar .g{background:#C35F8C}
+  .gcount{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;font-weight:700}
+  .gcount .b{color:#2C5677}.gcount .g{color:#8A3A5C}
+  .gwho{margin-top:8px;font-size:13px;color:var(--muted)}
+  .gwho summary{font-family:inherit;font-size:13px;font-weight:700}
+  .gwho details{margin-top:6px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -105,6 +121,12 @@
 
   <div id="app" class="hidden">
     <div class="hello"><span>Hi <b id="meName"></b>! 👋</span><a href="#" id="notMe">Not you?</a></div>
+    <section class="card gx" id="guessCard">
+      <h3>Boy or girl? 💙💗</h3>
+      <p class="sub" style="margin:0;text-align:center">Leslie &amp; Terel are keeping it a surprise — what's your guess?</p>
+      <div class="gbtns"><button class="gbtn boy" data-g="boy" type="button" aria-pressed="false">💙 Boy</button><button class="gbtn girl" data-g="girl" type="button" aria-pressed="false">💗 Girl</button></div>
+      <div id="gTally"></div>
+    </section>
     <div class="tabs">
       <button class="opt" data-t="swipe" aria-pressed="true">🔥 Swipe</button>
       <button class="opt" data-t="suggest" aria-pressed="false">💡 Suggest</button>
@@ -152,7 +174,7 @@ const GKEY="bp-party-guest-"+P;
 const $=id=>document.getElementById(id);
 const esc=x=>String(x==null?"":x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const GLABEL={b:"Boy",g:"Girl",n:"Neutral"};
-let D={guests:{},guestNames:{},custom:[],daily:[],today:"",parents:null}, ME=localStorage.getItem(GKEY)||"", deck=[], idx=0, busy=false, genders=new Set(["b","g","n"]), queue={}, qTimer=null;
+let D={guests:{},guestNames:{},custom:[],daily:[],today:"",parents:null,guesses:{}}, ME=localStorage.getItem(GKEY)||"", deck=[], idx=0, busy=false, genders=new Set(["b","g","n"]), queue={}, qTimer=null;
 
 let tT; function toast(t){ const e=$("toast"); e.textContent=t; e.classList.add("show"); clearTimeout(tT); tT=setTimeout(()=>e.classList.remove("show"),2400); }
 let ac; function tone(f,d,type){ try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume(); const o=ac.createOscillator(),g=ac.createGain(); o.type=type||"sine"; o.frequency.value=f; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.0001,ac.currentTime); g.gain.exponentialRampToValueAtTime(.16,ac.currentTime+.01); g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d); o.start(); o.stop(ac.currentTime+d+.02); }catch{} }
@@ -171,7 +193,7 @@ function likersOf(nl){ if(!isOpen()) return [];
   return out.concat(Object.entries(D.guests).filter(([k,e])=>k!==myKey()&&e[nl]==="like").map(([k])=>label(k))); }
 
 async function api(method,body){ const r=await fetch(`/api/party-state?p=${P}${ME?`&g=${encodeURIComponent(ME)}`:""}`,{method,headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined}); const d=await r.json(); if(!r.ok) throw new Error(d.error||"Something went wrong"); return d; }
-function absorb(d){ DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null}; }
+function absorb(d){ DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null,guesses:d.guesses||{}}; if(guessSending&&ME) D.guesses[myKey()]=guessSending; }
 const myCount=()=>Object.keys(mine()).length;
 const isOpen=()=>!!D.parents;
 
@@ -252,9 +274,30 @@ $("sugGo").onclick=async()=>{ const n=$("sugName").value.trim();
     $("sugName").value=""; renderAll(); }catch(e){ toast(e.message); } };
 $("sugName").onkeydown=e=>{ if(e.key==="Enter") $("sugGo").click(); };
 
+/* ---------- boy or girl guess ---------- */
+let guessSending=null;
+function guessRender(){ const el=$("gTally"); if(!el) return; const gs=Object.assign({},D.guesses||{}); if(guessSending&&ME) gs[myKey()]=guessSending;
+  const nm=k=>k==="leslie"?"Leslie":k==="anthony"?"Terel":k===myKey()?"You":label(k);
+  const boys=Object.keys(gs).filter(k=>gs[k]==="boy").map(nm), girls=Object.keys(gs).filter(k=>gs[k]==="girl").map(nm), tot=boys.length+girls.length;
+  const mineG=ME?gs[myKey()]:null;
+  document.querySelectorAll("#guessCard .gbtn").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g===mineG));
+  if(!tot){ el.innerHTML=`<p class="sub" style="text-align:center;margin:12px 0 0">No guesses yet — be the first!</p>`; return; }
+  const bp=Math.round(boys.length/tot*100), gp=100-bp, srt=a=>a.sort((x,y)=>(y==="You")-(x==="You")||x.localeCompare(y));
+  el.innerHTML=`<div class="gbar">${boys.length?`<div class="b" style="width:${bp}%">${bp>=14?bp+"%":""}</div>`:""}${girls.length?`<div class="g" style="width:${gp}%">${gp>=14?gp+"%":""}</div>`:""}</div>
+    <div class="gcount"><span class="b">💙 ${boys.length} say boy</span><span class="g">${girls.length} say girl 💗</span></div>
+    <div class="gwho"><details><summary>See who guessed what</summary><div style="margin-top:6px"><b style="color:#2C5677">💙 Boy:</b> ${esc(srt(boys).join(", ")||"nobody yet")}</div><div style="margin-top:4px"><b style="color:#8A3A5C">💗 Girl:</b> ${esc(srt(girls).join(", ")||"nobody yet")}</div></details></div>
+    ${mineG?`<p class="sub" style="text-align:center;margin:8px 0 0">You guessed <b>${mineG}</b> — tap the other one to change it.</p>`:""}`; }
+let gChain=Promise.resolve();
+async function sendGuess(v){ for(let i=0;i<3;i++){ try{ const d=await api("POST",{guest:ME,guess:v}); return d; }catch(e){ await new Promise(r=>setTimeout(r,1500)); } } return null; }
+document.querySelectorAll("#guessCard .gbtn").forEach(b=>b.onclick=()=>{ if(!ME) return; const v=b.dataset.g; const cur=guessSending||(D.guesses||{})[myKey()]; if(cur===v) return;
+  guessSending=v; guessRender(); buzz(18); tone(v==="boy"?587:784,.12); setTimeout(()=>tone(v==="boy"?740:988,.16),80); if(window.party) window.party(v==="boy"?"confetti":"hearts");
+  gChain=gChain.then(async()=>{ const d=await sendGuess(v); if(guessSending!==v) return;   // a newer tap is queued behind this one
+    guessSending=null; if(d){ absorb(d); toast(v==="boy"?"💙 Team Boy — guess saved!":"💗 Team Girl — guess saved!"); } else toast("Couldn't save your guess — check your connection and try again");
+    guessRender(); }); });
+
 /* ---------- leaderboard / mine ---------- */
 function renderAll(){
-  if(!ME) return; setTab();
+  if(!ME) return; setTab(); guessRender();
   const sl=$("sugList"); const cs=(D.custom||[]).slice().reverse();
   const likeCount=nl=>{ let c=0; if(isOpen()){ if(D.parents.leslie.includes(nl)) c++; if(D.parents.terel.includes(nl)) c++; } for(const [k,e] of Object.entries(D.guests)){ const src=k===myKey()?mine():e; if(src[nl]==="like") c++; } if(!D.guests[myKey()]&&mine()[nl]==="like") c++; return c; };
   sl.innerHTML=cs.length?cs.map(x=>{ const c=likeCount(x.n.toLowerCase()); return `<div class="row"><span class="n">${esc(x.n)}</span><span class="c">${esc(GLABEL[x.g]||"")} · by ${esc(x.by||"family")}<br>${c} like${c===1?"":"s"}</span></div>`; }).join(""):`<p class="sub">No suggestions yet — be the first!</p>`;

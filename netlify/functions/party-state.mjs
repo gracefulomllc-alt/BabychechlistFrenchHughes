@@ -2,7 +2,7 @@
 // Guests can only: see guest swipes, friend-suggested names and the daily drop; save their OWN swipes; suggest names.
 // Guests see Leslie & Terel's likes and matches (never their passes). They never see the household code or anything else.
 import { store, clean, takeQuota } from "../shared/lib.mjs";
-import { readSwipes, writeSwipe, readGuestNames, writeGuestName, readCustomNames, addCustomName, NAME_RE, GUEST_RE } from "../shared/swipes.mjs";
+import { readSwipes, writeSwipe, readGuestNames, writeGuestName, readCustomNames, addCustomName, readGuesses, writeGuess, NAME_RE, GUEST_RE } from "../shared/swipes.mjs";
 
 async function snapshot(st, h) {
   const all = await readSwipes(st, h);
@@ -19,7 +19,8 @@ async function snapshot(st, h) {
   const daily = await Promise.all(keys.map(async (k) => ({ date: k.split("/")[2], names: (await st.get(k, { type: "json" })) || [] })));
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Denver" });
   const due = doc.meta && /^\d{4}-\d{2}-\d{2}$/.test(doc.meta.due || "") ? doc.meta.due : null;   // only the date, nothing else from the household
-  return { guests, guestNames, custom, daily, today, parents, due };
+  const guesses = await readGuesses(st, h);
+  return { guests, guestNames, custom, daily, today, parents, due, guesses };
 }
 
 export default async (req) => {
@@ -42,6 +43,7 @@ export default async (req) => {
       await writeSwipe(st, h, bucket, n.toLowerCase(), v === "like" || v === "pass" ? v : null); saved++;
     }
   }
+  if ("guess" in body) { await writeGuess(st, h, bucket, body.guess === "boy" || body.guess === "girl" ? body.guess : null); saved++; }
   let suggested = null;
   if (body.suggest) {
     const q = await takeQuota(h, "suggest", 80, 500);

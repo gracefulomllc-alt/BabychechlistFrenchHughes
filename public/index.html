@@ -448,6 +448,20 @@
   .ckadd .go{margin-top:10px}
   li.flash{animation:ckflash 1.6s ease}
   @keyframes ckflash{0%,40%{background:#F6EFD3}100%{background:transparent}}
+  /* boy or girl guess */
+  .gx h3{margin:0 0 4px}
+  .gxrow{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .gxrow .gxwho{flex:0 0 78px;font-weight:800;display:flex;align-items:center;gap:6px}
+  .gxrow .gxwho img{width:22px;height:22px}
+  .gbtn{flex:1;min-width:90px;border:2px solid transparent;border-radius:10px;padding:10px 6px;font:800 15px/1.1 inherit;font-family:inherit;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+  .gbtn.boy{background:#E3EEF7;color:#2C5677;border-color:#A9C6DE}.gbtn.girl{background:#FBE7EF;color:#8A3A5C;border-color:#E5B3C8}
+  .gbtn[aria-pressed=true].boy{background:#2C5677;color:#fff;border-color:#1D3C54}.gbtn[aria-pressed=true].girl{background:#B04D78;color:#fff;border-color:#7E2F52}
+  .gbar{display:flex;height:28px;border-radius:999px;overflow:hidden;margin-top:14px;border:1px solid #C9D3C8;background:#F1F1EE;font:800 13px/28px inherit;font-family:inherit}
+  .gbar div{color:#fff;text-align:center;white-space:nowrap;overflow:hidden;transition:width .4s}
+  .gbar .b{background:#3F78A6}.gbar .g{background:#C35F8C}
+  .gcount{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;font-weight:700}
+  .gcount .b{color:#2C5677}.gcount .g{color:#8A3A5C}
+  .gwho{margin-top:6px;font-size:13.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -521,7 +535,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v52 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v53 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -621,6 +635,13 @@
 
 <div id="pane-names" class="pane">
   <div class="nur">
+    <div class="tool gx" id="guessCard">
+      <h3>Boy or girl? 💙💗</h3>
+      <p class="sub" style="margin:0 0 4px">Family &amp; friends guess on the invite page — you two can guess here too. Everyone sees the live tally.</p>
+      <div class="gxrow"><span class="gxwho"><img src="/badge.png" alt="">Leslie</span><button class="gbtn boy" type="button" data-who="leslie" data-g="boy" aria-pressed="false">💙 Boy</button><button class="gbtn girl" type="button" data-who="leslie" data-g="girl" aria-pressed="false">💗 Girl</button></div>
+      <div class="gxrow"><span class="gxwho"><img src="/ball.svg" alt="">Terel</span><button class="gbtn boy" type="button" data-who="anthony" data-g="boy" aria-pressed="false">💙 Boy</button><button class="gbtn girl" type="button" data-who="anthony" data-g="girl" aria-pressed="false">💗 Girl</button></div>
+      <div id="gTally"></div>
+    </div>
     <div class="tool invite">
       <h3 style="margin:0 0 4px">🎉 Invite family &amp; friends</h3>
       <p class="sub" style="margin:0 0 10px">Send a link so family &amp; friends can swipe names, suggest their own, and see a Family &amp; Friends leaderboard. They only see the name game: the same deck you swipe, plus a live leaderboard with your and Leslie's likes and matches (never your passes). They never see your checklist, gifts, notes, or household code.</p>
@@ -998,6 +1019,7 @@ function patch(p){ // queue a patch; merged server-side
   for(const k of ["ticks","notes","hidden","meta"]) if(p[k]) pending[k]=Object.assign(pending[k]||{},p[k]);
   for(const k of ["customAdd","customRemove"]) if(p[k]) pending[k]=(pending[k]||[]).concat(p[k]);
   if(p.favorites) pending.favorites=p.favorites;
+  if(p.guess) pending.guess=Object.assign(pending.guess||{},{[p.guess.who]:p.guess.v});
   if(p.swipeReset){ pending.swipeReset=(pending.swipeReset||[]).concat(p.swipeReset); p.swipeReset.forEach(b=>{ if(pending.swipeSet) delete pending.swipeSet[b]; }); }
   if(p.swipeSet){ pending.swipeSet=pending.swipeSet||{}; for(const [b,e] of Object.entries(p.swipeSet)) pending.swipeSet[b]=Object.assign(pending.swipeSet[b]||{},e); }
   cache(); savePending(); clearTimeout(flushTimer); flushTimer=setTimeout(flush,400);
@@ -1011,11 +1033,13 @@ function reapplyPending(){ const p=pending;
   if(p.meta) Object.assign(S.meta,p.meta);
   if(p.favorites) S.favorites=p.favorites;
   applySwipePending(p);
+  applyGuessPending(p);
 }
 function applySwipePending(p){ if(!p) return; S.meta.swipes=S.meta.swipes||{};
   (p.swipeReset||[]).forEach(b=>{ S.meta.swipes[b]={}; });
   for(const [b,e] of Object.entries(p.swipeSet||{})){ const bk=S.meta.swipes[b]=S.meta.swipes[b]||{}; for(const [n,v] of Object.entries(e)){ if(v==="like"||v==="pass") bk[n]=v; else delete bk[n]; } }
 }
+function applyGuessPending(p){ if(!p||!p.guess) return; S.meta.guesses=S.meta.guesses||{}; for(const [w,v] of Object.entries(p.guess)){ if(v) S.meta.guesses[w]=v; else delete S.meta.guesses[w]; } }
 let flushing=false;
 async function flush(){
   if(flushing){ clearTimeout(flushTimer); flushTimer=setTimeout(flush,300); return; }
@@ -1023,6 +1047,7 @@ async function flush(){
   flushing=true;
   const body={patch:pending}; pending={};
   try{ const r=await fetch(`/api/state?h=${H}`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); const d=await r.json(); if(!r.ok) throw 0; S.updated=d.updated; setSync("Synced"); savePending();
+    if(d.guesses){ S.meta.guesses=d.guesses; applyGuessPending(pending); }
     if(d.swipes){ S.meta.swipes=d.swipes; applySwipePending(pending); cache(); if(typeof namesResultsRender==="function") namesResultsRender(); } }
   catch{ setSync("Offline — will sync once you're back online"); const newer=pending; pending=body.patch; patchMergeInto(newer); savePending(); flushTimer=setTimeout(flush,5000); }
   finally{ flushing=false; }
@@ -1031,11 +1056,13 @@ function patchMergeInto(p){ // re-queue anything added while a failed save was i
   for(const k of ["ticks","notes","hidden","meta"]) if(p[k]) pending[k]=Object.assign(pending[k]||{},p[k]);
   for(const k of ["customAdd","customRemove","swipeReset"]) if(p[k]) pending[k]=(pending[k]||[]).concat(p[k]);
   if(p.favorites) pending.favorites=p.favorites;
+  if(p.guess) pending.guess=Object.assign(pending.guess||{},p.guess);
   if(p.swipeSet){ pending.swipeSet=pending.swipeSet||{}; for(const [b,e] of Object.entries(p.swipeSet)) pending.swipeSet[b]=Object.assign(pending.swipeSet[b]||{},e); }
 }
 setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
     if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); guestPicksRender(); namesResultsRender(); setSync("Updated from another device"); }
+    else if(JSON.stringify((d.meta&&d.meta.guesses)||{})!==JSON.stringify(S.meta.guesses||{})){ S.meta.guesses=(d.meta&&d.meta.guesses)||{}; cache(); guessRender(); }   // family guesses show up live
   }catch{} },8000);
 
 /* ================= tabs ================= */
@@ -1091,6 +1118,20 @@ document.getElementById("icsBtn").onclick=ics;
 /* ================= prices ================= */
 function priceOf(row){ const o=(S.meta.prices||{})[row.id]; if(o!=null) return o; const d=(window.PRICES||{})[row.name]; return d==null?null:d; }
 document.getElementById("priceTog").onclick=()=>{ const on=!document.body.classList.toggle("prices"); document.getElementById("priceTog").setAttribute("aria-pressed",!on); document.getElementById("priceTog").textContent=on?"Show prices":"Hide prices"; document.getElementById("budget").style.display=on?"none":""; update(); };
+/* ================= boy or girl guess ================= */
+function guessRender(){ const el=document.getElementById("gTally"); if(!el) return; const gs=(S.meta&&S.meta.guesses)||{};
+  document.querySelectorAll("#guessCard .gbtn").forEach(b=>b.setAttribute("aria-pressed",gs[b.dataset.who]===b.dataset.g));
+  const boys=Object.keys(gs).filter(k=>gs[k]==="boy").map(profileLabel), girls=Object.keys(gs).filter(k=>gs[k]==="girl").map(profileLabel), tot=boys.length+girls.length;
+  if(!tot){ el.innerHTML=`<p class="sub" style="margin:12px 0 0">No guesses yet. Share the invite link so family &amp; friends can vote!</p>`; return; }
+  const bp=Math.round(boys.length/tot*100), gp=100-bp, srt=a=>a.sort((x,y)=>x.localeCompare(y));
+  el.innerHTML=`<div class="gbar">${boys.length?`<div class="b" style="width:${bp}%">${bp>=14?bp+"%":""}</div>`:""}${girls.length?`<div class="g" style="width:${gp}%">${gp>=14?gp+"%":""}</div>`:""}</div>
+    <div class="gcount"><span class="b">💙 ${boys.length} say boy</span><span class="g">${girls.length} say girl 💗</span></div>
+    <div class="gwho"><div><b style="color:#2C5677">💙 Boy:</b> ${esc(srt(boys).join(", ")||"nobody yet")}</div><div style="margin-top:3px"><b style="color:#8A3A5C">💗 Girl:</b> ${esc(srt(girls).join(", ")||"nobody yet")}</div></div>`; }
+document.querySelectorAll("#guessCard .gbtn").forEach(b=>b.onclick=()=>{ const who=b.dataset.who, v=b.dataset.g; S.meta.guesses=S.meta.guesses||{};
+  const nv=S.meta.guesses[who]===v?null:v;   // tap your current pick again to clear it
+  if(nv) S.meta.guesses[who]=nv; else delete S.meta.guesses[who];
+  patch({guess:{who,v:nv}}); guessRender(); if(nv&&window.party) window.party(nv==="boy"?"confetti":"hearts");
+  toast(nv?`${profileLabel(who)} guessed ${nv} ${nv==="boy"?"💙":"💗"}`:`${profileLabel(who)}'s guess cleared`); });
 /* ================= who did it ================= */
 const AV={leslie:'<img src="/badge.png" alt="Leslie" title="Leslie">',anthony:'<img src="/ball.svg" alt="Terel" title="Terel">',both:'<img src="/badge.png" alt="Leslie" title="Leslie & Terel"><img src="/ball.svg" alt="Terel" title="Leslie & Terel">'};
 function whoAmI(){ return localStorage.getItem("bp-who")||""; }
@@ -1826,7 +1867,7 @@ function ensureMatchesOnShortlist(){
     e.v=e.v||[]; ["leslie","anthony"].forEach(k=>{ if(!e.v.includes(k)) e.v.push(k); }); }
   if(changed){ patch({meta:{names:list,matchAdded:added}}); namesRender(); }
 }
-function namesResultsRender(){ ensureMatchesOnShortlist(); syncCheckRender(); editRender(); boardRender(); suggestionsRender(); }
+function namesResultsRender(){ guessRender(); ensureMatchesOnShortlist(); syncCheckRender(); editRender(); boardRender(); suggestionsRender(); }
 /* ---- fun & celebratory swipe feedback: sound, haptics, bursts, streaks ---- */
 let swStreak=0, swAudioCtx=null, swBusy=false;
 function swTone(freq,dur,type){ try{
