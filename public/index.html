@@ -450,6 +450,20 @@
   @keyframes ckflash{0%,40%{background:#F6EFD3}100%{background:transparent}}
   /* boy or girl guess */
   .gx h3{margin:0 0 4px}
+  /* family & friends page */
+  .famjump{display:flex;align-items:center;gap:12px;width:100%;margin:12px 0 0;padding:14px 16px;border:1px solid #8E8A45;border-radius:12px;cursor:pointer;text-align:left;font-family:inherit;color:#fff;
+    background:linear-gradient(180deg,#5AA36F 0%,#3E8A52 50%,#2B6B3C 51%,#1E4D2B 100%);box-shadow:0 2px 5px rgba(0,0,0,.25)}
+  .famjump .fi{font-size:28px}
+  .famjump b{display:block;font-family:Georgia,serif;font-size:19px}
+  .famjump span.fs{font-size:13px;color:#E9F2EA}
+  .famjump .arr{margin-left:auto;font-size:22px;color:var(--gold)}
+  .famback{border:1px solid #8E8A45;border-radius:8px;background:linear-gradient(180deg,#fff,#E9ECE3);padding:9px 13px;font:700 14px/1 inherit;font-family:inherit;cursor:pointer;color:var(--ink);margin-top:12px}
+  .famstats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
+  .famstats div{flex:1;min-width:64px;padding:8px 4px!important;background:#F5F7F4;border:1px solid #C9D3C8;border-radius:8px;padding:8px;text-align:center}
+  .famstats b{display:block;font-family:Georgia,serif;font-size:22px}
+  .famstats span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .gpill{display:inline-block;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;font-family:'Trebuchet MS',sans-serif}
+  .gpill.boy{background:#E3EEF7;color:#2C5677}.gpill.girl{background:#FBE7EF;color:#8A3A5C}
   .gxrow{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
   .gxrow .gxwho{flex:0 0 78px;font-weight:800;display:flex;align-items:center;gap:6px}
   .gxrow .gxwho img{width:22px;height:22px}
@@ -535,7 +549,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v53 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v54 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -635,6 +649,36 @@
 
 <div id="pane-names" class="pane">
   <div class="nur">
+    <button class="famjump" id="famJump" type="button"><span class="fi">👨‍👩‍👧</span><span><b>Family &amp; Friends</b><span class="fs" id="famJumpSub">See who voted boy or girl and which names everyone likes</span></span><span class="arr">›</span></button>
+    <div id="famView" style="display:none">
+      <button class="famback" id="famBack" type="button">‹ Back to Baby Names</button>
+      <div class="tool">
+        <h3 style="margin:0 0 4px">👨‍👩‍👧 Family &amp; Friends</h3>
+        <p class="sub" style="margin:0">Everyone playing along from the invite link, plus you two. Updates live.</p>
+        <div class="famstats"><div><b id="fsPeople">0</b><span>playing</span></div><div><b id="fsBoy">0</b><span>say boy</span></div><div><b id="fsGirl">0</b><span>say girl</span></div><div><b id="fsSug">0</b><span>suggested</span></div></div>
+      </div>
+      <div class="tool gx">
+        <h3>Boy or girl? 💙💗</h3>
+        <div id="fgTally"></div>
+      </div>
+      <div class="tool">
+        <h3 style="margin:0 0 4px">🙋 Who's playing</h3>
+        <p class="sub" style="margin:0 0 6px">Tap a person to see the names they liked.</p>
+        <div id="fpList"></div>
+      </div>
+      <div class="tool">
+        <h3 style="margin:0 0 4px">🏆 Most popular names</h3>
+        <div class="sub" id="fbStat" style="margin-bottom:6px"></div>
+        <div id="fbList"></div>
+      </div>
+      <div class="tool sugbox">
+        <h3 style="margin:0 0 4px">💡 Suggested names <span class="sub" id="fsgCount" style="font-size:14px;font-weight:400"></span></h3>
+        <p class="sub" style="margin:0 0 8px">Names family &amp; friends added, and who suggested them.</p>
+        <div id="fsgList"></div>
+      </div>
+      <button class="famback" id="famBack2" type="button">‹ Back to Baby Names</button>
+    </div>
+    <div id="namesMain">
     <div class="tool gx" id="guessCard">
       <h3>Boy or girl? 💙💗</h3>
       <p class="sub" style="margin:0 0 4px">Family &amp; friends guess on the invite page — you two can guess here too. Everyone sees the live tally.</p>
@@ -719,6 +763,7 @@
         <div class="sub" id="nbStat" style="margin-bottom:6px"></div>
         <div id="nbList"></div>
       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -1120,13 +1165,14 @@ function priceOf(row){ const o=(S.meta.prices||{})[row.id]; if(o!=null) return o
 document.getElementById("priceTog").onclick=()=>{ const on=!document.body.classList.toggle("prices"); document.getElementById("priceTog").setAttribute("aria-pressed",!on); document.getElementById("priceTog").textContent=on?"Show prices":"Hide prices"; document.getElementById("budget").style.display=on?"none":""; update(); };
 /* ================= boy or girl guess ================= */
 function guessRender(){ const el=document.getElementById("gTally"); if(!el) return; const gs=(S.meta&&S.meta.guesses)||{};
+  const mirror=()=>{ const f=document.getElementById("fgTally"); if(f) f.innerHTML=el.innerHTML; };
   document.querySelectorAll("#guessCard .gbtn").forEach(b=>b.setAttribute("aria-pressed",gs[b.dataset.who]===b.dataset.g));
   const boys=Object.keys(gs).filter(k=>gs[k]==="boy").map(profileLabel), girls=Object.keys(gs).filter(k=>gs[k]==="girl").map(profileLabel), tot=boys.length+girls.length;
-  if(!tot){ el.innerHTML=`<p class="sub" style="margin:12px 0 0">No guesses yet. Share the invite link so family &amp; friends can vote!</p>`; return; }
+  if(!tot){ el.innerHTML=`<p class="sub" style="margin:12px 0 0">No guesses yet. Share the invite link so family &amp; friends can vote!</p>`; mirror(); return; }
   const bp=Math.round(boys.length/tot*100), gp=100-bp, srt=a=>a.sort((x,y)=>x.localeCompare(y));
   el.innerHTML=`<div class="gbar">${boys.length?`<div class="b" style="width:${bp}%">${bp>=14?bp+"%":""}</div>`:""}${girls.length?`<div class="g" style="width:${gp}%">${gp>=14?gp+"%":""}</div>`:""}</div>
     <div class="gcount"><span class="b">💙 ${boys.length} say boy</span><span class="g">${girls.length} say girl 💗</span></div>
-    <div class="gwho"><div><b style="color:#2C5677">💙 Boy:</b> ${esc(srt(boys).join(", ")||"nobody yet")}</div><div style="margin-top:3px"><b style="color:#8A3A5C">💗 Girl:</b> ${esc(srt(girls).join(", ")||"nobody yet")}</div></div>`; }
+    <div class="gwho"><div><b style="color:#2C5677">💙 Boy:</b> ${esc(srt(boys).join(", ")||"nobody yet")}</div><div style="margin-top:3px"><b style="color:#8A3A5C">💗 Girl:</b> ${esc(srt(girls).join(", ")||"nobody yet")}</div></div>`; mirror(); }
 document.querySelectorAll("#guessCard .gbtn").forEach(b=>b.onclick=()=>{ const who=b.dataset.who, v=b.dataset.g; S.meta.guesses=S.meta.guesses||{};
   const nv=S.meta.guesses[who]===v?null:v;   // tap your current pick again to clear it
   if(nv) S.meta.guesses[who]=nv; else delete S.meta.guesses[who];
@@ -1827,14 +1873,15 @@ document.getElementById("invNew").onclick=async()=>{ if(!confirm("Make a new inv
 document.getElementById("invOff").onclick=async()=>{ if(!confirm("Turn off the invite link? Guests won't be able to swipe until you make a new one. Their swipes so far are kept.")) return; if(await invCall("off")) toast("Invite link turned off"); };
 
 /* ================= Leaderboard: popular names + how many people like them ================= */
-function boardRender(){
+function boardRender(){ boardRenderInto("nbStat","nbList"); boardRenderInto("fbStat","fbList"); }
+function boardRenderInto(statId,listId){
   const sw=S.meta.swipes||{}, tally={};
   for(const [k,e] of Object.entries(sw)){ if(k.startsWith("_")) continue;
     for(const [n,v] of Object.entries(e||{})) if(v==="like") (tally[n]=tally[n]||[]).push(profileLabel(k)); }
   const people=Object.keys(sw).filter(k=>!k.startsWith("_")&&Object.keys(sw[k]||{}).length).length;
   const rows=Object.entries(tally).sort((a,b)=>b[1].length-a[1].length||nameDisplay(a[0]).localeCompare(nameDisplay(b[0]))).slice(0,50);
-  document.getElementById("nbStat").textContent=rows.length?`${people} ${people===1?"person has":"people have"} played · tap a name to see who liked it`:"";
-  const box=document.getElementById("nbList"); box.innerHTML="";
+  document.getElementById(statId).textContent=rows.length?`${people} ${people===1?"person has":"people have"} played · tap a name to see who liked it`:"";
+  const box=document.getElementById(listId); box.innerHTML="";
   if(!rows.length){ box.innerHTML='<p class="sub">No likes yet — start swiping, and send the invite link to family &amp; friends!</p>'; return; }
   rows.forEach(([n,who],i)=>{ const both=sw.leslie&&sw.anthony&&sw.leslie[n]==="like"&&sw.anthony[n]==="like";
     const r=document.createElement("div"); r.className="gp-row"; r.style.cursor="pointer";
@@ -1842,10 +1889,11 @@ function boardRender(){
     r.onclick=()=>{ const w=r.querySelector(".whol"); w.style.display=w.style.display==="none"?"":"none"; };
     box.appendChild(r); });
 }
-function suggestionsRender(){
-  const box=document.getElementById("sgList"); if(!box) return;
+function suggestionsRender(){ suggestionsRenderInto("sgList","sgCount"); suggestionsRenderInto("fsgList","fsgCount"); }
+function suggestionsRenderInto(boxId,countId){
+  const box=document.getElementById(boxId); if(!box) return;
   const sug=(S.meta.customNames||[]).slice().sort((a,b)=>(b.at||0)-(a.at||0)), sw=S.meta.swipes||{};
-  document.getElementById("sgCount").textContent=sug.length?`(${sug.length})`:"";
+  document.getElementById(countId).textContent=sug.length?`(${sug.length})`:"";
   box.innerHTML="";
   if(!sug.length){ box.innerHTML='<p class="sub">No suggestions yet. Family &amp; friends can suggest names from the invite link above.</p>'; return; }
   sug.forEach(x=>{ const nl=x.n.toLowerCase();
@@ -1867,7 +1915,33 @@ function ensureMatchesOnShortlist(){
     e.v=e.v||[]; ["leslie","anthony"].forEach(k=>{ if(!e.v.includes(k)) e.v.push(k); }); }
   if(changed){ patch({meta:{names:list,matchAdded:added}}); namesRender(); }
 }
-function namesResultsRender(){ guessRender(); ensureMatchesOnShortlist(); syncCheckRender(); editRender(); boardRender(); suggestionsRender(); }
+/* ================= Family & Friends page ================= */
+function famRender(){ const sw=S.meta.swipes||{}, gs=S.meta.guesses||{}, reg=S.meta.guestNames||{};
+  const keys=new Set(["leslie","anthony"]);
+  Object.keys(sw).forEach(k=>{ if(k.startsWith("guest:")) keys.add(k); }); Object.keys(gs).forEach(k=>keys.add(k)); Object.keys(reg).forEach(k=>{ if(k.startsWith("guest:")) keys.add(k); });
+  const people=[...keys].map(k=>{ const e=sw[k]||{}; const likes=Object.keys(e).filter(n=>e[n]==="like").sort((a,b)=>nameDisplay(a).localeCompare(nameDisplay(b)));
+    return {k,name:profileLabel(k),likes,swiped:Object.keys(e).length,guess:gs[k]||null}; })
+    .filter(p=>p.k==="leslie"||p.k==="anthony"||p.swiped||p.guess||reg[p.k]);
+  const active=people.filter(p=>p.swiped||p.guess);
+  const boys=Object.values(gs).filter(v=>v==="boy").length, girls=Object.values(gs).filter(v=>v==="girl").length, sug=(S.meta.customNames||[]).length;
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  set("fsPeople",active.length); set("fsBoy",boys); set("fsGirl",girls); set("fsSug",sug);
+  set("famJumpSub",active.length?`${active.length} playing · ${boys} say boy · ${girls} say girl — tap to see who voted`:"See who voted boy or girl and which names everyone likes");
+  const box=document.getElementById("fpList"); if(!box) return; box.innerHTML="";
+  const isParent=k=>k==="leslie"||k==="anthony";
+  people.sort((a,b)=>isParent(b.k)-isParent(a.k)||b.likes.length-a.likes.length||a.name.localeCompare(b.name)).forEach(p=>{
+    const r=document.createElement("div"); r.className="gp-row"; r.style.cursor="pointer";
+    const pill=p.guess?`<span class="gpill ${p.guess}">${p.guess==="boy"?"💙 Boy":"💗 Girl"}</span>`:"";
+    const sub=p.swiped?`${p.likes.length} liked`:(p.guess?"Guessed only":"Not yet");
+    r.innerHTML=`<div class="swi"><span class="n">${esc(p.name)}${pill}</span><span class="cnt">${sub}</span></div><div class="whol" style="display:none">${p.likes.length?esc(p.likes.map(nameDisplay).join(", ")):"No liked names yet"}</div>`;
+    r.onclick=()=>{ const w=r.querySelector(".whol"); w.style.display=w.style.display==="none"?"":"none"; };
+    box.appendChild(r); });
+}
+function famShow(on){ document.getElementById("famView").style.display=on?"":"none"; document.getElementById("namesMain").style.display=on?"none":""; document.getElementById("famJump").style.display=on?"none":"";
+  if(on) famRender(); const pane=document.getElementById("pane-names"); window.scrollTo({top:Math.max(0,pane.getBoundingClientRect().top+window.scrollY-70)}); }
+document.getElementById("famJump").onclick=()=>famShow(true);
+document.getElementById("famBack").onclick=document.getElementById("famBack2").onclick=()=>famShow(false);
+function namesResultsRender(){ famRender(); guessRender(); ensureMatchesOnShortlist(); syncCheckRender(); editRender(); boardRender(); suggestionsRender(); }
 /* ---- fun & celebratory swipe feedback: sound, haptics, bursts, streaks ---- */
 let swStreak=0, swAudioCtx=null, swBusy=false;
 function swTone(freq,dur,type){ try{
