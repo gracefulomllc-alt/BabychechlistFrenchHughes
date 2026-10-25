@@ -193,7 +193,12 @@ function likersOf(nl){ if(!isOpen()) return [];
   return out.concat(Object.entries(D.guests).filter(([k,e])=>k!==myKey()&&e[nl]==="like").map(([k])=>label(k))); }
 
 async function api(method,body){ const r=await fetch(`/api/party-state?p=${P}${ME?`&g=${encodeURIComponent(ME)}`:""}`,{method,headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined}); const d=await r.json(); if(!r.ok) throw new Error(d.error||"Something went wrong"); return d; }
-function absorb(d){ DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null,guesses:d.guesses||{}}; if(guessSending&&ME) D.guesses[myKey()]=guessSending; }
+const PAGE_V="56";
+function maybeUpdate(v){ // an older copy of this page reloads itself (once per version) so everyone has the latest buttons
+  if(!v||v===PAGE_V||Object.keys(queue).length||guessSending) return; const k="bp-upd-"+v;
+  try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,"1"); }catch{ return; }
+  const u=new URL(location.href); u.searchParams.set("v",v); location.replace(u.toString()); }
+function absorb(d){ maybeUpdate(d.v); DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null,guesses:d.guesses||{}}; if(guessSending&&ME) D.guesses[myKey()]=guessSending; }
 const myCount=()=>Object.keys(mine()).length;
 const isOpen=()=>!!D.parents;
 

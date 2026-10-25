@@ -2,6 +2,7 @@
 // Guests can only: see guest swipes, friend-suggested names and the daily drop; save their OWN swipes; suggest names.
 // Guests see Leslie & Terel's likes and matches (never their passes). They never see the household code or anything else.
 import { store, clean, takeQuota } from "../shared/lib.mjs";
+export const PAGE_VERSION = "56";   // bump with party.html so guests on an old copy reload
 import { readSwipes, writeSwipe, readGuestNames, writeGuestName, readCustomNames, addCustomName, readGuesses, writeGuess, NAME_RE, GUEST_RE } from "../shared/swipes.mjs";
 
 async function snapshot(st, h) {
@@ -20,7 +21,7 @@ async function snapshot(st, h) {
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Denver" });
   const due = doc.meta && /^\d{4}-\d{2}-\d{2}$/.test(doc.meta.due || "") ? doc.meta.due : null;   // only the date, nothing else from the household
   const guesses = await readGuesses(st, h);
-  return { guests, guestNames, custom, daily, today, parents, due, guesses };
+  return { guests, guestNames, custom, daily, today, parents, due, guesses, v: PAGE_VERSION };
 }
 
 export default async (req) => {
