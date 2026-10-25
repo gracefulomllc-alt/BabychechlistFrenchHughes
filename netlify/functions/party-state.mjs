@@ -2,7 +2,7 @@
 // Guests can only: see guest swipes, friend-suggested names and the daily drop; save their OWN swipes; suggest names.
 // Guests see Leslie & Terel's likes and matches (never their passes). They never see the household code or anything else.
 import { store, clean, takeQuota } from "../shared/lib.mjs";
-export const PAGE_VERSION = "56";   // bump with party.html so guests on an old copy reload
+export const PAGE_VERSION = "auto";   // v56 invite pages compare this to "56" and reload once; newer pages use /version.json
 import { readSwipes, writeSwipe, readGuestNames, writeGuestName, readCustomNames, addCustomName, readGuesses, writeGuess, NAME_RE, GUEST_RE } from "../shared/swipes.mjs";
 
 async function snapshot(st, h) {

@@ -193,12 +193,7 @@ function likersOf(nl){ if(!isOpen()) return [];
   return out.concat(Object.entries(D.guests).filter(([k,e])=>k!==myKey()&&e[nl]==="like").map(([k])=>label(k))); }
 
 async function api(method,body){ const r=await fetch(`/api/party-state?p=${P}${ME?`&g=${encodeURIComponent(ME)}`:""}`,{method,headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined}); const d=await r.json(); if(!r.ok) throw new Error(d.error||"Something went wrong"); return d; }
-const PAGE_V="56";
-function maybeUpdate(v){ // an older copy of this page reloads itself (once per version) so everyone has the latest buttons
-  if(!v||v===PAGE_V||Object.keys(queue).length||guessSending) return; const k="bp-upd-"+v;
-  try{ if(sessionStorage.getItem(k)) return; sessionStorage.setItem(k,"1"); }catch{ return; }
-  const u=new URL(location.href); u.searchParams.set("v",v); location.replace(u.toString()); }
-function absorb(d){ maybeUpdate(d.v); DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null,guesses:d.guesses||{}}; if(guessSending&&ME) D.guesses[myKey()]=guessSending; }
+function absorb(d){ DUE=d.due||null; tickCd(); D={guests:d.guests||{},guestNames:d.guestNames||{},custom:d.custom||[],daily:d.daily||[],today:d.today||"",parents:d.parents||null,guesses:d.guesses||{}}; if(guessSending&&ME) D.guesses[myKey()]=guessSending; }
 const myCount=()=>Object.keys(mine()).length;
 const isOpen=()=>!!D.parents;
 
@@ -328,7 +323,7 @@ function renderAll(){
 }
 
 /* ---------- start ---------- */
-function startApp(){ $("join").classList.add("hidden"); $("app").classList.remove("hidden"); $("meName").textContent=ME; buildDeck(); renderAll(); setTab(); }
+function startApp(){ $("join").classList.add("hidden"); $("app").classList.remove("hidden"); $("meName").textContent=ME; buildDeck(); renderAll(); setTab(); if(window.__bpResume) window.__bpResume(); }
 async function boot(){
   if(!P){ $("err").textContent="This invite link is missing its code — ask Leslie or Terel to send it again."; $("err").classList.remove("hidden"); return; }
   try{ absorb(await api("GET")); }catch(e){ $("err").textContent=e.message; $("err").classList.remove("hidden"); return; }
@@ -336,6 +331,24 @@ async function boot(){
 }
 setInterval(async()=>{ if(!ME||document.hidden||Object.keys(queue).length) return; try{ absorb(await api("GET")); renderAll(); }catch{} },15000);
 addEventListener("pagehide",()=>{ if(Object.keys(queue).length) navigator.sendBeacon&&navigator.sendBeacon(`/api/party-state?p=${P}`,new Blob([JSON.stringify({guest:ME,swipeSet:Object.fromEntries(Object.entries(queue).map(([k,v])=>[display(k),v]))})],{type:"application/json"})); });
+window.__bpBeforeReload=()=>{ const t=(document.querySelector('.tabs .opt[aria-pressed="true"]')||{}).dataset; sessionStorage.setItem("bp-resume",JSON.stringify({t:t&&t.t,y:scrollY,sug:$("sugName").value})); };
+window.__bpResume=()=>{ let r=null; try{ r=JSON.parse(sessionStorage.getItem("bp-resume")); sessionStorage.removeItem("bp-resume"); }catch{} if(!r) return;
+  const b=r.t&&document.querySelector(`.tabs .opt[data-t="${r.t}"]`); if(b) b.click(); if(r.sug) $("sugName").value=r.sug; setTimeout(()=>scrollTo(0,r.y||0),300); };
+window.__bpSafeToReload=()=>!Object.keys(queue).length&&!guessSending&&!busy;
+/* ---------- auto-update: when a newer version is live, reload at a safe moment ---------- */
+(function(){ const BUILD="__BUILD__"; if(BUILD.indexOf("__")===0) return;   // not stamped (local copy) — skip
+  let want=null;
+  const typing=()=>{ const a=document.activeElement; return !!(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"||a.tagName==="SELECT"||a.isContentEditable)&&!document.hidden); };
+  function tryReload(){ if(!want) return;
+    if(!window.__bpSafeToReload||!window.__bpSafeToReload()||typing()){ setTimeout(tryReload,4000); return; }
+    const k="bp-upd-"+want; let n=0; try{ n=Number(sessionStorage.getItem(k)||0); if(n>=2) return; sessionStorage.setItem(k,String(n+1)); }catch{}
+    try{ window.__bpBeforeReload&&window.__bpBeforeReload(); }catch{}
+    const u=new URL(location.href); u.searchParams.set("v",want); location.replace(u.toString()); }
+  async function check(){ try{ const r=await fetch("/version.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json();
+      if(d&&d.v&&d.v!==BUILD){ want=d.v; tryReload(); } }catch{} }
+  check(); setInterval(check,60000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) check(); }); addEventListener("focus",check); addEventListener("pageshow",check);
+})();
 boot();
 </script>
 </body>

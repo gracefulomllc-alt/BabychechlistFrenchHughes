@@ -549,7 +549,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v56 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v57 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -2099,7 +2099,28 @@ document.getElementById("bumpDel").onclick=async()=>{ if(!confirm(`Remove week $
 document.getElementById("partyBtn").onclick=()=>window.party&&window.party();
 // Extra celebration when a whole category gets completed
 const _upd=update; update=function(){ const before=[...document.querySelectorAll('section[data-done="1"]')].length; _upd(); const after=[...document.querySelectorAll('section[data-done="1"]')].length; if(after>before&&window.party) window.party("confetti"); };
-if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(r=>{ try{ r.update(); }catch{} }).catch(()=>{});
+// keep your place across an automatic update: same tab, same Baby Names view, same scroll spot
+window.__bpBeforeReload=()=>{ const t=(document.querySelector('.tab[aria-selected="true"]')||{}).dataset; const nm=(document.querySelector('.nmtab[aria-pressed="true"]')||{}).dataset;
+  sessionStorage.setItem("bp-resume",JSON.stringify({tab:t&&t.tab,nm:nm&&nm.v,fam:document.getElementById("famView").style.display!=="none",y:scrollY})); };
+(function(){ let r=null; try{ r=JSON.parse(sessionStorage.getItem("bp-resume")); sessionStorage.removeItem("bp-resume"); }catch{} if(!r) return;
+  try{ if(r.tab) goTab(r.tab); if(r.nm){ const b=document.querySelector(`.nmtab[data-v="${r.nm}"]`); if(b) b.click(); } if(r.fam) famShow(true); setTimeout(()=>scrollTo(0,r.y||0),300); }catch{} })();
+window.__bpSafeToReload=()=>!Object.keys(pending).length&&!flushing&&!swBusy&&!(document.getElementById("whopop")||{classList:{contains:()=>false}}).classList.contains("show");
+/* ---------- auto-update: when a newer version is live, reload at a safe moment ---------- */
+(function(){ const BUILD="__BUILD__"; if(BUILD.indexOf("__")===0) return;   // not stamped (local copy) — skip
+  let want=null;
+  const typing=()=>{ const a=document.activeElement; return !!(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"||a.tagName==="SELECT"||a.isContentEditable)&&!document.hidden); };
+  function tryReload(){ if(!want) return;
+    if(!window.__bpSafeToReload||!window.__bpSafeToReload()||typing()){ setTimeout(tryReload,4000); return; }
+    const k="bp-upd-"+want; let n=0; try{ n=Number(sessionStorage.getItem(k)||0); if(n>=2) return; sessionStorage.setItem(k,String(n+1)); }catch{}
+    try{ window.__bpBeforeReload&&window.__bpBeforeReload(); }catch{}
+    const u=new URL(location.href); u.searchParams.set("v",want); location.replace(u.toString()); }
+  async function check(){ try{ const r=await fetch("/version.json?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const d=await r.json();
+      if(d&&d.v&&d.v!==BUILD){ want=d.v; tryReload(); } }catch{} }
+  check(); setInterval(check,60000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) check(); }); addEventListener("focus",check); addEventListener("pageshow",check);
+})();
+
 function recoverLostSwipes(){ const flag="bp-swipefix-"+H; if(localStorage.getItem(flag)) return; localStorage.setItem(flag,"1");
   const loc=LOCAL_BEFORE&&LOCAL_BEFORE.meta&&LOCAL_BEFORE.meta.swipes; if(!loc) return; S.meta.swipes=S.meta.swipes||{}; const set={}; let n=0;
   for(const [b,e] of Object.entries(loc)) for(const [name,v] of Object.entries(e||{})){ if((v==="like"||v==="pass")&&!(S.meta.swipes[b]&&name in S.meta.swipes[b])){ (set[b]=set[b]||{})[name]=v; n++; } }

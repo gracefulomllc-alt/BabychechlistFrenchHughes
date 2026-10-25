@@ -1,5 +1,16 @@
 [build]
   publish = "public"
+  # Stamp every deploy with its own build id so open phones can tell when a newer version is live.
+  command = "B=$(echo ${COMMIT_REF:-$(date +%s)} | cut -c1-12) && sed -i \"s/__BUILD__/$B/g\" public/index.html public/party.html public/sw.js && printf '{\"v\":\"%s\"}' \"$B\" > public/version.json"
 
 [functions]
   node_bundler = "esbuild"
+
+[[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-store"
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
