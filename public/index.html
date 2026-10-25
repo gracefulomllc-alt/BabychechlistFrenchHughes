@@ -549,7 +549,7 @@
     <button type="button"><span class="em">🙈</span><h2>Hidden items</h2><span class="n"></span><span class="car">▶</span></button>
     <ul id="hiddenList"></ul>
   </section>
-  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v54 — Leslie edition</span></p>
+  <p class="foot">Quantities assume one baby and laundry every 2–3 days. <button id="reset">Reset all ticks</button><br><span style="opacity:.7">Baby Prep v55 — Leslie edition</span></p>
 </div>
 
 <div id="pane-nursery" class="pane">
@@ -1107,7 +1107,11 @@ function patchMergeInto(p){ // re-queue anything added while a failed save was i
 setInterval(async()=>{ if(document.hidden||Object.keys(pending).length) return;
   try{ const r=await fetch(`/api/state?h=${H}`); if(!r.ok) return; const d=await r.json();
     if((d.updated||0)>(S.updated||0)){ const oldDue=S.meta.due; S=d; cache(); render(); renderFavs(); applyDue(); if(S.meta.due!==oldDue){ wkSel=null; showWeek(currentWeek()); tick(); } syncRendToggle(); ctRender(); kkRender(); namesRender(); afterRender(); giftsRender(); feedRender(); bagRender(); guestPicksRender(); namesResultsRender(); setSync("Updated from another device"); }
-    else if(JSON.stringify((d.meta&&d.meta.guesses)||{})!==JSON.stringify(S.meta.guesses||{})){ S.meta.guesses=(d.meta&&d.meta.guesses)||{}; cache(); guessRender(); }   // family guesses show up live
+    else { // family & friends play on the invite page — pull in their swipes, names, suggestions and guesses live
+      const dm=d.meta||{}, keys=["swipes","guestNames","customNames","guesses"]; let changed=false;
+      for(const k of keys) if(JSON.stringify(dm[k]||null)!==JSON.stringify(S.meta[k]||null)){ S.meta[k]=dm[k]; changed=true; }
+      if(changed){ cache(); guestPicksRender(); namesResultsRender(); }
+    }
   }catch{} },8000);
 
 /* ================= tabs ================= */
